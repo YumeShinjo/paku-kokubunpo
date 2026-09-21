@@ -11,7 +11,7 @@ export function HungryBadge() {
   return (
     <p className="hungry-badge" role="status">
       🍙 コトが おなかを すかせているよ!(⭐{count}もん)
-      <small>ステージで あそぶと、ごはんが まざるよ。</small>
+      <small>あそぶと、⭐もんだいに であえるかも!</small>
     </p>
   );
 }

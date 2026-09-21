@@ -286,3 +286,13 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 - ソースコードは [MIT License](LICENSE)(コピーライトの名義: Yume Shinjo)。
 - 画像・音声などの素材、同梱フォント(M PLUS Rounded 1c: SIL Open Font License)、使用ライブラリは、それぞれのライセンスに従う。出典は [docs/ASSET_CREDITS.md](docs/ASSET_CREDITS.md) とゲーム内のクレジット画面にまとめている。
 - `.env.local`(Firebaseの設定値)は Git の管理対象外。公開しても、Firestoreはセキュリティルール(firestore.rules)で守られている。
+
+## 1問につき判定は1回だけ(重大な不具合の修正)
+選択式(通常・文中タップ)・穴埋め・仕分けのすべてで、解答が確定したあとは選択肢・カード・「こたえる」を押せない(disabled)。
+再描画を待たずに続けて押されても、最初の1回だけを解答にする(ref で同期的に記録)。さらに [QuizPlayer](src/features/quiz/QuizPlayer.tsx) 側でも、
+同じ問題への2回目以降の解答は無視する(ボスのHP・正解数・統計・星が二重に更新されない)。選んだ選択肢は正誤の色で、不正解のときは正解の選択肢も色で示す。
+再発防止のテストは [engines.test.tsx](src/engines/engines.test.tsx)。
+
+## ストーリーの見返し(ことだまの書「おもいで」)
+見終わったストーリー(導入・小ボス撃破後・真相・エリアクリアなど)を、エリアごとにいつでも見返せる([storyArchive.ts](src/features/story/storyArchive.ts) / [StoryArchive.tsx](src/features/zukan/StoryArchive.tsx))。
+まだ見ていないものは出さない(ネタバレ防止)。選択肢のあるエンディング分岐は、従来どおり「エンディングを もういちど 見る」で見返す。

@@ -95,6 +95,8 @@ export function QuizPlayer({
   // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
   const lastMessage = useRef<Record<string, string>>({});
   const lastEffect = useRef<CorrectEffect | undefined>(undefined);
+  // すでに解答した問題の位置(二重の判定を防ぐ)
+  const answeredIndex = useRef(-1);
 
   // 再開したとき、すでにボスのHPが0(とどめの一撃のあとで中断した)なら、そのままクリアにする
   const resumeCompleted = useRef(false);
@@ -123,6 +125,10 @@ export function QuizPlayer({
   const showGuide = feedback === null && !seenGuides.includes(guideKey);
 
   function handleAnswer(answer: Answer) {
+    // 1問につき判定は1回だけ。同じ問題に2回目以降に届いた解答は無視する
+    // (再描画を待たずに続けて届いても防げるよう、state ではなく ref で同期的に記録する)
+    if (answeredIndex.current === index) return;
+    answeredIndex.current = index;
     const correct = judgeAnswer(question, answer);
     playSe(correct ? "correct" : "incorrect");
     recordAnswer(question, correct);

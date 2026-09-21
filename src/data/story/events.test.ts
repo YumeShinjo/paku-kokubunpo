@@ -83,6 +83,19 @@ describe("ストーリーイベント(全エリア)", () => {
   });
 });
 
+describe("表記の統一", () => {
+  it("エリア名・場所の表記は「王座の間」で統一されている(「玉座」の表記ゆれがない)", () => {
+    const all = storyEvents.flatMap((e) => e.lines.map((l) => l.text.map((s) => s.text).join("")));
+    for (const text of all) expect(text).not.toContain("玉座");
+    expect(all.some((t) => t.includes("王座の間"))).toBe(true);
+  });
+
+  it("エリア名を含むストーリーの台詞は、areas.ts の正式名称と一致している", () => {
+    const names = areas.map((a) => a.name);
+    expect(names).toContain("王座の間");
+  });
+});
+
 describe("STORY.md の台詞の反映(抜粋の照合)", () => {
   it("序章導入は5行で、最初の行はナレーション", () => {
     const event = getStoryEvent(introStoryId("prologue"))!;

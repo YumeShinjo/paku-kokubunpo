@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { SortingQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
@@ -34,7 +34,11 @@ export function SortingEngine({ question, onAnswer }: Props) {
     setSelectedItemId(null);
   }
 
+  const submittedRef = useRef(false); // 再描画を待たずに続けて押されても、最初の1回だけにする
+
   function handleSubmit() {
+    if (submittedRef.current) return; // 二重に判定しない
+    submittedRef.current = true;
     setSubmitted(true);
     onAnswer({ engine: "sorting", placements });
   }

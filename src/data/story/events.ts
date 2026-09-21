@@ -218,7 +218,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: introStoryId("ohzaNoMa"),
     lines: [
-      narration("玉座[ぎょくざ]の間。重い扉の向こうに、宰相[さいしょう]が立ちはだかっている。"),
+      narration("王座[おうざ]の間。重い扉の向こうに、宰相[さいしょう]が立ちはだかっている。"),
       line("ニジュヴェール", "おやおや、ここまでいらっしゃられるとは。よくぞおいでくださられましたね。"),
       koto("な、なんか喋[しゃべ]り方が変…"),
     ],
@@ -238,7 +238,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: truthStoryId("ohzaNoMa"),
     lines: [
-      narration("玉座[ぎょくざ]に座っていたのは、もはや人の形をなさない「乱れ」そのものだった。"),
+      narration("王座[おうざ]に座っていたのは、もはや人の形をなさない「乱れ」そのものだった。"),
       line("王(乱れに飲まれた姿)", "正しい言葉など、いらな……いる……どちらでも……どうでもよい……"),
       koto("よくないよ!言葉は、ちゃんと伝えたい人がいるから、大事なんだから!", "glow"),
     ],
@@ -252,7 +252,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: lastBossClearStoryId("ohzaNoMa"),
     lines: [
-      narration("「乱れ」が晴れていくと同時に、玉座[ぎょくざ]に座っていた人物の輪郭[りんかく]がはっきりとしていく。"),
+      narration("「乱れ」が晴れていくと同時に、王座[おうざ]に座っていた人物の輪郭[りんかく]がはっきりとしていく。"),
       line("ヴェルバルト", "……ここは……わたしは、一体……"),
       narration("正気[しょうき]を取り戻した王様が、ゆっくりと顔を上げる。"),
       line("ヴェルバルト", "(コトを見て)まさか……お前は……", { showMascot: true, mascotForm: "true" }),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { AssemblyQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
@@ -15,6 +15,17 @@ interface Props {
  */
 export function AssemblyEngine({ question, onAnswer }: Props) {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  // 1問につき判定は1回だけ: 「こたえる」を押したあとは、カードも「こたえる」も押せない
+  const [submitted, setSubmitted] = useState(false);
+
+  const submittedRef = useRef(false); // 再描画を待たずに続けて押されても、最初の1回だけにする
+
+  function handleSubmit() {
+    if (submittedRef.current || !selectedCardId) return;
+    submittedRef.current = true;
+    setSubmitted(true);
+    onAnswer({ engine: "assembly", order: [selectedCardId] });
+  }
 
   return (
     <div className="engine engine-assembly">
@@ -45,6 +56,7 @@ export function AssemblyEngine({ question, onAnswer }: Props) {
           <button
             key={card.id}
             type="button"
+            disabled={submitted}
             className={selectedCardId === card.id ? "selected" : ""}
             onClick={() => setSelectedCardId(card.id)}
           >
@@ -56,11 +68,8 @@ export function AssemblyEngine({ question, onAnswer }: Props) {
       <button
         type="button"
         data-no-tap
-        disabled={!selectedCardId}
-        onClick={() =>
-          selectedCardId &&
-          onAnswer({ engine: "assembly", order: [selectedCardId] })
-        }
+        disabled={!selectedCardId || submitted}
+        onClick={handleSubmit}
       >
         こたえる
       </button>

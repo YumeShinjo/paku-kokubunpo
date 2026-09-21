@@ -12,6 +12,7 @@ import { useMascotStore } from "@/app/store/mascotStore";
 import { getAllQuestions } from "@/data/questionLoader";
 import { TitleBadge } from "@/components/TitleBadge";
 import { ZukanPages } from "@/features/zukan/ZukanPages";
+import { StoryArchive } from "@/features/zukan/StoryArchive";
 import { ENDING_CHOICE_EVENT_ID, getEndingTitle } from "@/data/titles";
 import { buildEndingReplayScreen } from "@/features/story/storyFlow";
 
@@ -80,6 +81,8 @@ export function ZukanScreen() {
         )}
       </p>
       <ZukanPages />
+
+      <StoryArchive />
 
       <h3>たんげんごとの せいとうりつ</h3>
       <p className="zukan-lead">

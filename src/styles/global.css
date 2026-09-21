@@ -1197,3 +1197,45 @@ button.incorrect {
   font-size: 0.8rem;
   font-weight: normal;
 }
+
+/* ---- 解答後の選択肢(押せないが、正誤がはっきり読める) ---- */
+.engine-choice-list button:disabled,
+.sentence-segment:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.engine-choice-list button.correct:disabled,
+.engine-choice-list button.incorrect:disabled,
+.sentence-segment.correct:disabled,
+.sentence-segment.incorrect:disabled {
+  opacity: 1;
+}
+
+.sentence-segment.correct {
+  background: var(--color-correct);
+}
+
+.sentence-segment.incorrect {
+  background: var(--color-incorrect);
+}
+
+/* ---- ことだまの書: おもいで(ストーリーの見返し) ---- */
+.zukan-memories h3 {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.memory-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.memory-list button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.9rem;
+}
