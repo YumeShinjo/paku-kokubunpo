@@ -1,0 +1,1199 @@
+/* 配色は未決事項(12章)のため仮のパステルカラー。デザイン確定後に差し替える。 */
+:root {
+  /* 配色(SPEC 10章で確定): 背景=クリーム(生成り) / メイン=パステルミント / 特別=淡いゴールド / 文字=焦げ茶(純黒は使わない) */
+  --color-bg: #fbf4e4;
+  --color-surface: #fffdf7;
+  --color-primary: #a8e0c8;
+  --color-primary-strong: #5fb896;
+  --color-on-primary: #4b3a2e;
+  --color-primary-text: #2f8a68;
+  --color-accent: #7cc9a9;
+  --color-gold: #f2d98a;
+  --color-gold-soft: #fbf0c8;
+  --color-gold-line: #d9b95a;
+  --color-gold-text: #8a6a12;
+  --color-text: #4b3a2e;
+  --color-text-muted: #8a7566;
+  --color-boss: #e0b3cf;
+  --color-correct: #7fcf98;
+  --color-correct-text: #2f7a4b;
+  --color-incorrect: #e8917f;
+  --color-tint: #eef9f3;
+  /* 正答率グラフ(図鑑): 単一系列。バーは背景に対して視認できる濃さにする */
+  --color-bar: #4aa886;
+  --color-bar-track: #ebe2cb;
+  --color-hp: #e2606b;
+  --font-base: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-base);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 9章: レスポンシブ対応(スマートフォン・パソコン両方でレイアウトが崩れない) */
+.screen {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  /* 右下の固定ミュートボタンに、最後のボタンが隠れないよう、下に余白をとる */
+  padding-bottom: 4.5rem;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button {
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button.selected {
+  outline: 3px solid var(--color-gold-line);
+}
+
+ruby rt {
+  font-size: 0.6em;
+}
+
+.area-list,
+.stage-list,
+.engine-choice-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 選択式の選択肢は、文字数によらず全幅にそろえる(親指で押しやすく) */
+.engine-choice-list button {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  text-align: left;
+}
+
+.stage-list button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+}
+
+.stage-list button.stage-subboss {
+  background: var(--color-boss);
+}
+
+.sorting-items,
+.sorting-categories,
+.assembly-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mascot {
+  font-size: 3rem;
+  text-align: center;
+}
+
+.feedback-correct {
+  color: var(--color-correct-text);
+}
+
+.feedback-incorrect {
+  color: #b5533f;
+}
+
+.feedback-explanation {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* 仕分けゲーム: 正誤は色でも示す(7章: 無音でも伝わる視覚的フィードバック) */
+button.correct {
+  background: var(--color-correct);
+}
+
+button.incorrect {
+  background: var(--color-incorrect);
+}
+
+.sorting-results {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sorting-results li {
+  border-left: 4px solid transparent;
+  padding-left: 0.5rem;
+}
+
+.sorting-results li.correct {
+  border-left-color: var(--color-correct);
+}
+
+.sorting-results li.incorrect {
+  border-left-color: var(--color-incorrect);
+}
+
+.sorting-result-item {
+  margin: 0;
+}
+
+.sorting-result-explanation {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* ストーリー演出(3章): 背景・立ち絵は本番素材が揃うまでの仮表示 */
+.screen-story {
+  padding: 0;
+  justify-content: flex-end;
+}
+
+.story-stage {
+  flex: 1;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--color-accent), var(--color-bg));
+}
+
+.story-character {
+  animation: story-character-in 0.2s ease-out;
+}
+
+@keyframes story-character-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.story-textbox {
+  margin: 0 1rem;
+  padding: 1rem;
+  border-radius: 16px 16px 0 0;
+  background: var(--color-surface);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  min-height: 5.5rem;
+}
+
+.story-speaker {
+  margin: 0 0 0.3rem;
+  font-weight: bold;
+  color: var(--color-primary-text);
+}
+
+.story-text {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.story-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  /* 右下の固定ミュートボタンと重ならないよう、右に余白をとる */
+  padding: 0.75rem 4rem 1rem 1rem;
+}
+
+.story-controls button {
+  flex: 1;
+}
+
+.story-skip {
+  background: transparent;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+/* ---- プレイ画面: コンボ・エンジンの呼び名・ボスHP(3章・5章) ---- */
+.stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 1.75rem;
+}
+
+/* 出題中に途中で抜けるボタン(小さめ・控えめ。誤タップで終わらないよう確認を挟む) */
+.quit-button {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-text-muted);
+}
+
+.quit-confirm {
+  border: 2px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+}
+
+.quit-confirm p {
+  margin: 0 0 0.75rem;
+}
+
+.quit-confirm-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.quit-confirm-buttons button {
+  flex: 1;
+}
+
+.quit-confirm .quit-yes {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text-muted);
+}
+
+.stage-progress,
+.combo,
+.quiz-heading {
+  margin: 0;
+}
+
+.quiz-heading {
+  font-weight: bold;
+}
+
+.combo-badge {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-gold-soft);
+  color: var(--color-gold-text);
+  font-weight: bold;
+  animation: combo-pop 0.25s ease-out;
+}
+
+@keyframes combo-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.engine-flavor {
+  border-left: 4px solid var(--area-accent, var(--color-primary));
+  padding-left: 0.6rem;
+}
+
+.engine-flavor p {
+  margin: 0;
+}
+
+.engine-flavor-label {
+  font-weight: bold;
+}
+
+.engine-flavor-situation {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.boss-panel {
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.boss-panel p {
+  margin: 0;
+}
+
+.boss-name {
+  font-weight: bold;
+}
+
+.hp-gauge {
+  height: 14px;
+  margin: 0.35rem 0 0.2rem;
+  border-radius: 7px;
+  background: var(--color-bar-track);
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  background: var(--color-hp);
+  transition: width 0.4s ease-out;
+}
+
+.hp-text {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* 攻撃が決まったらゲージが光り、外れたらボスが横にかわす(被ダメージの演出はない) */
+.boss-hit .hp-fill {
+  animation: hp-flash 0.4s ease-out;
+}
+
+.boss-miss {
+  animation: boss-dodge 0.4s ease-out;
+}
+
+@keyframes hp-flash {
+  0% {
+    filter: brightness(1.6);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes boss-dodge {
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(10px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* ---- 正誤フィードバック: 正解演出は3パターンからランダム(3章)。不正解は色と文言で示す ---- */
+.feedback {
+  position: relative;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.feedback-message {
+  margin: 0 0 0.4rem;
+  font-weight: bold;
+  font-size: 1.15rem;
+}
+
+.feedback-correct {
+  box-shadow: inset 0 0 0 2px var(--color-correct);
+}
+
+.feedback-incorrect {
+  box-shadow: inset 0 0 0 2px var(--color-incorrect);
+}
+
+.effect-pop {
+  animation: feedback-pop 0.35s ease-out;
+}
+
+@keyframes feedback-pop {
+  0% {
+    transform: scale(0.85);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.effect-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.85) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: feedback-shine 0.7s ease-out;
+  pointer-events: none;
+}
+
+@keyframes feedback-shine {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.sparkles span {
+  position: absolute;
+  top: 0.4rem;
+  font-size: 1.2rem;
+  opacity: 0;
+  animation: sparkle-rise 0.9s ease-out;
+}
+
+.sparkles span:nth-child(1) {
+  right: 12%;
+}
+
+.sparkles span:nth-child(2) {
+  right: 26%;
+  animation-delay: 0.12s;
+}
+
+.sparkles span:nth-child(3) {
+  right: 40%;
+  animation-delay: 0.24s;
+}
+
+@keyframes sparkle-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+/* ---- ことだまの書: 単元別正答率の横棒グラフ(6章) ---- */
+.zukan-lead {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.zukan-area h3 {
+  margin: 0.5rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.zukan-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.zukan-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label value"
+    "bar bar";
+  gap: 0.3rem 0.75rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.zukan-row-label {
+  grid-area: label;
+  font-weight: bold;
+}
+
+.zukan-row-value {
+  grid-area: value;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.zukan-row-value small {
+  color: var(--color-text-muted);
+}
+
+/* バーは24px以下、データ側の端だけ4px丸め、始点(左)は直線 */
+.zukan-bar {
+  grid-area: bar;
+  display: block;
+  height: 14px;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-bar-track);
+}
+
+.zukan-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-bar);
+  transition: width 0.5s ease-out;
+}
+
+/* 色だけに頼らず、文字の目印でも「にがて」を示す */
+.zukan-weak {
+  margin-left: 0.5rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--color-bar);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combo-badge,
+  .effect-pop,
+  .effect-shine::after,
+  .sparkles span,
+  .boss-miss,
+  .boss-hit .hp-fill,
+  .story-character {
+    animation: none;
+  }
+
+  .sparkles span {
+    opacity: 1;
+  }
+
+  .hp-fill,
+  .zukan-bar-fill {
+    transition: none;
+  }
+}
+
+/* ---- 選択式の文中タップ表示(絆の間): 文の各文節をそのままタップして選ぶ ---- */
+.engine-sentence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0;
+  line-height: 2.4;
+}
+
+.sentence-segment {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* 問いの基準になる語: タップ対象ではないので、ボタンと区別して強調する */
+.sentence-given {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 3px solid var(--color-accent);
+  font-weight: bold;
+}
+
+/* ---- ストーリー: 選択肢(エンディング分岐)とマスコットの変身演出(2章) ---- */
+.story-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.mascot-glow .mascot-emoji,
+.mascot-true .mascot-emoji {
+  display: inline-block;
+  filter: drop-shadow(0 0 10px #fff3a8) drop-shadow(0 0 22px #ffe066);
+  animation: mascot-glow 1.8s ease-in-out infinite;
+}
+
+.mascot-true .mascot-emoji {
+  font-size: 1.25em;
+}
+
+@keyframes mascot-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px #fff3a8) drop-shadow(0 0 14px #ffe066);
+  }
+  50% {
+    filter: drop-shadow(0 0 14px #fff3a8) drop-shadow(0 0 30px #ffd633);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-glow .mascot-emoji,
+  .mascot-true .mascot-emoji {
+    animation: none;
+  }
+}
+
+/* ロック中のステージ(解放条件を満たすまで挑戦できない) */
+.stage-locked {
+  font-size: 0.8rem;
+  opacity: 0.95;
+}
+
+/* ---- 初回プレイの操作ガイド ---- */
+.engine-guide {
+  border: 2px dashed var(--color-accent);
+  border-radius: 12px;
+  background: var(--color-tint);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.engine-guide-title {
+  margin: 0;
+  font-weight: bold;
+}
+
+.engine-guide-steps {
+  margin: 0;
+  padding-left: 1.4rem;
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+
+.engine-guide-footer {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.settings-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ---- 称号・エンディング結果・クレジット ---- */
+.title-badge {
+  display: inline-block;
+  padding: 0.15rem 0.8rem;
+  border-radius: 999px;
+  background: var(--color-gold-soft);
+  border: 1px solid var(--color-gold-line);
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+.title-owned,
+.zukan-title {
+  margin: 0;
+  text-align: center;
+}
+
+.zukan-title-none {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.screen-ending-result {
+  align-items: center;
+  text-align: center;
+}
+
+.ending-title {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.ending-title-reason {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.credits-lead {
+  text-align: center;
+  margin: 0;
+}
+
+.credits-section h3,
+.credits-section h4 {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.credits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.credits-role {
+  color: var(--color-text-muted);
+  margin-right: 0.5rem;
+}
+
+.credits-asset-name,
+.credits-asset-detail {
+  margin: 0;
+}
+
+.credits-asset-detail {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.credits-placeholder {
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-text-muted);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0;
+}
+
+/* ---- 素材(画像)の受け皿。素材が置かれたときだけ使われる ---- */
+.screen-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+}
+
+/* 文字が読めるよう、半透明のクリーム色を重ねる */
+.screen-bg-soft::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(251, 244, 228, 0.82);
+}
+
+.title-logo {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.mascot-layers {
+  position: relative;
+  display: inline-block;
+  width: 8rem;
+  height: 8rem;
+}
+
+.mascot-image {
+  display: block;
+  width: 8rem;
+  height: 8rem;
+  object-fit: contain;
+}
+
+.mascot-layers .mascot-image {
+  position: absolute;
+  inset: 0;
+}
+
+.boss-portrait {
+  position: relative;
+  width: 6rem;
+  height: 6rem;
+  margin: 0 auto 0.4rem;
+}
+
+.boss-portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.story-king {
+  display: block;
+  max-height: 12rem;
+  width: auto;
+}
+
+.story-stage {
+  background-size: cover;
+  background-position: center;
+}
+
+.title-badge-image {
+  height: 1.2em;
+  width: auto;
+  vertical-align: -0.2em;
+  margin-right: 0.3em;
+}
+
+.zukan-replay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: stretch;
+}
+
+/* ---- ランキング ---- */
+.ranking-lead {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.ranking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ranking-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.ranking-form input {
+  font-size: 1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-text-muted);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.ranking-error {
+  margin: 0;
+  color: #b5533f;
+  font-size: 0.9rem;
+}
+
+.ranking-class,
+.ranking-score {
+  margin: 0;
+}
+
+.ranking-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ranking-list li {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ranking-list li.ranking-me {
+  background: var(--color-gold-soft);
+  outline: 2px solid var(--color-gold-line);
+}
+
+.ranking-rank {
+  font-weight: bold;
+  text-align: center;
+}
+
+.ranking-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-points {
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-hint {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ---- ミュートの固定アイコン(全画面・右下) ---- */
+.mute-button {
+  position: fixed;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 50;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.mute-button.is-muted {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-line);
+}
+
+/* ---- 復習(星) ---- */
+.star-button {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-text-muted);
+}
+
+.star-button.starred {
+  background: var(--color-gold-soft);
+  color: var(--color-text);
+  border-color: var(--color-gold-line);
+}
+
+.stage-header {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.feedback-overcome {
+  margin: 0;
+  font-weight: bold;
+  color: var(--color-gold-text);
+}
+
+.zukan-review {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.zukan-stars {
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+}
+
+/* ---- 品詞の色分け(ことだまの書・解答後の結果だけ) ---- */
+.pos-chip {
+  display: inline-block;
+  padding: 0.05rem 0.55rem;
+  border-radius: 999px;
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+/* ---- ことだまの書のページ ---- */
+.zukan-pages h3,
+.screen-zukan > h3 {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.zukan-pages-lead {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.zukan-page,
+.zukan-page-locked {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  margin: 0 0 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.zukan-page-locked {
+  color: var(--color-text-muted);
+}
+
+.zukan-page summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.zukan-page-intro {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.zukan-pos-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+}
+
+.zukan-entries {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.zukan-entry dt {
+  font-weight: bold;
+}
+
+.zukan-entry dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.zukan-entry dd p {
+  margin: 0;
+}
+
+.zukan-example {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: flex-end;
+  margin-top: 0.3rem !important;
+}
+
+.zukan-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  color: var(--color-text);
+}
+
+.zukan-word-plain {
+  padding-left: 0;
+  padding-right: 0;
+  font-weight: bold;
+}
+
+.zukan-word-text {
+  font-weight: bold;
+}
+
+.zukan-word-pos {
+  font-size: 0.65rem;
+}
+
+.zukan-example-note {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+/* ---- ホーム画面のバッジ ---- */
+.hungry-badge {
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: var(--color-gold-soft);
+  border: 1px solid var(--color-gold-line);
+  text-align: center;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hungry-badge small {
+  color: var(--color-text-muted);
+}
+
+/* ---- ステージの続きから ---- */
+.stage-resume {
+  color: var(--color-on-primary);
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.stage-restart {
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-text-muted);
+}
+
+/* ---- エリアごとのアクセントカラー(マップ・ステージ選択・出題画面) ---- */
+.area-list button {
+  border-left: 10px solid var(--area-accent, var(--color-primary-strong));
+}
+
+.screen-stage-select h2 {
+  padding-bottom: 0.25rem;
+  border-bottom: 4px solid var(--area-accent, var(--color-primary));
+}
+
+.stage-list button:not(.stage-subboss) {
+  border-left: 10px solid var(--area-accent, var(--color-primary-strong));
+}
+
+/* ---- ランキング上位・称号(淡いゴールド) ---- */
+.ranking-list li.ranking-top .ranking-rank {
+  background: var(--color-gold);
+  color: var(--color-gold-text);
+  border-radius: 999px;
+  line-height: 1.8rem;
+}
+
+/* エリア選択: 名前と単元名を2行にして、全幅にそろえる */
+.area-list button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+}
+
+.area-list button span {
+  font-size: 0.8rem;
+  font-weight: normal;
+}

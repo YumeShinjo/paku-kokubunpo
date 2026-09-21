@@ -1,0 +1,312 @@
+import { useEffect, useRef, useState } from "react";
+import type { Question, RubyText } from "@/data/schema";
+import { getEngineFlavor } from "@/data/engineFlavor";
+import { getUnitMeta } from "@/data/units";
+import { EngineRouter } from "@/engines/EngineRouter";
+import { judgeAnswer, type Answer } from "@/engines/core/judge";
+import { Ruby } from "@/components/Ruby";
+import { playSe } from "@/lib/audio";
+import { useReviewStore } from "@/app/store/reviewStore";
+import { useTutorialStore } from "@/app/store/tutorialStore";
+import { guideKeyOf } from "@/data/engineGuide";
+import { EngineGuide } from "./EngineGuide";
+import { BossPortrait } from "./BossPortrait";
+import { recordReviewResult, type ReviewOutcome } from "./review";
+import type { QuizProgress } from "./session";
+import { ScreenBackground } from "@/components/ScreenBackground";
+import { areaAccentStyle } from "@/data/areaTheme";
+import { useStatsStore } from "@/app/store/statsStore";
+import {
+  comboLabel,
+  CORRECT_EFFECTS,
+  pickDifferent,
+  pickMessage,
+  type CorrectEffect,
+} from "./feedback";
+
+export interface SessionResult {
+  correctCount: number;
+  /** 実際に解答した問題数(小ボスをHP0で早く終えた場合は出題数より少ない) */
+  answered: number;
+  maxCombo: number;
+  /** ボス戦のときだけ意味を持つ。HPを0にできたか */
+  bossDefeated: boolean;
+  /** 小ボスのHPの残り(ボス戦のみ)。「もう少し」の表示に使う */
+  hpLeft: number;
+}
+
+interface Props {
+  /** エンジンの呼び名(5章の世界観演出)を引くためのエリアid */
+  areaId: string;
+  questions: Question[];
+  /** 指定するとボス戦(HPゲージ付き)になる。3章: ゲージは演出のみで、プレイヤー側は被ダメージなし */
+  boss?: { label: string; title: string; hpMax: number; type: "subBoss" | "lastBoss" };
+  /** 画面上部に出す見出し(自由練習の単元名など) */
+  heading?: RubyText;
+  onComplete: (result: SessionResult) => void;
+  /** 途中から再開するときの、それまでの進行状況(出題 questions は、保存時と同じ並びを渡す) */
+  resume?: QuizProgress;
+  /** 1問解答するたびに、次に解く位置などの進行状況を通知する(再開用の保存に使う) */
+  onProgress?: (progress: QuizProgress) => void;
+  /** 途中でやめて戻る。指定すると「やめる」ボタンを出す(確認つき。クリアにはならない) */
+  onQuit?: () => void;
+  /** やめても、あとで続きから遊べる(確認の文面が変わる) */
+  canResumeLater?: boolean;
+}
+
+interface Feedback {
+  correct: boolean;
+  message: string;
+  effect: CorrectEffect | null;
+  /** 星のついていた問題を克服したときだけ入る */
+  review: ReviewOutcome | null;
+}
+
+/**
+ * 1セッション分の出題進行。通常ステージ・小ボス・自由練習で共通に使う。
+ * 「負け」という状態は作らない(3章): 不正解でも次の問題へ進むだけで、ボス戦もHPは
+ * ボス側にしかない。プールを解ききってもHPが残った場合は、呼び出し側が「もう少し」を出す。
+ */
+export function QuizPlayer({
+  areaId,
+  questions,
+  boss,
+  heading,
+  onComplete,
+  resume,
+  onProgress,
+  onQuit,
+  canResumeLater,
+}: Props) {
+  const recordAnswer = useStatsStore((s) => s.recordAnswer);
+  const toggleStar = useReviewStore((s) => s.toggleStar);
+  const starredIds = useReviewStore((s) => s.starredQuestionIds);
+
+  const seenGuides = useTutorialStore((s) => s.seenGuides);
+  const markGuideSeen = useTutorialStore((s) => s.markSeen);
+
+  const [index, setIndex] = useState(resume?.index ?? 0);
+  const [correctCount, setCorrectCount] = useState(resume?.correctCount ?? 0);
+  const [combo, setCombo] = useState(resume?.combo ?? 0);
+  const [maxCombo, setMaxCombo] = useState(resume?.maxCombo ?? 0);
+  const [hp, setHp] = useState(resume?.hp ?? boss?.hpMax ?? 0);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
+  // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
+  const lastMessage = useRef<Record<string, string>>({});
+  const lastEffect = useRef<CorrectEffect | undefined>(undefined);
+
+  // 再開したとき、すでにボスのHPが0(とどめの一撃のあとで中断した)なら、そのままクリアにする
+  const resumeCompleted = useRef(false);
+  useEffect(() => {
+    if (resume && boss && resume.hp <= 0 && !resumeCompleted.current) {
+      resumeCompleted.current = true;
+      onComplete({
+        correctCount: resume.correctCount,
+        answered: resume.index,
+        maxCombo: resume.maxCombo,
+        bossDefeated: true,
+        hpLeft: 0,
+      });
+    }
+    // 再開の判定は、最初に開いたときの1回だけ
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const question = questions[index];
+  // 呼び名は問題の所属エリアで引く(全エリアの問題が出るラスボスでも、その問題らしい呼び名になる)
+  const flavor = getEngineFlavor(getUnitMeta(question.unit)?.areaId ?? areaId, question.engine);
+  const comboText = comboLabel(combo);
+  const starred = starredIds.includes(question.id);
+  // 初回プレイ時だけ、その出題形式の操作ガイドを出す(解答後は出さない)
+  const guideKey = guideKeyOf(question);
+  const showGuide = feedback === null && !seenGuides.includes(guideKey);
+
+  function handleAnswer(answer: Answer) {
+    const correct = judgeAnswer(question, answer);
+    playSe(correct ? "correct" : "incorrect");
+    recordAnswer(question, correct);
+
+    const kind = boss ? (correct ? "bossHit" : "bossMiss") : correct ? "correct" : "incorrect";
+    const message = pickMessage(kind, lastMessage.current[kind]);
+    lastMessage.current[kind] = message;
+
+    // 星(復習)の更新と、克服ボーナス。解答の直後に必ず反映する
+    const review = recordReviewResult(question.id, correct);
+    // 克服ボーナスでアクセサリーが増えたときは、正解音のあとに、きらっとした音を鳴らす
+    if (review.bonusGained) setTimeout(() => playSe("bonus"), 250);
+
+    let effect: CorrectEffect | null = null;
+    if (correct) {
+      effect = pickDifferent(CORRECT_EFFECTS, lastEffect.current);
+      lastEffect.current = effect;
+      setCorrectCount((c) => c + 1);
+      setCombo(combo + 1);
+      setMaxCombo((m) => Math.max(m, combo + 1));
+      if (boss) setHp((h) => Math.max(0, h - 1));
+    } else {
+      setCombo(0);
+    }
+    setFeedback({ correct, message, effect, review: review.overcame ? review : null });
+
+    // 再開用に、解答のたびに進行状況を通知する(次に解く位置。最後の問題のときは位置を進めない)
+    onProgress?.({
+      index: index + 1 < questions.length ? index + 1 : index,
+      correctCount: correctCount + (correct ? 1 : 0),
+      combo: correct ? combo + 1 : 0,
+      maxCombo: correct ? Math.max(maxCombo, combo + 1) : maxCombo,
+      hp: boss && correct ? Math.max(0, hp - 1) : hp,
+    });
+  }
+
+  function handleNext() {
+    const defeated = boss !== undefined && hp <= 0;
+    const isLast = index + 1 >= questions.length;
+    if (defeated || isLast) {
+      onComplete({
+        correctCount,
+        answered: index + 1,
+        maxCombo,
+        bossDefeated: defeated,
+        hpLeft: hp,
+      });
+      return;
+    }
+    setFeedback(null);
+    setIndex(index + 1);
+  }
+
+  return (
+    <div className="screen screen-stage" style={areaAccentStyle(areaId)}>
+      <ScreenBackground name={areaId} />
+      {heading && (
+        <p className="quiz-heading">
+          <Ruby text={heading} />
+        </p>
+      )}
+
+      {boss && (
+        <div
+          className={[
+            "boss-panel",
+            feedback ? (feedback.correct ? "boss-hit" : "boss-miss") : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <BossPortrait type={boss.type} areaId={areaId} />
+          <p className="boss-name">
+            {boss.label}: {boss.title}
+          </p>
+          <div
+            className="hp-gauge"
+            role="progressbar"
+            aria-label="ボスのHP"
+            aria-valuemin={0}
+            aria-valuemax={boss.hpMax}
+            aria-valuenow={hp}
+          >
+            <div className="hp-fill" style={{ width: `${(hp / boss.hpMax) * 100}%` }} />
+          </div>
+          <p className="hp-text">
+            HP {hp} / {boss.hpMax}
+          </p>
+        </div>
+      )}
+
+      <div className="stage-header">
+        <p className="stage-progress">
+          {index + 1} / {questions.length}
+        </p>
+        <p className="combo" aria-live="polite">
+          {comboText && (
+            <span key={combo} className="combo-badge">
+              🔥 {comboText}
+            </span>
+          )}
+        </p>
+        <button
+          type="button"
+          className={`star-button ${starred ? "starred" : ""}`.trim()}
+          aria-pressed={starred}
+          onClick={() => toggleStar(question.id)}
+        >
+          {starred ? "⭐ ふくしゅうちゅう" : "☆ ふくしゅうに いれる"}
+        </button>
+        {onQuit && (
+          <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>
+            やめる
+          </button>
+        )}
+      </div>
+
+      {confirmingQuit && onQuit && (
+        <div className="quit-confirm" role="alertdialog" aria-label="やめる確認">
+          <p>
+            {canResumeLater
+              ? "ここまでの すすみぐあいは のこるよ。あとで つづきから あそべるよ。やめる?"
+              : "ここでやめると、このステージはクリアにならないよ。やめる?"}
+          </p>
+          <div className="quit-confirm-buttons">
+            <button type="button" className="quit-yes" onClick={onQuit}>
+              やめる
+            </button>
+            <button type="button" onClick={() => setConfirmingQuit(false)}>
+              つづける
+            </button>
+          </div>
+        </div>
+      )}
+
+      {flavor && (
+        <div className="engine-flavor">
+          <p className="engine-flavor-label">
+            <Ruby text={flavor.label} />
+          </p>
+          <p className="engine-flavor-situation">
+            <Ruby text={flavor.situation} />
+          </p>
+        </div>
+      )}
+
+      {showGuide && <EngineGuide guideKey={guideKey} onDismiss={() => markGuideSeen(guideKey)} />}
+
+      <EngineRouter key={question.id} question={question} onAnswer={handleAnswer} />
+
+      {feedback && (
+        <div
+          className={[
+            "feedback",
+            feedback.correct ? "feedback-correct" : "feedback-incorrect",
+            feedback.effect ? `effect-${feedback.effect}` : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {feedback.effect === "sparkle" && (
+            <span className="sparkles" aria-hidden="true">
+              <span>✨</span>
+              <span>✨</span>
+              <span>✨</span>
+            </span>
+          )}
+          <p className="feedback-message">{feedback.message}</p>
+          {feedback.review && (
+            <p className="feedback-overcome">
+              ⭐ にがてを こくふくした!
+              {feedback.review.bonusGained && " コトに アクセサリーが ふえたよ ✨"}
+            </p>
+          )}
+          {question.explanation && (
+            <p className="feedback-explanation">
+              <Ruby text={question.explanation} />
+            </p>
+          )}
+          <button type="button" onClick={handleNext}>
+            つぎへ
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
