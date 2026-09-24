@@ -18,8 +18,8 @@ export interface Toast {
 
 /** エリアクリアで出す通知の内容 */
 export const TOAST_CONTENT = {
-  growth: { icon: "✨", message: "せいちょうした!", se: "growth", face: "surprised" },
-  pageUnlock: { icon: "📖", message: "ずかんが ふえたよ!", se: "pageUnlock" },
+  growth: { icon: "✨", message: "成長[せいちょう]したよ!", se: "growth", face: "surprised" },
+  pageUnlock: { icon: "📖", message: "図鑑[ずかん]が増[ふ]えたよ!", se: "pageUnlock" },
 } as const satisfies Record<string, Omit<Toast, "id">>;
 
 interface ToastState {

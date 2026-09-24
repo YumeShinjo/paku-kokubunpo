@@ -45,7 +45,7 @@ describe("buildAreaEntryScreen", () => {
   });
 });
 
-describe("buildStageEntryScreen(ラスボス前のストーリー)", () => {
+describe("buildStageEntryScreen(ラスボス前・小ボス前のストーリー)", () => {
   const lastBoss = { id: "ohzaNoMa-lastboss", type: "lastBoss" as const };
 
   it("ラスボスに初めて挑むときは、ラスボス前のストーリーを挟んでからステージへ進む", () => {
@@ -62,16 +62,42 @@ describe("buildStageEntryScreen(ラスボス前のストーリー)", () => {
     ).toEqual({ name: "stage", areaId: "ohzaNoMa", stageId: "ohzaNoMa-lastboss" });
   });
 
-  it("通常ステージ・小ボスの前には何も挟まない", () => {
-    for (const type of ["normal", "subBoss"] as const) {
-      expect(
-        buildStageEntryScreen({
-          areaId: "ohzaNoMa",
-          stage: { id: "ohzaNoMa-x", type },
-          hasSeen: never,
-        }),
-      ).toEqual({ name: "stage", areaId: "ohzaNoMa", stageId: "ohzaNoMa-x" });
-    }
+  it("通常ステージの前には何も挟まない", () => {
+    expect(
+      buildStageEntryScreen({
+        areaId: "ohzaNoMa",
+        stage: { id: "ohzaNoMa-x", type: "normal" },
+        hasSeen: never,
+      }),
+    ).toEqual({ name: "stage", areaId: "ohzaNoMa", stageId: "ohzaNoMa-x" });
+  });
+
+  describe("小ボス戦の前(取り憑かれて乱れた台詞)", () => {
+    const subBoss = { id: "kotobaNoIchiba-subboss", type: "subBoss" as const };
+
+    it("初めて挑むときは、戦闘前のストーリーを挟んでから、ステージ(戦闘開始の画面)へ進む", () => {
+      expect(buildStageEntryScreen({ areaId: "kotobaNoIchiba", stage: subBoss, hasSeen: never })).toEqual({
+        name: "story",
+        eventId: "kotobaNoIchiba-subboss-intro",
+        next: { name: "stage", areaId: "kotobaNoIchiba", stageId: "kotobaNoIchiba-subboss" },
+      });
+    });
+
+    it("視聴済みなら、そのままステージへ進む(再挑戦のたびに流さない)", () => {
+      expect(buildStageEntryScreen({ areaId: "kotobaNoIchiba", stage: subBoss, hasSeen: () => true })).toEqual({
+        name: "stage",
+        areaId: "kotobaNoIchiba",
+        stageId: "kotobaNoIchiba-subboss",
+      });
+    });
+
+    it("撃破後は、戦闘前の台詞ではなく、浄化されたあとの台詞(subboss-clear)だけが流れる", () => {
+      const { events } = unfold(
+        buildPostClearScreen({ areaId: "kotobaNoIchiba", stageType: "subBoss", justClearedArea: false, hasSeen: never }),
+      );
+      expect(events).toContain("kotobaNoIchiba-subboss-clear");
+      expect(events).not.toContain("kotobaNoIchiba-subboss-intro");
+    });
   });
 });
 

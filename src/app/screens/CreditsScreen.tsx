@@ -3,9 +3,15 @@ import { assetCredits, softwareCredits, staffCredits } from "@/data/credits";
 import { creditsId } from "@/features/story/storyIds";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { Rb } from "@/components/Rb";
 
 const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
-const KIND_LABEL: Record<string, string> = { 画像: "がぞう", BGM: "BGM", SE: "こうかおん", フォント: "フォント" };
+const KIND_LABEL: Record<string, string> = {
+  画像: "画像[がぞう]",
+  BGM: "BGM",
+  SE: "効果音[こうかおん]",
+  フォント: "フォント",
+};
 
 /**
  * クレジット画面(10章)。使用素材の出典は docs/ASSET_CREDITS.md の素材管理表から自動で表示される。
@@ -43,10 +49,16 @@ export function CreditsScreen({
   return (
     <div className="screen screen-credits">
       <h2>クレジット</h2>
-      {ending && <p className="credits-lead">パクっと国文法を あそんでくれて ありがとう!</p>}
+      {ending && (
+        <p className="credits-lead">
+          <Rb t="パクっと国文法[こくぶんぽう]を遊[あそ]んでくれてありがとう!" />
+        </p>
+      )}
 
       <section className="credits-section">
-        <h3>せいさく</h3>
+        <h3>
+          <Rb t="制作[せいさく]" />
+        </h3>
         <ul className="credits-list">
           {staffCredits.map((s) => (
             <li key={s.role}>
@@ -57,26 +69,27 @@ export function CreditsScreen({
       </section>
 
       <section className="credits-section">
-        <h3>しようした そざい</h3>
+        <h3>
+          <Rb t="使用[しよう]した素材[そざい]" />
+        </h3>
         {assetCredits.length === 0 ? (
           <p className="credits-placeholder">
-            しゅってんは、そざいが そろいしだい ここに のるよ。(じゅんびちゅう)
+            <Rb t="出典[しゅってん]は、素材[そざい]が揃[そろ]い次第[しだい]ここに載[の]るよ。(準備中[じゅんびちゅう])" />
           </p>
         ) : (
           kinds.map((kind) => (
             <div key={kind}>
-              <h4>{KIND_LABEL[kind] ?? kind}</h4>
+              <h4>
+                <Rb t={KIND_LABEL[kind] ?? kind} />
+              </h4>
               <ul className="credits-list">
                 {assetCredits
                   .filter((c) => c.kind === kind)
                   .map((c, i) => (
                     <li key={`${c.name}-${i}`}>
-                      <p className="credits-asset-name">
-                        {c.name}
-                        {c.usage && <small>({c.usage})</small>}
-                      </p>
+                      <p className="credits-asset-name">{c.name}</p>
                       <p className="credits-asset-detail">
-                        出典: {c.source} / ライセンス: {c.license}
+                        <Rb t="出典[しゅってん]" />: {c.source} / ライセンス: {c.license}
                       </p>
                     </li>
                   ))}
@@ -87,7 +100,9 @@ export function CreditsScreen({
       </section>
 
       <section className="credits-section">
-        <h3>つかった ソフトウェア</h3>
+        <h3>
+          <Rb t="使[つか]ったソフトウェア" />
+        </h3>
         <ul className="credits-list">
           {softwareCredits.map((s) => (
             <li key={s.name}>
@@ -98,7 +113,7 @@ export function CreditsScreen({
       </section>
 
       <button type="button" onClick={close}>
-        {ending ? "おわる" : "もどる"}
+        <Rb t={ending ? "終[お]わる" : "戻[もど]る"} />
       </button>
     </div>
   );

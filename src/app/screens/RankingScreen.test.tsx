@@ -40,7 +40,7 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
   }
 
   async function openRenameForm() {
-    act(() => byText("ニックネームを かえる")!.click());
+    act(() => byText("ニックネームを変")!.click());
     return container.querySelector<HTMLInputElement>(".ranking-rename input")!;
   }
 
@@ -132,7 +132,7 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
 
   it("アイコンを選ぶと、端末に保存され、サーバーへ送られる", async () => {
     await act(async () => {
-      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="きいろの ほし"]')!.click();
+      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="黄色の星"]')!.click();
     });
     await flush();
     expect(useProfileStore.getState().iconId).toBe("gold-star");
@@ -146,7 +146,7 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
     act(() => root.render(<RankingScreen key="form" />));
     await flush();
     await act(async () => {
-      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="あおの しかく"]')!.click();
+      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="青の四角"]')!.click();
     });
     const inputs = container.querySelectorAll<HTMLInputElement>(".ranking-form input");
     type(inputs[0], "3a");

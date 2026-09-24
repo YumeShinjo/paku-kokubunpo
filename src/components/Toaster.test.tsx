@@ -50,22 +50,22 @@ describe("Toaster(エリアクリアの通知)", () => {
     expect(text()).toBeNull();
     expect(audio.playSe).not.toHaveBeenCalled();
     act(() => useNavigationStore.setState({ screen: { name: "areaSelect" } }));
-    expect(text()).toContain("せいちょうした!");
+    expect(text()).toContain("成長");
   });
 
   it("1つずつ順に出て、出る瞬間に対応する効果音が1回ずつ鳴る。重ならない", () => {
     act(() => useToastStore.getState().push("growth", "pageUnlock"));
-    expect(text()).toContain("せいちょうした!");
+    expect(text()).toContain("成長");
     expect(audio.playSe).toHaveBeenCalledTimes(1);
     expect(audio.playSe).toHaveBeenLastCalledWith("growth");
 
     // 最初の通知の効果音(3秒)と表示が終わるまで、次は出ない
     advance(2999);
-    expect(text()).toContain("せいちょうした!");
+    expect(text()).toContain("成長");
     expect(audio.playSe).toHaveBeenCalledTimes(1);
 
     advance(TOAST_GAP_MS + 1);
-    expect(text()).toContain("ずかんが ふえたよ!");
+    expect(text()).toContain("図鑑");
     expect(audio.playSe).toHaveBeenCalledTimes(2);
     expect(audio.playSe).toHaveBeenLastCalledWith("pageUnlock");
   });
@@ -92,7 +92,7 @@ describe("Toaster(エリアクリアの通知)", () => {
     expect(text()).toBeNull();
     audio.seBusyRemainingMs.mockReturnValue(0);
     advance(4100);
-    expect(text()).toContain("せいちょうした!");
+    expect(text()).toContain("成長");
     expect(audio.playSe).toHaveBeenCalledTimes(1);
   });
 });

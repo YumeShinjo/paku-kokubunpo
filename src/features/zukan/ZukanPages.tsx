@@ -7,6 +7,8 @@ import { Ruby } from "@/components/Ruby";
 import { PosChip } from "@/components/PosChip";
 import { partsOfSpeech } from "@/data/partOfSpeech";
 import { useProgressStore } from "@/app/store/progressStore";
+import { Rb } from "@/components/Rb";
+import { areaNameText } from "@/data/areaText";
 
 const t = (text: string) => <Ruby text={rb(autoRuby(text))} />;
 
@@ -35,16 +37,21 @@ export function ZukanPages() {
 
   return (
     <section className="zukan-pages">
-      <h3>ことばの ずかん</h3>
+      <h3>
+        <Rb t="言葉[ことば]の図鑑[ずかん]" />
+      </h3>
       <p className="zukan-pages-lead">
-        エリアをクリアすると、ページが ふえるよ。({unlocked} / {zukanPages.length}ページ)
+        <Rb t={`エリアをクリアすると、ページが増[ふ]えるよ。(${unlocked} / ${zukanPages.length}ページ)`} />
       </p>
       {zukanPages.map((page) => {
         const area = areas.find((a) => a.id === page.areaId);
         if (!isAreaCleared(page.areaId)) {
           return (
             <p key={page.areaId} className="zukan-page-locked">
-              🔒 {area?.name ?? page.title} <small>クリアすると ひらくよ</small>
+              🔒 {area ? <Rb t={areaNameText(area)} /> : page.title}{" "}
+                <small>
+                  <Rb t="クリアすると開[ひら]くよ" />
+                </small>
             </p>
           );
         }

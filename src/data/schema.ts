@@ -104,14 +104,20 @@ export interface AreaMeta {
   /** 進行順(0=序章) */
   order: number;
   name: string;
+  /** エリア名のふりがな付き表記("漢字[ふりがな]" 記法。画面表示用。なければ name のまま) */
+  nameRuby?: string;
   /** 単元(大分類)の表示名 */
   unitLabel: string;
   /** 小ボスの役職名。序章のように小ボスがいないエリアは undefined */
   subBoss?: string;
+  /** 小ボスの役職名のふりがな付き表記(画面表示用。なければ subBoss のまま) */
+  subBossRuby?: string;
   /** 小ボスの名前(STORY.md のキャラクター名)。役職と並べてボス戦の表示に使う */
   subBossName?: string;
   /** ラスボス(王座の間のみ)。全エリアの内容を複合出題する総仕上げ(3章) */
   finalBoss?: string;
+  /** ラスボスの呼び名のふりがな付き表記(画面表示用) */
+  finalBossRuby?: string;
   /** 出題データが組み込み済みで、エリア選択に表示するか */
   implemented: boolean;
 }

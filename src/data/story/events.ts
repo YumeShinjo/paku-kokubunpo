@@ -8,6 +8,7 @@ import {
   lastBossClearStoryId,
   lastBossIntroStoryId,
   subBossClearStoryId,
+  subBossIntroStoryId,
   truthStoryId,
 } from "@/features/story/storyIds";
 
@@ -72,10 +73,16 @@ export const storyEvents: StoryEvent[] = [
       koto("これも「言葉の乱れ」ってやつの仕業かも。ちょっと見てきてよ。"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("kotobaNoIchiba"),
+    lines: [
+      line("メイ", "あ、あの…わたくし、何がなんだか、その、えーと…名詞? 動詞? もうどれがどれだか…"),
+    ],
+  },
   {
     id: subBossClearStoryId("kotobaNoIchiba"),
     lines: [
-      line("メイ", "あ、あの…わたくし、何がなんだか、その、えーと…名詞? 動詞? もうどれがどれだか…"),
       line("メイ", "す、すみません…頭がはっきりしてきました…。少し働きすぎていたのかもしれません。"),
       koto("ふぅ、元に戻ったね。よかったよかった。"),
     ],
@@ -97,10 +104,16 @@ export const storyEvents: StoryEvent[] = [
       narration("金属も、木も、あるべき姿になろうとして、なれずにいる。"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("sugatakaeNoKajiba"),
+    lines: [
+      line("レル", "くっ…もう、この炎[ほのお]を、支えれない…いや、支えられない…?あれ、わたしは何を言おうと…"),
+    ],
+  },
   {
     id: subBossClearStoryId("sugatakaeNoKajiba"),
     lines: [
-      line("レル", "くっ…もう、この炎[ほのお]を、支えれない…いや、支えられない…?あれ、わたしは何を言おうと…"),
       line("レル", "……あれ、ここは…?わたし、何をしていたんでしょう…"),
       narration("(レルが我[われ]に返[かえ]ると同時に、鍛冶場[かじば]の炎[ほのお]がゆらりと揺[ゆ]れた)"),
       narration("コトは、その炎[ほのお]をじっと見つめたまま、少しの間、動かなかった。", { showMascot: true }),
@@ -124,10 +137,16 @@ export const storyEvents: StoryEvent[] = [
       koto("あそこに誰かいる…文官さん?"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("namerakaNoTaki"),
+    lines: [
+      line("オンヴィン", "報告、いたし…言いた…もうしあげ…あれ、どの言い方が正しいのか、分からなく…"),
+    ],
+  },
   {
     id: subBossClearStoryId("namerakaNoTaki"),
     lines: [
-      line("オンヴィン", "報告、いたし…言いた…もうしあげ…あれ、どの言い方が正しいのか、分からなく…"),
       line("オンヴィン", "(乱れが晴れて)……失礼いたしました。少々、頭が混乱していたようです。"),
       koto("よかった、元通りだ!"),
     ],
@@ -148,10 +167,16 @@ export const storyEvents: StoryEvent[] = [
       narration("橋の板同士をつなぐ言葉が、あちこちで抜け落ちている。"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("tsunagiNoHashi"),
+    lines: [
+      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…"),
+    ],
+  },
   {
     id: subBossClearStoryId("tsunagiNoHashi"),
     lines: [
-      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…"),
       line("ジョゼット", "(乱れが晴れて)……失礼いたしました。どうぞ、紅茶をお持ちいたしました。"),
       line("ジョゼット", "(コトに向き直り、恭[うやうや]しく一礼して)貴方様[あなたさま]には、格別のおもてなしを。"),
       narration("コトは、妙に丁寧に扱われて、なんだか落ち着かない様子だった。", { showMascot: true }),
@@ -174,10 +199,16 @@ export const storyEvents: StoryEvent[] = [
       koto("あれ、なんか…関係性が、めちゃくちゃになってる?"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("kizunaNoMa"),
+    lines: [
+      line("ネジラルド", "私の誇りは、剣を極[きわ]めたい…いや、極[きわ]めることだ…?いや…"),
+    ],
+  },
   {
     id: subBossClearStoryId("kizunaNoMa"),
     lines: [
-      line("ネジラルド", "私の誇りは、剣を極[きわ]めたい…いや、極[きわ]めることだ…?いや…"),
       line("ネジラルド", "(乱れが晴れて)……失礼した。取[と]り乱[みだ]してしまったようだ。"),
       koto("騎士団長さんも、大変だったんだね。"),
     ],
@@ -198,10 +229,16 @@ export const storyEvents: StoryEvent[] = [
       koto("なんか、話が入り組んでてよく分からないよ…?"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("mikakeNoMa"),
+    lines: [
+      line("サイラス", "これは、行かさせて…いえ、行かせて…いただき…おかしいな、言葉が二重に…"),
+    ],
+  },
   {
     id: subBossClearStoryId("mikakeNoMa"),
     lines: [
-      line("サイラス", "これは、行かさせて…いえ、行かせて…いただき…おかしいな、言葉が二重に…"),
       line("サイラス", "(乱れが晴れて)……お恥ずかしいところを。少々、言葉を飾りすぎていたようです。"),
       koto("正直に話してくれたら、それでいいのにね。"),
     ],
@@ -223,11 +260,17 @@ export const storyEvents: StoryEvent[] = [
       koto("な、なんか喋[しゃべ]り方が変…"),
     ],
   },
+  // 小ボス戦の前: 取り憑かれて乱れた話し方(STORY.md の撃破後ドラフトの冒頭の台詞。撃破後は浄化されたあとの台詞から始まる)
+  {
+    id: subBossIntroStoryId("ohzaNoMa"),
+    lines: [
+      line("ニジュヴェール", "くっ…わたくしめが、お仕[つか]えなさられて…いえ、お仕[つか]えして…もう、限界です…"),
+    ],
+  },
   // 宰相撃破。コトが淡く光り始める(2章「変身のタイミング」の予兆)。この後 truth へ続く。
   {
     id: subBossClearStoryId("ohzaNoMa"),
     lines: [
-      line("ニジュヴェール", "くっ…わたくしめが、お仕[つか]えなさられて…いえ、お仕[つか]えして…もう、限界です…"),
       line("ニジュヴェール", "(乱れが晴れて、膝[ひざ]をつき)……申し上げます。王座には、真の王ではなく、「乱れ」そのものが座っております。"),
       line("ニジュヴェール", "そして……あなた様こそ、行方知[ゆくえし]れずとなっていらっしゃられた、王家の…"),
       narration("コトの姿が、淡[あわ]く光り始める。", { showMascot: true, mascotForm: "glow" }),

@@ -3,7 +3,9 @@ import type { SortingQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
 import { PosChip } from "@/components/PosChip";
+import { TargetText } from "@/components/TargetText";
 import { findPartOfSpeech } from "@/data/partOfSpeech";
+import { Rb } from "@/components/Rb";
 
 type SortingItem = SortingQuestion["items"][number];
 
@@ -35,7 +37,7 @@ function categoryAt(x: number, y: number): string | null {
 /**
  * 仕分けゲームエンジン。品詞分類・自立語/付属語で使用(5章)。
  * 操作は2通り(どちらでも同じ結果になる):
- *  - ドラッグ&ドロップ: 単語をドラッグして、カゴに運ぶ(マウス・タッチ・ペン。Pointer Events)。
+ *  - ドラッグ&ドロップ: 単語をドラッグして、カゴに運ぶ(マウス・ペンは Pointer Events、指は Touch Events)。
  *    入れた単語はカゴの中に並び、別のカゴへドラッグして入れ直せる。
  *  - タップ選択: 単語をタップして選び、カゴのボタンをタップして入れる(キーボードや、ドラッグしづらいときの代わり)。
  * 解答後は項目ごとの正誤と解説を表示する(7章: 無音でも伝わる視覚的フィードバック)。
@@ -55,6 +57,9 @@ export function SortingEngine({ question, onAnswer }: Props) {
   /** ドラッグ中のポインターの位置。端に近いあいだ、画面を自動でスクロールする(カゴが画面に収まらないとき用) */
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  /** 描画のたびに最新の共通処理を入れておく(タッチのリスナーは、最初に1回だけ登録するため) */
+  const pressHandlersRef = useRef({ beginPress, movePress, endPress, cancelPress });
 
   function stopAutoScroll() {
     if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current);
@@ -89,6 +94,43 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   useEffect(() => stopAutoScroll, []);
 
+  // 指(タッチ)のドラッグ。スクロールを止めるには touchmove の preventDefault が必要で、そのためには
+  // passive: false で直接登録する必要がある(React の onTouchMove は passive なので使えない)。
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const touchOf = (event: TouchEvent, changed: boolean) => (changed ? event.changedTouches : event.touches)[0];
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return pressHandlersRef.current.cancelPress(); // 2本指以上はドラッグにしない
+      const chip = (event.target as Element | null)?.closest<HTMLElement>("[data-item-id]");
+      const touch = touchOf(event, false);
+      if (chip?.dataset.itemId && touch) pressHandlersRef.current.beginPress(chip.dataset.itemId, touch.clientX, touch.clientY);
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      const touch = touchOf(event, false);
+      // ドラッグになったら、画面のスクロールを止める(ドラッグ前の小さな動きは止めない=タップとして扱える)
+      if (touch && pressHandlersRef.current.movePress(touch.clientX, touch.clientY) && event.cancelable) event.preventDefault();
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      const touch = touchOf(event, true);
+      // ドラッグだったときは、続けて届く click(タップ扱い)を止める
+      if (touch && pressHandlersRef.current.endPress(touch.clientX, touch.clientY) && event.cancelable) event.preventDefault();
+    };
+    const onTouchCancel = () => pressHandlersRef.current.cancelPress();
+    root.addEventListener("touchstart", onTouchStart, { passive: true });
+    root.addEventListener("touchmove", onTouchMove, { passive: false });
+    root.addEventListener("touchend", onTouchEnd, { passive: false });
+    root.addEventListener("touchcancel", onTouchCancel);
+    return () => {
+      root.removeEventListener("touchstart", onTouchStart);
+      root.removeEventListener("touchmove", onTouchMove);
+      root.removeEventListener("touchend", onTouchEnd);
+      root.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, []);
+
+  pressHandlersRef.current = { beginPress, movePress, endPress, cancelPress };
+
   const allPlaced = question.items.every((item) => placements[item.id]);
 
   function placeItem(itemId: string, categoryId: string) {
@@ -107,52 +149,77 @@ export function SortingEngine({ question, onAnswer }: Props) {
     placeItem(selectedItemId, categoryId);
   }
 
+  /*
+   * ドラッグの共通処理。マウス・ペンは Pointer Events、指(タッチ)は Touch Events から、同じ関数を呼ぶ。
+   * iPhone(Safari)では、指の動きを Pointer Events だけに任せると、ドラッグが始まる前にブラウザがスクロールを
+   * 始めて途切れることがある。そのため、指は touchmove の preventDefault(passive: false)でスクロールを止める
+   * Touch Events で扱い、Pointer Events のほうは指(pointerType === "touch")を無視する(二重に処理しない)。
+   */
+  function beginPress(itemId: string, x: number, y: number) {
+    if (submittedRef.current) return;
+    pressRef.current = { itemId, startX: x, startY: y, active: false };
+  }
+
+  /** ポインターを動かした。ドラッグ中(しきい値を超えた)なら true */
+  function movePress(x: number, y: number): boolean {
+    const press = pressRef.current;
+    if (!press) return false;
+    if (!press.active) {
+      if (Math.hypot(x - press.startX, y - press.startY) < DRAG_THRESHOLD_PX) return false;
+      press.active = true;
+      setSelectedItemId(null);
+    }
+    pointerRef.current = { x, y };
+    startAutoScroll();
+    setDrag({ itemId: press.itemId, x, y, overCategoryId: categoryAt(x, y) });
+    return true;
+  }
+
+  /** ポインターを離した。ドラッグだったら true(そのあとの click は選択として扱わない) */
+  function endPress(x: number, y: number): boolean {
+    const press = pressRef.current;
+    pressRef.current = null;
+    stopAutoScroll();
+    if (!press?.active) return false; // 動かなかった(タップ)なら、click で選択する
+    setDrag(null);
+    suppressClickRef.current = true;
+    setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+    const categoryId = categoryAt(x, y);
+    if (categoryId) placeItem(press.itemId, categoryId);
+    return true;
+  }
+
+  function cancelPress() {
+    pressRef.current = null;
+    stopAutoScroll();
+    setDrag(null);
+  }
+
   function handlePointerDown(event: React.PointerEvent<HTMLElement>, itemId: string) {
-    if (submitted || event.button !== 0) return; // 主ボタン(マウスの左・タッチ・ペンの接触)だけ
-    pressRef.current = { itemId, startX: event.clientX, startY: event.clientY, active: false };
+    if (event.pointerType === "touch" || submitted || event.button !== 0) return; // 指は Touch Events で扱う。主ボタンだけ
+    beginPress(itemId, event.clientX, event.clientY);
     try {
-      event.currentTarget.setPointerCapture(event.pointerId); // 指・ポインターが要素の外へ出ても、動きを受け取り続ける
+      event.currentTarget.setPointerCapture(event.pointerId); // ポインターが要素の外へ出ても、動きを受け取り続ける
     } catch {
       // 対応していない環境では、そのまま続ける
     }
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
-    const press = pressRef.current;
-    if (!press) return;
-    if (!press.active) {
-      if (Math.hypot(event.clientX - press.startX, event.clientY - press.startY) < DRAG_THRESHOLD_PX) return;
-      press.active = true;
-      setSelectedItemId(null);
-    }
-    pointerRef.current = { x: event.clientX, y: event.clientY };
-    startAutoScroll();
-    setDrag({
-      itemId: press.itemId,
-      x: event.clientX,
-      y: event.clientY,
-      overCategoryId: categoryAt(event.clientX, event.clientY),
-    });
+    if (event.pointerType === "touch") return;
+    movePress(event.clientX, event.clientY);
   }
 
   function handlePointerUp(event: React.PointerEvent<HTMLElement>) {
-    const press = pressRef.current;
-    pressRef.current = null;
-    stopAutoScroll();
-    if (!press?.active) return; // 動かなかった(タップ)なら、click で選択する
-    setDrag(null);
-    suppressClickRef.current = true;
-    setTimeout(() => {
-      suppressClickRef.current = false;
-    }, 0);
-    const categoryId = categoryAt(event.clientX, event.clientY);
-    if (categoryId) placeItem(press.itemId, categoryId);
+    if (event.pointerType === "touch") return;
+    endPress(event.clientX, event.clientY);
   }
 
-  function handlePointerCancel() {
-    pressRef.current = null;
-    stopAutoScroll();
-    setDrag(null);
+  function handlePointerCancel(event: React.PointerEvent<HTMLElement>) {
+    if (event.pointerType === "touch") return;
+    cancelPress();
   }
 
   function handleItemClick(itemId: string) {
@@ -181,6 +248,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
       <button
         key={item.id}
         type="button"
+        data-item-id={item.id}
         disabled={submitted}
         className={[
           "sorting-item",
@@ -196,7 +264,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onPointerCancel={handlePointerCancel}
         onClick={() => handleItemClick(item.id)}
       >
-        <Ruby text={item.text} />
+        <TargetText text={item.text} />
         {submitted && (isCorrect ? " ◎" : " ×")}
       </button>
     );
@@ -206,14 +274,16 @@ export function SortingEngine({ question, onAnswer }: Props) {
   const draggedItem = drag ? question.items.find((item) => item.id === drag.itemId) : undefined;
 
   return (
-    <div className="engine engine-sorting">
+    <div className="engine engine-sorting" ref={rootRef}>
       <p className="engine-prompt">
         <Ruby text={question.instruction} />
       </p>
 
       <div className="sorting-items" aria-label="まだ 入れていない言葉">
         {unplaced.map(renderItem)}
-        {unplaced.length === 0 && !submitted && <p className="sorting-empty">ぜんぶ 入れたよ!まちがいが ないか 見てから「こたえる」を おしてね。</p>}
+        {unplaced.length === 0 && !submitted && <p className="sorting-empty">
+            <Rb t="ぜんぶ入[い]れたよ!まちがいがないか見[み]てから「答[こた]える」を押[お]してね。" />
+          </p>}
       </div>
 
       <div className="sorting-categories">
@@ -246,7 +316,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
       {!submitted && (
         <button type="button" data-no-tap disabled={!allPlaced} onClick={handleSubmit}>
-          こたえる
+          <Rb t="答[こた]える" />
         </button>
       )}
 
@@ -257,7 +327,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
             return (
               <li key={item.id} className={isCorrect ? "correct" : "incorrect"}>
                 <p className="sorting-result-item">
-                  <Ruby text={item.text} />
+                  <TargetText text={item.text} />
                   {" → "}
                   {isCorrect && findPartOfSpeech(item.correctCategoryId) ? (
                     // 正解が確定したあとなので、品詞の色をつけてよい(5・7章)

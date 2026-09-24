@@ -8,6 +8,7 @@ import { subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import type { Screen } from "@/app/store/navigationStore";
+import { Rb } from "@/components/Rb";
 
 /**
  * ストーリー演出画面(3章: ステージ間のストーリーテキストは短く、必ずスキップ可能)。
@@ -121,7 +122,7 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
       ) : (
         <div className="story-controls">
           <button type="button" onClick={handleNext}>
-            {isLast ? "とじる" : "つぎへ"}
+            <Rb t={isLast ? "閉[と]じる" : "次[つぎ]へ"} />
           </button>
           <button type="button" className="story-skip" onClick={handleSkip}>
             スキップ

@@ -9,7 +9,7 @@ import type { PlayerTitle } from "@/data/titles";
 export function TitleBadge({ title, className = "" }: { title: PlayerTitle; className?: string }) {
   const badgeUrl = findImage(IMAGE.titleBadge(title.id));
   return (
-    <span className={`title-badge ${className}`.trim()} aria-label={`しょうごう ${title.plain}`}>
+    <span className={`title-badge ${className}`.trim()} aria-label={`称号 ${title.plain}`}>
       {badgeUrl ? (
         <img className="title-badge-image" src={badgeUrl} alt="" draggable={false} />
       ) : (

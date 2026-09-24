@@ -1,5 +1,6 @@
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
+import { Rb } from "@/components/Rb";
 
 /**
  * 起動直後、タイトル画面の前に挟む1枚の導入画面(9章)。
@@ -11,9 +12,13 @@ import { Mascot } from "@/features/mascot/Mascot";
 export function TapToStart() {
   return (
     <button type="button" data-no-tap className="tap-to-start" onClick={unlockPlayback}>
-      <span className="tap-to-start-name">パクっと国文法</span>
+      <span className="tap-to-start-name">
+        <Rb t="パクっと国文法[こくぶんぽう]" />
+      </span>
       <Mascot />
-      <span className="tap-to-start-hint">タップして はじめる</span>
+      <span className="tap-to-start-hint">
+        <Rb t="タップして始[はじ]める" />
+      </span>
     </button>
   );
 }

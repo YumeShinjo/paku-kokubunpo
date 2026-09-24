@@ -28,7 +28,6 @@ export function Mascot({
   size?: "small" | "normal" | "large";
 }) {
   const growthStage = useMascotStore((s) => s.growthStage);
-  const bonusAccessoryIds = useMascotStore((s) => s.bonusAccessoryIds);
 
   const label = form === "true" ? "王女コレット" : `マスコット 成長段階${growthStage}`;
   const trueUrl = form === "true" ? findImage(IMAGE.mascotTrue) : undefined;
@@ -66,9 +65,6 @@ export function Mascot({
   return (
     <div className={["mascot", form ? `mascot-${form}` : "", `mascot-${size}`].filter(Boolean).join(" ")} aria-label={label}>
       {body}
-      {form === undefined && bonusAccessoryIds.length > 0 && (
-        <span className="mascot-bonus-count">✨{bonusAccessoryIds.length}</span>
-      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { AssemblyQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
+import { Rb } from "@/components/Rb";
 
 interface Props {
   question: AssemblyQuestion;
@@ -71,7 +72,7 @@ export function AssemblyEngine({ question, onAnswer }: Props) {
         disabled={!selectedCardId || submitted}
         onClick={handleSubmit}
       >
-        こたえる
+        <Rb t="答[こた]える" />
       </button>
     </div>
   );

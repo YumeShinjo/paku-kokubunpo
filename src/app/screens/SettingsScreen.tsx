@@ -2,9 +2,12 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
+import { useState } from "react";
 import { useProfileStore } from "@/app/store/profileStore";
+import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { IconPicker } from "@/components/IconPicker";
 import { syncScore } from "@/features/ranking/scoreSync";
+import { Rb } from "@/components/Rb";
 
 /** 設定画面。BGM/SE音量とミュートを端末ローカルに保存する(7章)。 */
 export function SettingsScreen() {
@@ -14,6 +17,15 @@ export function SettingsScreen() {
 
   const iconId = useProfileStore((s) => s.iconId);
   const setIcon = useProfileStore((s) => s.setIcon);
+
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  async function handleReset() {
+    setResetting(true);
+    await resetAllData(); // ランキング参加中なら先にクラスから抜ける。通信できなくても、端末のデータは消す
+    reloadApp(); // 読み込み直して、メモリ上のデータも最初の状態にする
+  }
 
   const resetGuides = useTutorialStore((s) => s.resetGuides);
   const guidesPending = useTutorialStore((s) => s.seenGuides.length === 0);
@@ -27,10 +39,14 @@ export function SettingsScreen() {
 
   return (
     <div className="screen screen-settings">
-      <h2>せってい</h2>
+      <h2>
+        <Rb t="設定[せってい]" />
+      </h2>
 
       <div className="settings-icon">
-        アイコン(ランキングに でるよ)
+        <span>
+          <Rb t="アイコン(ランキングに出[で]るよ)" />
+        </span>
         <IconPicker
           value={iconId}
           onChange={(id) => {
@@ -41,7 +57,7 @@ export function SettingsScreen() {
       </div>
 
       <label>
-        BGMおんりょう
+        <Rb t="BGM音量[おんりょう]" />
         <input
           type="range"
           min={0}
@@ -53,7 +69,7 @@ export function SettingsScreen() {
       </label>
 
       <label>
-        こうかおんおんりょう
+        <Rb t="効果音[こうかおん]音量[おんりょう]" />
         <input
           type="range"
           min={0}
@@ -64,7 +80,7 @@ export function SettingsScreen() {
         />
       </label>
       <button type="button" onClick={handleTestSe}>
-        こうかおんをためす
+        <Rb t="効果音[こうかおん]を試[ため]す" />
       </button>
 
       <label>
@@ -77,16 +93,40 @@ export function SettingsScreen() {
       </label>
 
       <button type="button" onClick={resetGuides} disabled={guidesPending}>
-        そうさの せつめいを もういちど 見る
+        <Rb t="操作[そうさ]の説明[せつめい]をもう一度[いちど]見[み]る" />
       </button>
-      {guidesPending && <p className="settings-note">つぎに あそぶとき、せつめいが 出るよ。</p>}
+      {guidesPending && (
+        <p className="settings-note">
+          <Rb t="次[つぎ]に遊[あそ]ぶとき、説明[せつめい]が出[で]るよ。" />
+        </p>
+      )}
 
       <button type="button" onClick={() => goTo({ name: "credits", next: { name: "settings" } })}>
         クレジット
       </button>
 
+      {confirmingReset ? (
+        <div className="quit-confirm" role="alertdialog" aria-label="データの初期化の確認">
+          <p>
+            <Rb t="進[すす]み具合[ぐあい]・得点[とくてん]・ストーリー・図鑑[ずかん]・アイコン・ランキング参加[さんか]など、保存[ほぞん]したデータをすべて消[け]して、最初[さいしょ]の状態[じょうたい]に戻[もど]すよ。音量[おんりょう]の設定[せってい]は残[のこ]るよ。ランキングに参加[さんか]中[ちゅう]なら、順位表[じゅんいひょう]からも抜[ぬ]けるよ(通信[つうしん]できないときは、順位表[じゅんいひょう]にデータが残[のこ]るよ)。本当[ほんとう]に初期化[しょきか]する?" />
+          </p>
+          <div className="quit-confirm-buttons">
+            <button type="button" className="quit-yes" disabled={resetting} onClick={() => void handleReset()}>
+              <Rb t={resetting ? "処理中[しょりちゅう]…" : "初期化[しょきか]する"} />
+            </button>
+            <button type="button" disabled={resetting} onClick={() => setConfirmingReset(false)}>
+              やめる
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" className="quit-button" onClick={() => setConfirmingReset(true)}>
+          <Rb t="データを初期化[しょきか]する" />
+        </button>
+      )}
+
       <button type="button" onClick={() => goTo({ name: "title" })}>
-        もどる
+        <Rb t="戻[もど]る" />
       </button>
     </div>
   );

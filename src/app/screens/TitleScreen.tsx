@@ -6,8 +6,10 @@ import { findImage, IMAGE } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
 import { useReviewStore } from "@/app/store/reviewStore";
+import { titleExpression } from "@/features/mascot/mood";
 import { getEndingTitle } from "@/data/titles";
 import { useStoryStore } from "@/app/store/storyStore";
+import { Rb } from "@/components/Rb";
 
 /**
  * タイトル画面。9章のモバイル音声自動再生制約対応として、
@@ -19,7 +21,7 @@ export function TitleScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const title = getEndingTitle(useStoryStore((s) => s.choices));
   const logoUrl = findImage(IMAGE.titleLogo);
-  const hungry = useReviewStore((s) => s.starredQuestionIds.length > 0); // 星の問題が残っているあいだは、おなかがすいて眠そう
+  const starCount = useReviewStore((s) => s.starredQuestionIds.length); // 星の問題がたくさん(5問以上)残っているときだけ眠そう
 
   function handleStart() {
     unlockPlayback();
@@ -38,10 +40,10 @@ export function TitleScreen() {
         {logoUrl ? (
           <img className="title-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
         ) : (
-          "パクっと国文法"
+          <Rb t="パクっと国文法[こくぶんぽう]" />
         )}
       </h1>
-      <Mascot size="large" expression={hungry ? "sleepy" : undefined} />
+      <Mascot size="large" expression={titleExpression(starCount)} />
       <HungryBadge />
       {title && (
         <p className="title-owned">
@@ -49,7 +51,7 @@ export function TitleScreen() {
         </p>
       )}
       <button type="button" onClick={handleStart}>
-        はじめる
+        <Rb t="始[はじ]める" />
       </button>
       <button
         type="button"
@@ -58,13 +60,13 @@ export function TitleScreen() {
           goTo({ name: "zukan" });
         }}
       >
-        ことだまの書
+        <Rb t="ことだまの書[しょ]" />
       </button>
       <button type="button" onClick={() => goTo({ name: "ranking" })}>
         ランキング
       </button>
       <button type="button" onClick={handleSettings}>
-        せってい
+        <Rb t="設定[せってい]" />
       </button>
       <button type="button" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
         クレジット

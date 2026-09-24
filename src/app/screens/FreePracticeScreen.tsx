@@ -5,6 +5,8 @@ import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { Ruby } from "@/components/Ruby";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
+import { Rb } from "@/components/Rb";
+import { rb } from "@/data/ruby";
 
 /**
  * 自由練習(6章): ことだまの書から、選んだ単元の問題プールだけを解くセッション。
@@ -34,9 +36,11 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
   if (!meta || questions.length === 0) {
     return (
       <div className="screen">
-        <p>この単元の問題が見つかりません。</p>
+        <p>
+          <Rb t="この単元[たんげん]の問題[もんだい]が見[み]つかりません。" />
+        </p>
         <button type="button" onClick={() => goTo({ name: "zukan" })}>
-          ことだまの書へ
+          <Rb t="ことだまの書[しょ]へ" />
         </button>
       </div>
     );
@@ -45,19 +49,25 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
   if (result) {
     return (
       <div className="screen screen-stage-result">
-        <h2>れんしゅう おわり!</h2>
+        <h2>
+          <Rb t="練習[れんしゅう]おわり!" />
+        </h2>
         <p>
           <Ruby text={meta.label} />
         </p>
         <p>
-          {result.correctCount} / {result.answered} もん せいかい
+          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい]`} />
         </p>
-        {result.maxCombo >= 2 && <p>さいだい 🔥 {result.maxCombo}れんぞく!</p>}
+        {result.maxCombo >= 2 && (
+          <p>
+            <Rb t={`最大[さいだい] 🔥 ${result.maxCombo}連続[れんぞく]!`} />
+          </p>
+        )}
         <button type="button" onClick={again}>
-          もういちど
+          <Rb t="もう一度[いちど]" />
         </button>
         <button type="button" onClick={() => goTo({ name: "zukan" })}>
-          ことだまの書へ
+          <Rb t="ことだまの書[しょ]へ" />
         </button>
       </div>
     );
@@ -68,7 +78,7 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
       key={attempt}
       areaId={meta.areaId}
       questions={questions}
-      heading={[{ text: "じゆうれんしゅう: " }, ...meta.label]}
+      heading={[...rb("自由[じゆう]練習[れんしゅう]: "), ...meta.label]}
       onComplete={setResult}
       onQuit={() => goTo({ name: "zukan" })}
     />

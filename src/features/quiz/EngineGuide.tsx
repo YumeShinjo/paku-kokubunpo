@@ -1,5 +1,6 @@
 import { engineGuides, guideFooter, type GuideKey } from "@/data/engineGuide";
 import { Ruby } from "@/components/Ruby";
+import { Rb } from "@/components/Rb";
 
 /**
  * 初回プレイ時だけ、その出題形式の操作を問題の上に出すカード。
@@ -8,7 +9,7 @@ import { Ruby } from "@/components/Ruby";
 export function EngineGuide({ guideKey, onDismiss }: { guideKey: GuideKey; onDismiss: () => void }) {
   const guide = engineGuides[guideKey];
   return (
-    <aside className="engine-guide" aria-label="そうさの せつめい">
+    <aside className="engine-guide" aria-label="操作の説明">
       <p className="engine-guide-title">
         💡 <Ruby text={guide.title} />
       </p>
@@ -20,10 +21,10 @@ export function EngineGuide({ guideKey, onDismiss }: { guideKey: GuideKey; onDis
         ))}
       </ol>
       <p className="engine-guide-footer">
-        <Ruby text={guideFooter} />
+        <Ruby text={guide.footer ?? guideFooter} />
       </p>
       <button type="button" onClick={onDismiss}>
-        わかった!
+        <Rb t="わかった!" />
       </button>
     </aside>
   );

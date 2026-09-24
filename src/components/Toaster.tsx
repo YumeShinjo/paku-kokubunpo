@@ -4,6 +4,7 @@ import { useToastStore, type Toast } from "@/app/store/toastStore";
 import { duckBgm, playSe, seBusyRemainingMs, seDurationMs } from "@/lib/audio";
 import { MascotFace } from "@/features/mascot/Mascot";
 import { findImage, IMAGE } from "@/assets/registry";
+import { Rb } from "@/components/Rb";
 
 /** 通知が見えている時間と、次の通知までの間(ミリ秒) */
 export const TOAST_VISIBLE_MS = 2500;
@@ -73,7 +74,7 @@ export function Toaster() {
         ) : (
           <span aria-hidden="true">{shown.icon}</span>
         )}{" "}
-        {shown.message}
+        <Rb t={shown.message} />
       </div>
     </div>
   );

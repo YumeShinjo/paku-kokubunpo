@@ -3,8 +3,8 @@ import { getAllQuestions } from "./questionLoader";
 import { engineGuides, guideKeyOf, guideKeys } from "./engineGuide";
 
 describe("操作ガイド", () => {
-  it("出題形式ごと(仕分け・穴埋め・選択式・文中タップ)の4つ、それぞれ手順が1つ以上ある", () => {
-    expect([...guideKeys].sort()).toEqual(["assembly", "choice", "sorting", "tapInSentence"]);
+  it("出題形式ごと(仕分け・穴埋め・選択式・文中タップ)の4つと、ことだまの書(図鑑)の1つ、それぞれ手順が1つ以上ある", () => {
+    expect([...guideKeys].sort()).toEqual(["assembly", "choice", "sorting", "tapInSentence", "zukan"]);
     for (const key of guideKeys) {
       expect(engineGuides[key].steps.length, key).toBeGreaterThan(0);
       expect(engineGuides[key].title.length, key).toBeGreaterThan(0);

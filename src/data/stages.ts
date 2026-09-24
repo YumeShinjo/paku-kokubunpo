@@ -79,12 +79,10 @@ function buildNormalStagesEvenly(areaId: string, questions: Question[]): Stage[]
 }
 
 /**
- * 小ボスの出題数は「通常ステージ数×この値」を基本にし、ステージ数の少ないエリアでも
- * ボス戦らしい手応え(HPが減っていく実感)が出るよう最低 SUB_BOSS_MIN_PICKS 問は出す。
- * ただしプールの問題数を超えない。
+ * 小ボスの出題数(通常ステージの8〜10問より多く、ボス戦らしい手応えを出す)。
+ * プールは、そのエリアの通常ステージの全問題。プールがこれより小さいエリアでは、プールの全問。
  */
-const SUB_BOSS_PICKS_PER_STAGE = 2;
-const SUB_BOSS_MIN_PICKS = 8;
+const SUB_BOSS_PICKS = 15;
 
 /** ラスボス(王座の間)の出題数。全エリアの内容から単元ごとに均等に抽出する(3章) */
 const LAST_BOSS_PICKS = 16;
@@ -106,10 +104,7 @@ function buildSubBossStage(
     type: "subBoss",
     title,
     questionIds,
-    pickCount: Math.min(
-      questionIds.length,
-      Math.max(SUB_BOSS_MIN_PICKS, normalStages.length * SUB_BOSS_PICKS_PER_STAGE),
-    ),
+    pickCount: Math.min(questionIds.length, SUB_BOSS_PICKS),
   };
 }
 

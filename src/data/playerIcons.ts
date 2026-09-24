@@ -15,14 +15,14 @@ export interface PlayerIconMeta {
 }
 
 export const PLAYER_ICONS: readonly PlayerIconMeta[] = [
-  { id: "mint-circle", label: "ミントの まる", color: "#5fb896", shape: "circle" },
-  { id: "pink-heart", label: "ピンクの ハート", color: "#e88aa5", shape: "heart" },
-  { id: "gold-star", label: "きいろの ほし", color: "#e6b93c", shape: "star" },
-  { id: "blue-square", label: "あおの しかく", color: "#5b8fd6", shape: "square" },
-  { id: "orange-triangle", label: "オレンジの さんかく", color: "#ec8c4a", shape: "triangle" },
-  { id: "purple-diamond", label: "むらさきの ひしがた", color: "#9a7ad0", shape: "diamond" },
-  { id: "sky-drop", label: "みずいろの しずく", color: "#4fb3cf", shape: "drop" },
-  { id: "brown-moon", label: "ちゃいろの つき", color: "#a97c50", shape: "moon" },
+  { id: "mint-circle", label: "ミントの丸", color: "#5fb896", shape: "circle" },
+  { id: "pink-heart", label: "ピンクのハート", color: "#e88aa5", shape: "heart" },
+  { id: "gold-star", label: "黄色の星", color: "#e6b93c", shape: "star" },
+  { id: "blue-square", label: "青の四角", color: "#5b8fd6", shape: "square" },
+  { id: "orange-triangle", label: "オレンジの三角", color: "#ec8c4a", shape: "triangle" },
+  { id: "purple-diamond", label: "紫のひし形", color: "#9a7ad0", shape: "diamond" },
+  { id: "sky-drop", label: "水色のしずく", color: "#4fb3cf", shape: "drop" },
+  { id: "brown-moon", label: "茶色の月", color: "#a97c50", shape: "moon" },
 ];
 
 export const DEFAULT_ICON_ID = PLAYER_ICONS[0].id;

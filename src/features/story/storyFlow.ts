@@ -11,6 +11,7 @@ import {
   lastBossClearStoryId,
   lastBossIntroStoryId,
   subBossClearStoryId,
+  subBossIntroStoryId,
   truthStoryId,
 } from "./storyIds";
 
@@ -41,7 +42,9 @@ export function buildAreaEntryScreen(areaId: string, hasSeen: HasSeen): Screen {
 
 /**
  * ステージに挑戦するとき、そのステージの直前に流すストーリーがあれば挟む。
- * 現状はラスボス戦の前(「最後の戦いが始まる」)だけ。再挑戦(もう少し→もう一度)では流れない。
+ *  - 小ボス戦の前: subboss-intro(取り憑かれて混乱した台詞)。そのあと戦闘開始の画面(「○○が あらわれた!」)へ続く
+ *  - ラスボス戦の前: lastboss-intro(「最後の戦いが始まる」)
+ * どちらも未視聴のときだけ。再挑戦(もう少し→もう一度)では流れない。
  */
 export function buildStageEntryScreen(opts: {
   areaId: string;
@@ -49,8 +52,9 @@ export function buildStageEntryScreen(opts: {
   hasSeen: HasSeen;
 }): Screen {
   const stage: Screen = { name: "stage", areaId: opts.areaId, stageId: opts.stage.id };
-  if (opts.stage.type !== "lastBoss") return stage;
-  return chain([lastBossIntroStoryId(opts.areaId)], opts.hasSeen, stage);
+  if (opts.stage.type === "subBoss") return chain([subBossIntroStoryId(opts.areaId)], opts.hasSeen, stage);
+  if (opts.stage.type === "lastBoss") return chain([lastBossIntroStoryId(opts.areaId)], opts.hasSeen, stage);
+  return stage;
 }
 
 /**

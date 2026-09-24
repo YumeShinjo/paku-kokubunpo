@@ -43,6 +43,9 @@ describe("sceneForScreen", () => {
       expect(sceneForScreen(story(id)), id).toBe("talk");
     }
     expect(sceneForScreen(story("ohzaNoMa-intro"))).toBe("explore");
+    // 小ボス戦の前の台詞(subboss-intro)も、王座の間以外は会話用の曲
+    expect(sceneForScreen(story("kotobaNoIchiba-subboss-intro"))).toBe("talk");
+    expect(sceneForScreen(story("ohzaNoMa-subboss-intro"))).toBe("explore");
     expect(sceneForScreen(story("ohzaNoMa-subboss-clear"))).toBe("explore");
     expect(sceneForScreen(story("ohzaNoMa-truth"))).toBe("truth");
     expect(sceneForScreen(story("ohzaNoMa-lastboss-intro"))).toBe("explore");

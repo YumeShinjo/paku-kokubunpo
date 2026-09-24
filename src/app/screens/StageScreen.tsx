@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getStage } from "@/data/stages";
 import { areas } from "@/data/areas";
+import { stageTitleText } from "@/data/areaText";
 import { buildStageSession } from "@/features/quiz/buildSession";
 import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
@@ -9,12 +10,14 @@ import { syncScore } from "@/features/ranking/scoreSync";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useToastStore } from "@/app/store/toastStore";
 import { MascotFace } from "@/features/mascot/Mascot";
+import { BossEncounter } from "@/features/quiz/BossEncounter";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { useSessionStore } from "@/app/store/sessionStore";
 import { restoreSession } from "@/features/quiz/session";
+import { Rb } from "@/components/Rb";
 
 const SCORE_PER_QUESTION = 10;
 
@@ -44,6 +47,8 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [justClearedArea, setJustClearedArea] = useState(false);
+  // 小ボス戦は、出題の前に「○○が あらわれた!」の画面を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
+  const [encounterPending, setEncounterPending] = useState(() => stage?.type === "subBoss" && restored === null);
 
   const cleared = result !== null && (!isBoss || result.bossDefeated);
 
@@ -87,9 +92,11 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   if (!stage || !isStageUnlocked(stageId) || questions.length === 0) {
     return (
       <div className="screen">
-        <p>このステージはまだ挑戦できません。</p>
+        <p>
+          <Rb t="このステージはまだ挑戦[ちょうせん]できません。" />
+        </p>
         <button type="button" onClick={() => goTo({ name: "stageSelect", areaId })}>
-          ステージせんたくへ
+          <Rb t="ステージ選択[せんたく]へ" />
         </button>
       </div>
     );
@@ -99,16 +106,20 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     return (
       <div className="screen screen-stage-result">
         <MascotFace expression="sad" size="large" />
-        <h2>もう少し!</h2>
-        <p>あと少しで浄化できたよ。何度でも挑戦できるよ!</p>
+        <h2>
+          <Rb t="もう少[すこ]し!" />
+        </h2>
         <p>
-          {result.correctCount} / {result.answered} もん せいかい(ボスのHP のこり {result.hpLeft})
+          <Rb t="あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ!" />
+        </p>
+        <p>
+          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい](ボスのHP 残[のこ]り ${result.hpLeft})`} />
         </p>
         <button type="button" onClick={retry}>
-          もういちどちょうせん
+          <Rb t="もう一度[いちど]挑戦[ちょうせん]" />
         </button>
         <button type="button" onClick={() => goTo({ name: "stageSelect", areaId })}>
-          ステージせんたくへ
+          <Rb t="ステージ選択[せんたく]へ" />
         </button>
       </div>
     );
@@ -123,14 +134,18 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
             "クリア!"
           ) : (
             <>
-              {label}を<ruby>浄化<rt>じょうか</rt></ruby>した!
+              {label}を<Rb t="浄化[じょうか]した!" />
             </>
           )}
         </h2>
         <p>
-          {result.correctCount} / {result.answered} もん せいかい
+          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい]`} />
         </p>
-        {result.maxCombo >= 2 && <p>さいだい 🔥 {result.maxCombo}れんぞく!</p>}
+        {result.maxCombo >= 2 && (
+          <p>
+            <Rb t={`最大[さいだい] 🔥 ${result.maxCombo}連続[れんぞく]!`} />
+          </p>
+        )}
         <button
           type="button"
           onClick={() =>
@@ -144,9 +159,23 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
             )
           }
         >
-          つぎへ
+          <Rb t="次[つぎ]へ" />
         </button>
       </div>
+    );
+  }
+
+  const subBossName = areas.find((a) => a.id === areaId)?.subBossName;
+  if (encounterPending && isBoss && label && subBossName) {
+    return (
+      <BossEncounter
+        areaId={areaId}
+        bossName={subBossName}
+        label={label}
+        title={stageTitleText(stage)}
+        hpMax={bossHpMax(questions.length)}
+        onStart={() => setEncounterPending(false)}
+      />
     );
   }
 
@@ -159,7 +188,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
         isBoss && label
           ? {
               label,
-              title: stage.title,
+              title: stageTitleText(stage),
               hpMax: bossHpMax(questions.length),
               type: stage.type === "lastBoss" ? "lastBoss" : "subBoss",
             }

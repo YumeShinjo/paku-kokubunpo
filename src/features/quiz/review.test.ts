@@ -2,48 +2,43 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { useMascotStore } from "@/app/store/mascotStore";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { useSettingsStore } from "@/app/store/settingsStore";
-import { overcomeAccessoryId, recordReviewResult } from "./review";
+import { recordReviewResult } from "./review";
 
-describe("復習(星)と克服ボーナス", () => {
+describe("復習(星)と克服", () => {
   beforeEach(() => {
     useReviewStore.setState({ starredQuestionIds: [] });
-    useMascotStore.setState({ growthStage: 0, bonusAccessoryIds: [] });
+    useMascotStore.setState({ growthStage: 0 });
   });
 
   it("不正解だと星がつく(すでについていれば重ならない)", () => {
-    expect(recordReviewResult("q1", false)).toEqual({ overcame: false, bonusGained: false });
+    expect(recordReviewResult("q1", false)).toEqual({ overcame: false });
     recordReviewResult("q1", false);
     expect(useReviewStore.getState().starredQuestionIds).toEqual(["q1"]);
   });
 
-  it("星のついていた問題を正解すると、星が外れ、アクセサリーがボーナスで1つ増える", () => {
+  it("星のついていた問題を正解すると、星が外れて克服になる(呼び出し側が克服ボーナス音を鳴らす)", () => {
     recordReviewResult("q1", false);
-    const outcome = recordReviewResult("q1", true);
-    expect(outcome).toEqual({ overcame: true, bonusGained: true });
+    expect(recordReviewResult("q1", true)).toEqual({ overcame: true });
     expect(useReviewStore.getState().starredQuestionIds).toEqual([]);
-    expect(useMascotStore.getState().bonusAccessoryIds).toEqual([overcomeAccessoryId("q1")]);
   });
 
-  it("星のない問題を正解しても、ボーナスは増えない", () => {
-    expect(recordReviewResult("q1", true)).toEqual({ overcame: false, bonusGained: false });
-    expect(useMascotStore.getState().bonusAccessoryIds).toEqual([]);
+  it("星のない問題を正解しても、克服にはならない", () => {
+    expect(recordReviewResult("q1", true)).toEqual({ overcame: false });
   });
 
-  it("同じ問題を何度間違えて克服しても、ボーナスは1つだけ(稼ぎ放題にならない)", () => {
-    recordReviewResult("q1", false);
-    recordReviewResult("q1", true);
-    recordReviewResult("q1", false);
-    const second = recordReviewResult("q1", true);
-    expect(second).toEqual({ overcame: true, bonusGained: false });
-    expect(useMascotStore.getState().bonusAccessoryIds).toHaveLength(1);
-  });
-
-  it("問題ごとにボーナスが増える", () => {
-    for (const id of ["q1", "q2", "q3"]) {
+  it("克服のたびに克服になる(何度でも音が鳴る)が、マスコットのアクセサリーは増えない", () => {
+    const before = useMascotStore.getState();
+    for (let i = 0; i < 3; i++) {
+      recordReviewResult("q1", false);
+      expect(recordReviewResult("q1", true)).toEqual({ overcame: true });
+    }
+    for (const id of ["q2", "q3"]) {
       recordReviewResult(id, false);
       recordReviewResult(id, true);
     }
-    expect(useMascotStore.getState().bonusAccessoryIds).toHaveLength(3);
+    // 成長(アクセサリー)は、エリアクリアのときだけ進む。克服では動かない
+    expect(useMascotStore.getState().growthStage).toBe(before.growthStage);
+    expect(useMascotStore.getState()).not.toHaveProperty("bonusAccessoryIds");
   });
 
   it("自分で星をつけたり外したりできる(お気に入り登録)。星をつけた問題も、正解すれば克服になる", () => {
@@ -53,7 +48,7 @@ describe("復習(星)と克服ボーナス", () => {
     expect(useReviewStore.getState().starredQuestionIds).toEqual([]);
 
     useReviewStore.getState().toggleStar("q9");
-    expect(recordReviewResult("q9", true)).toEqual({ overcame: true, bonusGained: true });
+    expect(recordReviewResult("q9", true)).toEqual({ overcame: true });
   });
 });
 

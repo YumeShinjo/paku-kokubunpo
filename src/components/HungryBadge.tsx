@@ -1,4 +1,5 @@
 import { useReviewStore } from "@/app/store/reviewStore";
+import { Rb } from "@/components/Rb";
 
 /**
  * ホーム画面の軽いバッジ(6章)。星のついた問題(コトの好物)が残っているとき、コトがお腹を空かせている、と知らせる。
@@ -10,8 +11,10 @@ export function HungryBadge() {
   if (count === 0) return null;
   return (
     <p className="hungry-badge" role="status">
-      🍙 コトが おなかを すかせているよ!(⭐{count}もん)
-      <small>あそぶと、⭐もんだいに であえるかも!</small>
+      <Rb t={`🍙 コトがお腹[なか]をすかせているよ!(苦手[にがて]問題[もんだい] ${count}問[もん])`} />
+      <small>
+        <Rb t="遊[あそ]ぶと、苦手[にがて]問題[もんだい]に出会[であ]えるかも!" />
+      </small>
     </p>
   );
 }

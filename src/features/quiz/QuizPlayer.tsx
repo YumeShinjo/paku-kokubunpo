@@ -24,6 +24,7 @@ import {
   pickMessage,
   type CorrectEffect,
 } from "./feedback";
+import { Rb } from "@/components/Rb";
 
 export interface SessionResult {
   correctCount: number;
@@ -138,10 +139,10 @@ export function QuizPlayer({
     const message = pickMessage(kind, lastMessage.current[kind]);
     lastMessage.current[kind] = message;
 
-    // 星(復習)の更新と、克服ボーナス。解答の直後に必ず反映する
+    // 星(復習)の更新と、克服したときの音。解答の直後に必ず反映する
     const review = recordReviewResult(question.id, correct);
-    // 克服ボーナスでアクセサリーが増えたときは、正解音のあとに、きらっとした音を鳴らす
-    if (review.bonusGained) setTimeout(() => playSe("bonus"), 250);
+    // 星のついていた問題を克服したときは、正解音のあとに、きらっとした克服ボーナス音を鳴らす
+    if (review.overcame) setTimeout(() => playSe("bonus"), 250);
 
     let effect: CorrectEffect | null = null;
     if (correct) {
@@ -203,7 +204,7 @@ export function QuizPlayer({
         >
           <BossPortrait type={boss.type} areaId={areaId} />
           <p className="boss-name">
-            {boss.label}: {boss.title}
+            <Rb t={`${boss.label}: ${boss.title}`} />
           </p>
           <div
             className="hp-gauge"
@@ -228,7 +229,7 @@ export function QuizPlayer({
         <p className="combo" aria-live="polite">
           {comboText && (
             <span key={combo} className="combo-badge">
-              🔥 {comboText}
+              🔥 <Rb t={comboText} />
             </span>
           )}
         </p>
@@ -238,7 +239,7 @@ export function QuizPlayer({
           aria-pressed={starred}
           onClick={() => toggleStar(question.id)}
         >
-          {starred ? "⭐ ふくしゅうちゅう" : "☆ ふくしゅうに いれる"}
+          <Rb t={starred ? "⭐ 苦手[にがて]問題[もんだい]" : "☆ 苦手[にがて]問題[もんだい]に入[い]れる"} />
         </button>
         {onQuit && (
           <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>
@@ -250,16 +251,20 @@ export function QuizPlayer({
       {confirmingQuit && onQuit && (
         <div className="quit-confirm" role="alertdialog" aria-label="やめる確認">
           <p>
-            {canResumeLater
-              ? "ここまでの すすみぐあいは のこるよ。あとで つづきから あそべるよ。やめる?"
-              : "ここでやめると、このステージはクリアにならないよ。やめる?"}
+            <Rb
+              t={
+                canResumeLater
+                  ? "ここまでの進[すす]み具合[ぐあい]は残[のこ]るよ。あとで続[つづ]きから遊[あそ]べるよ。やめる?"
+                  : "ここでやめると、このステージはクリアにならないよ。やめる?"
+              }
+            />
           </p>
           <div className="quit-confirm-buttons">
             <button type="button" className="quit-yes" onClick={onQuit}>
               やめる
             </button>
             <button type="button" onClick={() => setConfirmingQuit(false)}>
-              つづける
+              <Rb t="続[つづ]ける" />
             </button>
           </div>
         </div>
@@ -299,14 +304,15 @@ export function QuizPlayer({
           )}
           {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ)、不正解=しょんぼり */}
           <MascotFace
-            expression={feedback.correct ? (feedback.review?.bonusGained ? "eating" : "happy") : "sad"}
+            expression={feedback.correct ? (feedback.review?.overcame ? "eating" : "happy") : "sad"}
             size="small"
           />
-          <p className="feedback-message">{feedback.message}</p>
+          <p className="feedback-message">
+            <Rb t={feedback.message} />
+          </p>
           {feedback.review && (
             <p className="feedback-overcome">
-              ⭐ にがてを こくふくした!
-              {feedback.review.bonusGained && " コトに アクセサリーが ふえたよ ✨"}
+              <Rb t="⭐ 苦手[にがて]を克服[こくふく]した!" />
             </p>
           )}
           {question.explanation && (
@@ -315,7 +321,7 @@ export function QuizPlayer({
             </p>
           )}
           <button type="button" onClick={handleNext}>
-            つぎへ
+            <Rb t="次[つぎ]へ" />
           </button>
         </div>
       )}

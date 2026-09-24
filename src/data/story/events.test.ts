@@ -8,6 +8,7 @@ import {
   lastBossClearStoryId,
   lastBossIntroStoryId,
   subBossClearStoryId,
+  subBossIntroStoryId,
   truthStoryId,
 } from "@/features/story/storyIds";
 import { areas } from "@/data/areas";
@@ -40,11 +41,25 @@ describe("ストーリーイベント(全エリア)", () => {
     }
   });
 
-  it("小ボスを持つエリアには小ボス撃破ストーリーがあり、序章にはない", () => {
+  it("小ボスを持つエリアには、小ボス戦の前・撃破後のストーリーがあり、序章にはない", () => {
     for (const area of areas.filter((a) => a.subBoss)) {
-      expect(getStoryEvent(subBossClearStoryId(area.id)), area.id).toBeDefined();
+      expect(getStoryEvent(subBossIntroStoryId(area.id)), `${area.id} の戦闘前`).toBeDefined();
+      expect(getStoryEvent(subBossClearStoryId(area.id)), `${area.id} の撃破後`).toBeDefined();
     }
+    expect(getStoryEvent(subBossIntroStoryId("prologue"))).toBeUndefined();
     expect(getStoryEvent(subBossClearStoryId("prologue"))).toBeUndefined();
+  });
+
+  it("戦闘前は小ボス本人の(取り憑かれて乱れた)台詞だけ。撃破後は、その乱れが晴れたあとの台詞から始まる", () => {
+    for (const area of areas.filter((a) => a.subBossName)) {
+      const intro = getStoryEvent(subBossIntroStoryId(area.id))!;
+      expect(intro.lines.length, area.id).toBeGreaterThan(0);
+      for (const line of intro.lines) expect(line.speaker, area.id).toBe(area.subBossName);
+      const clear = getStoryEvent(subBossClearStoryId(area.id))!;
+      // 戦闘前の台詞が、撃破後に重複して残っていない
+      const introTexts = new Set(plain(intro));
+      for (const text of plain(clear)) expect(introTexts.has(text), `${area.id}: ${text}`).toBe(false);
+    }
   });
 
   it("イベントidは重複しない", () => {
@@ -122,6 +137,21 @@ describe("STORY.md の台詞の反映(抜粋の照合)", () => {
   it("橋の小ボス撃破(既視感②)は、妙に丁寧に扱われて落ち着かない演出を含む", () => {
     const texts = plain(getStoryEvent(subBossClearStoryId("tsunagiNoHashi"))!);
     expect(texts.some((t) => t.includes("妙に丁寧に扱われて"))).toBe(true);
+  });
+
+  it("既視感の演出は、戦闘前の台詞には入らず、撃破後(浄化された台詞のあと)の位置に残っている", () => {
+    for (const [areaId, marker] of [
+      ["sugatakaeNoKajiba", "少しの間、動かなかった"],
+      ["tsunagiNoHashi", "妙に丁寧に扱われて"],
+    ] as const) {
+      const intro = plain(getStoryEvent(subBossIntroStoryId(areaId))!);
+      const clear = plain(getStoryEvent(subBossClearStoryId(areaId))!);
+      expect(intro.some((t) => t.includes(marker)), `${areaId} の戦闘前`).toBe(false);
+      const at = clear.findIndex((t) => t.includes(marker));
+      expect(at, `${areaId} の撃破後`).toBeGreaterThan(0); // 浄化された台詞のあとに来る
+      // その行はコトの様子(マスコットの立ち絵つき)
+      expect(getStoryEvent(subBossClearStoryId(areaId))!.lines[at].showMascot).toBe(true);
+    }
   });
 
   it("既視感の演出は2回だけ(鍛冶場と橋)で、他の小ボス撃破後にはない", () => {

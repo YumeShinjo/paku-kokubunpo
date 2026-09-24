@@ -127,7 +127,7 @@ describe("仕分け: ドラッグ&ドロップ", () => {
   });
 
   it("全部入れると「こたえる」が押せる。ドラッグで入れた結果が、そのまま解答になる(1回だけ)", () => {
-    const submit = () => buttons().find((b) => b.textContent === "こたえる")!;
+    const submit = () => buttons().find((b) => b.textContent?.includes("こたえる"))!;
     drag(chip("走る"), 40);
     expect(submit().disabled).toBe(true);
     drag(chip("山"), 150);
@@ -141,7 +141,7 @@ describe("仕分け: ドラッグ&ドロップ", () => {
   it("答え合わせのあとは、ドラッグしても動かない(単語もカゴも押せない)", () => {
     drag(chip("走る"), 150); // 間違い: 動詞を名詞のカゴへ
     drag(chip("山"), 150);
-    act(() => buttons().find((b) => b.textContent === "こたえる")!.click());
+    act(() => buttons().find((b) => b.textContent?.includes("こたえる"))!.click());
     for (const b of buttons()) expect(b.disabled).toBe(true);
     drag(chip("走る"), 40);
     expect(basketTexts("c2")).toEqual(["走る ×", "山 ◎"]);
@@ -197,4 +197,103 @@ describe("仕分け: ドラッグ&ドロップ", () => {
       vi.useRealTimers();
     }
   });
+
+  describe("指(タッチ)でのドラッグ(iPhone実機の不具合の再発防止。Touch Events で扱う)", () => {
+    type TouchType = "touchstart" | "touchmove" | "touchend" | "touchcancel";
+
+    /** jsdom には Touch がないので、touches / changedTouches を持つイベントを作って送る。cancelable なので preventDefault の有無を見られる */
+    function touch(el: Element, type: TouchType, x: number, y = 300, fingers = 1) {
+      const point = { clientX: x, clientY: y, identifier: 0 };
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      const list = type === "touchend" || type === "touchcancel" ? [] : Array.from({ length: fingers }, () => point);
+      Object.assign(event, { touches: list, changedTouches: [point], targetTouches: list });
+      act(() => {
+        el.dispatchEvent(event);
+      });
+      return event;
+    }
+
+    it("単語を指でドラッグしてカゴで離すと、そのカゴに入る", () => {
+      const el = chip("走る");
+      touch(el, "touchstart", 50);
+      touch(el, "touchmove", 60);
+      touch(el, "touchmove", 40);
+      touch(el, "touchend", 40);
+      expect(basketTexts("c1")).toEqual(["走る"]);
+      expect(poolTexts()).toEqual(["山"]);
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+    });
+
+    it("ドラッグ中は、画面のスクロールを止める(touchmove の既定動作を止める)。ドラッグの終わりの click も止める", () => {
+      const el = chip("山");
+      touch(el, "touchstart", 50);
+      const small = touch(el, "touchmove", 52); // しきい値未満(タップの範囲)
+      expect(small.defaultPrevented).toBe(false);
+      const moved = touch(el, "touchmove", 150);
+      expect(moved.defaultPrevented).toBe(true);
+      expect(container.querySelector(".sorting-ghost")?.textContent).toBe("山");
+      expect(basket("c2").classList.contains("is-over")).toBe(true);
+      const end = touch(el, "touchend", 150);
+      expect(end.defaultPrevented).toBe(true);
+      expect(basketTexts("c2")).toEqual(["山"]);
+    });
+
+    it("ほとんど動かさない(タップ)ときは、何も止めず、選択になる(そのあとカゴのボタンで入れられる)", () => {
+      const el = chip("走る");
+      touch(el, "touchstart", 50);
+      const end = touch(el, "touchend", 51);
+      expect(end.defaultPrevented).toBe(false);
+      act(() => el.click());
+      expect(el.classList.contains("selected")).toBe(true);
+    });
+
+    it("カゴのない場所で離すと入らない。touchcancel でもドラッグをやめて、そのまま", () => {
+      let el = chip("走る");
+      touch(el, "touchstart", 50);
+      touch(el, "touchmove", 200);
+      touch(el, "touchend", -1);
+      expect(poolTexts()).toEqual(["走る", "山"]);
+      el = chip("山");
+      touch(el, "touchstart", 50);
+      touch(el, "touchmove", 200);
+      touch(el, "touchcancel", 200);
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+      expect(poolTexts()).toEqual(["走る", "山"]);
+    });
+
+    it("2本指(ピンチなど)では、ドラッグにしない", () => {
+      const el = chip("走る");
+      touch(el, "touchstart", 50, 300, 2);
+      const moved = touch(el, "touchmove", 150, 300, 2);
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+      expect(moved.defaultPrevented).toBe(false);
+    });
+
+    it("指のポインターイベント(pointerType=touch)は無視する(Touch Events と二重に処理しない)", () => {
+      const el = chip("走る");
+      const send = (type: string, x: number) =>
+        act(() => {
+          const e = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: 300, button: 0 });
+          Object.defineProperty(e, "pointerType", { value: "touch" });
+          el.dispatchEvent(e);
+        });
+      send("pointerdown", 50);
+      send("pointermove", 150);
+      send("pointerup", 150);
+      expect(basketTexts("c2")).toEqual([]);
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+    });
+
+    it("答え合わせのあとは、指でドラッグしても動かない", () => {
+      drag(chip("走る"), 40);
+      drag(chip("山"), 150);
+      act(() => buttons().find((b) => b.textContent?.includes("こたえる"))!.click());
+      touch(chip("走る"), "touchstart", 50);
+      touch(chip("走る"), "touchmove", 150);
+      touch(chip("走る"), "touchend", 150);
+      expect(basketTexts("c1")).toEqual(["走る ◎"]);
+      expect(basketTexts("c2")).toEqual(["山 ◎"]);
+    });
+  });
 });
+

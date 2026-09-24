@@ -6,7 +6,7 @@ import { persist } from "zustand/middleware";
  * (混入は features/selection/selectQuestions.ts と features/quiz/buildSession.ts が担う)。
  *  - 間違えた問題には自動で星がつく(markWrong)
  *  - 自分で星をつけたり外したりもできる(toggleStar。「お気に入り登録」)
- *  - 正解し直す(克服)と星が外れる(markOvercome)。克服のボーナスは features/quiz/review.ts が付ける
+ *  - 正解し直す(克服)と星が外れる(markOvercome)。克服のときは克服ボーナス音が鳴る(アクセサリーは増えない)
  */
 interface ReviewState {
   starredQuestionIds: string[];

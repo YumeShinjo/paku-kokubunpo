@@ -12,7 +12,7 @@ export function IconPicker({
   disabled?: boolean;
 }) {
   return (
-    <div className="icon-picker" role="group" aria-label="アイコンをえらぶ">
+    <div className="icon-picker" role="group" aria-label="アイコンを選ぶ">
       {PLAYER_ICONS.map((icon) => (
         <button
           key={icon.id}

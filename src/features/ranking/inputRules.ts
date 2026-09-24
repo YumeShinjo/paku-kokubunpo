@@ -29,10 +29,10 @@ export function normalizeClassCode(input: string): string {
 export function validateClassCode(input: string): Validation {
   const code = normalizeClassCode(input);
   const len = length(code);
-  if (len < CLASS_CODE_MIN) return { ok: false, message: `クラスコードは ${CLASS_CODE_MIN}もじ いじょうで いれてね。` };
-  if (len > CLASS_CODE_MAX) return { ok: false, message: `クラスコードは ${CLASS_CODE_MAX}もじ いないに してね。` };
+  if (len < CLASS_CODE_MIN) return { ok: false, message: `クラスコードは${CLASS_CODE_MIN}文字[もじ]以上[いじょう]で入[い]れてね。` };
+  if (len > CLASS_CODE_MAX) return { ok: false, message: `クラスコードは${CLASS_CODE_MAX}文字[もじ]以内[いない]にしてね。` };
   if (!/^[\p{L}\p{N}_-]+$/u.test(code) || code.startsWith("__")) {
-    return { ok: false, message: "クラスコードには、もじ・すうじ・「-」「_」だけ つかえるよ。" };
+    return { ok: false, message: "クラスコードには、文字[もじ]・数字[すうじ]・「-」「_」だけ使[つか]えるよ。" };
   }
   return { ok: true, value: code };
 }
@@ -41,11 +41,11 @@ export function validateClassCode(input: string): Validation {
 export function validateNickname(input: string): Validation {
   const name = input.normalize("NFKC").trim().replace(/\s+/g, " ");
   const len = length(name);
-  if (len < 1) return { ok: false, message: "ニックネームを いれてね。" };
-  if (len > NICKNAME_MAX) return { ok: false, message: `ニックネームは ${NICKNAME_MAX}もじ いないに してね。` };
-  if (hasControlChar(name)) return { ok: false, message: "ニックネームに つかえない もじが あるよ。" };
+  if (len < 1) return { ok: false, message: "ニックネームを入[い]れてね。" };
+  if (len > NICKNAME_MAX) return { ok: false, message: `ニックネームは${NICKNAME_MAX}文字[もじ]以内[いない]にしてね。` };
+  if (hasControlChar(name)) return { ok: false, message: "ニックネームに使[つか]えない文字[もじ]があるよ。" };
   if (containsNgWord(name)) {
-    return { ok: false, message: "その ニックネームは つかえないよ。べつの なまえに してね。" };
+    return { ok: false, message: "そのニックネームは使[つか]えないよ。別[べつ]の名前[なまえ]にしてね。" };
   }
   return { ok: true, value: name };
 }

@@ -99,7 +99,7 @@ describe("小ボスの表示名", () => {
     );
     expect(titles).toEqual({
       kotobaNoIchiba: "侍女見習い・メイ",
-      sugatakaeNoKajiba: "従者・レル",
+      sugatakaeNoKajiba: "鍛冶見習い・レル",
       namerakaNoTaki: "文官・オンヴィン",
       tsunagiNoHashi: "メイド長・ジョゼット",
       kizunaNoMa: "騎士団長・ネジラルド",
@@ -121,21 +121,19 @@ describe("小ボス", () => {
     }
   });
 
-  it("出題数(pickCount)は8問以上・プール以下で、プールが十分大きければプールより少ない", () => {
+  it("出題数(pickCount)は15問(通常ステージの8〜10問より多い)。プールが15問未満のエリアはプール全問", () => {
     for (const id of bossAreas) {
       const boss = subBossOf(id)!;
-      expect(boss.pickCount!, id).toBeGreaterThanOrEqual(8);
-      expect(boss.pickCount!, id).toBeLessThanOrEqual(boss.questionIds.length);
-      expect(boss.pickCount!, id).toBeLessThan(boss.questionIds.length);
+      expect(boss.pickCount!, id).toBe(Math.min(15, boss.questionIds.length));
+      expect(boss.pickCount!, id).toBeGreaterThan(10); // 通常ステージの最大(10問)より多い
       expect(stageQuestionCount(boss)).toBe(boss.pickCount);
     }
   });
 
-  it("従来のエリアの出題数は変わらない(市場10問・鍛冶場12問)、少ないエリアは下限の8問", () => {
-    expect(subBossOf("kotobaNoIchiba")!.pickCount).toBe(10);
-    expect(subBossOf("sugatakaeNoKajiba")!.pickCount).toBe(12);
-    for (const id of ["namerakaNoTaki", "tsunagiNoHashi", "kizunaNoMa", "mikakeNoMa", "ohzaNoMa"]) {
-      expect(subBossOf(id)!.pickCount, id).toBe(8);
+  it("小ボスのエリアは、プールが15問以上あるので、すべて15問出題", () => {
+    for (const id of bossAreas) {
+      expect(subBossOf(id)!.questionIds.length, id).toBeGreaterThanOrEqual(15);
+      expect(subBossOf(id)!.pickCount, id).toBe(15);
     }
   });
 });

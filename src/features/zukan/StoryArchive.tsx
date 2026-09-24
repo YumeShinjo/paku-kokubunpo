@@ -1,6 +1,7 @@
 import { buildStoryArchive, countReplayableStories } from "@/features/story/storyArchive";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { Rb } from "@/components/Rb";
 
 /**
  * ことだまの書の「おもいで」。見終わったストーリーを、いつでも見返せる。
@@ -15,12 +16,16 @@ export function StoryArchive() {
 
   return (
     <section className="zukan-memories">
-      <h3>おもいで(ストーリー)</h3>
+      <h3>
+        <Rb t="思[おも]い出[で](ストーリー)" />
+      </h3>
       <p className="zukan-pages-lead">
-        みた ストーリーを、もういちど 見られるよ。({seenCount} / {countReplayableStories()})
+        <Rb t={`見[み]たストーリーを、もう一度[いちど]見[み]られるよ。(${seenCount} / ${countReplayableStories()})`} />
       </p>
       {groups.length === 0 ? (
-        <p className="zukan-page-locked">まだ ストーリーを みていないよ。</p>
+        <p className="zukan-page-locked">
+          <Rb t="まだストーリーを見[み]ていないよ。" />
+        </p>
       ) : (
         groups.map((group) => (
           <details key={group.areaId} className="zukan-page">
