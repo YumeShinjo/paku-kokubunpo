@@ -39,6 +39,10 @@ function getAudioContext(): AudioContext | null {
   if (!Ctor) return null;
   if (!audioContext) {
     audioContext = new Ctor();
+    // 動き出した(running になった)ときに、鳴らそうとして待たされていたBGMを始める
+    audioContext.addEventListener?.("statechange", () => {
+      if (audioContext?.state === "running") ensureBgmPlaying();
+    });
   }
   return audioContext;
 }
@@ -55,6 +59,16 @@ export function unlockPlayback(): void {
   }
   primeBgmElement();
   void preloadSeFiles();
+  // 解禁のタップの中で、いまの場面のBGMを始める。iOSは、タップの中で始めた再生でないとブロックすることがあり、
+  // 画面の描画のあと(useBgm の effect)に始めるだけでは、別の音が鳴るまでBGMが始まらないことがあった。
+  bgmStarter?.();
+  ensureBgmPlaying();
+}
+
+/** いまの場面のBGMを鳴らす関数。useBgm が登録する(unlockPlayback から、解禁のタップの中で呼ぶため) */
+let bgmStarter: (() => void) | null = null;
+export function setBgmStarter(starter: (() => void) | null): void {
+  bgmStarter = starter;
 }
 
 export type SeKind =
@@ -230,6 +244,24 @@ function safePlay(audio: HTMLAudioElement): void {
   }
 }
 
+/** アプリが見えていない(ホーム画面に戻った・画面ロック)あいだは、BGMを鳴らさない */
+function isPageHidden(): boolean {
+  return typeof document !== "undefined" && document.visibilityState === "hidden";
+}
+
+/** BGM要素を再生する。見えていないあいだは何もしない(戻ってきたとき ensureBgmPlaying が始める) */
+function playBgmElement(audio: HTMLAudioElement): void {
+  if (!isPageHidden()) safePlay(audio);
+}
+
+/**
+ * 曲が指定されているのに、止まったままのBGMを鳴らし直す(解禁の直後・ミュート解除・
+ * AudioContext が動き出したとき・アプリに戻ったとき)。ミュート中も再生は続け、音量0で鳴らしておく。
+ */
+function ensureBgmPlaying(): void {
+  if (bgmElement && bgmSrc && bgmElement.paused) playBgmElement(bgmElement);
+}
+
 /** タップの中で、BGM要素を無音で一度再生しておく(unlockPlayback から呼ぶ) */
 function primeBgmElement(): void {
   const audio = getBgmElement();
@@ -268,14 +300,14 @@ export function playBgm(src: string, introSrc?: string): void {
       clearIntroHandler();
       audio.src = src;
       audio.loop = true;
-      safePlay(audio);
+      playBgmElement(audio);
     };
     audio.addEventListener("ended", introEndedHandler);
   } else {
     audio.src = src;
     audio.loop = true;
   }
-  safePlay(audio);
+  playBgmElement(audio);
   bgmSrc = src;
 }
 
@@ -303,6 +335,15 @@ export function duckBgm(ms: number): void {
   }, until - Date.now());
 }
 
+/** ダッキングを、その場で終わらせて元の音量へ戻す(演出を飛ばしたときなど) */
+export function restoreBgm(): void {
+  if (duckTimer) clearTimeout(duckTimer);
+  duckTimer = null;
+  duckUntil = 0;
+  duckFactor = 1;
+  applyBgmLevel(DUCK_UP_SEC);
+}
+
 /** 効果音の長さ(ミリ秒)。本物の素材が読み込めていればその長さ、なければ合成音の長さ */
 export function seDurationMs(kind: SeKind): number {
   const buffer = seBuffers.get(kind);
@@ -315,15 +356,20 @@ useSettingsStore.subscribe((state, prev) => {
   applyBgmLevel(0.02);
   if (prev.muted && !state.muted) {
     resumeAudioContext();
-    if (bgmElement && bgmSrc && bgmElement.paused) safePlay(bgmElement);
+    ensureBgmPlaying();
   }
 });
 
-// 画面を閉じて戻ってきたとき(電話・ロック解除など)、止まってしまった音を動かし直す
+// アプリがバックグラウンドに回ったら(ホーム画面に戻った・画面ロック)BGMを止め、戻ってきたら続きから鳴らす。
+// ミュート中は、音量0のまま再生を続けるので、戻っても無音のまま(解除すれば鳴る)。
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState !== "visible" || !useSettingsStore.getState().audioUnlocked) return;
+    if (!useSettingsStore.getState().audioUnlocked) return;
+    if (isPageHidden()) {
+      bgmElement?.pause();
+      return;
+    }
     resumeAudioContext();
-    if (bgmElement && bgmSrc && bgmElement.paused) safePlay(bgmElement);
+    ensureBgmPlaying();
   });
 }

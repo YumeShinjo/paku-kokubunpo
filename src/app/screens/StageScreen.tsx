@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { getStage } from "@/data/stages";
 import { areas } from "@/data/areas";
 import { buildStageSession } from "@/features/quiz/buildSession";
@@ -6,7 +6,8 @@ import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { buildPostClearScreen } from "@/features/story/storyFlow";
 import { syncScore } from "@/features/ranking/scoreSync";
-import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
+import { Mascot } from "@/features/mascot/Mascot";
+import { useClearSequence } from "@/features/quiz/clearSequence";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
@@ -70,28 +71,9 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     setAttempt((a) => a + 1);
   }
 
-  // クリア画面に切り替わった瞬間に1度だけ達成音を鳴らす(7章: 視覚演出とセットの効果音)。
-  useEffect(() => {
-    if (!cleared) return;
-    const kind = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
-    playSe(kind);
-    duckBgm(seDurationMs(kind)); // 達成音が聞こえるよう、鳴っているあいだBGMを下げる
-  }, [cleared, stage?.type]);
-
-  // エリアクリアのときは、クリア音のあとに、マスコットの成長音 → 図鑑のページが開く音、の順に重ならないよう鳴らす
-  useEffect(() => {
-    if (!justClearedArea) return;
-    const start = stage?.type === "lastBoss" ? 1000 : 600; // ラスボスのクリア音は長いので、少し待つ
-    const pageAt = start + 700;
-    const growth = setTimeout(() => playSe("growth"), start);
-    const page = setTimeout(() => playSe("pageUnlock"), pageAt);
-    // クリア音・成長音・ページ解放音が流れ終わるまで、BGMを下げたままにする(何が起きたか聞き分けやすくする)
-    duckBgm(pageAt + seDurationMs("pageUnlock"));
-    return () => {
-      clearTimeout(growth);
-      clearTimeout(page);
-    };
-  }, [justClearedArea, stage?.type]);
+  // クリア画面では、達成音 →(エリアクリアなら)成長 → ページ解放、を間を空けて1つずつ出し、出すたびに効果音を鳴らす(7章)
+  const clearSe = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
+  const { phase, done, skip } = useClearSequence(cleared, clearSe, justClearedArea);
 
   // ステージ選択画面でも押せないが、解放条件(先にクリアすべきステージ)を満たさない挑戦は入口で止める。
   if (!stage || !isStageUnlocked(stageId) || questions.length === 0) {
@@ -139,23 +121,40 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
           {result.correctCount} / {result.answered} もん せいかい
         </p>
         {result.maxCombo >= 2 && <p>さいだい 🔥 {result.maxCombo}れんぞく!</p>}
-        {justClearedArea && <p>エリアクリア!マスコットが成長した!</p>}
-        {justClearedArea && <p>📖 ことだまの書に、あたらしい ページが ふえたよ!</p>}
-        <button
-          type="button"
-          onClick={() =>
-            goTo(
-              buildPostClearScreen({
-                areaId,
-                stageType: stage.type,
-                justClearedArea,
-                hasSeen,
-              }),
-            )
-          }
-        >
-          つぎへ
-        </button>
+        <div className="clear-reveal" aria-live="polite">
+          {justClearedArea && phase >= 1 && (
+            <section className="reveal-step">
+              <Mascot />
+              <p>エリアクリア!マスコットが成長した!</p>
+            </section>
+          )}
+          {justClearedArea && phase >= 2 && (
+            <section className="reveal-step">
+              <p>📖 ことだまの書に、あたらしい ページが ふえたよ!</p>
+            </section>
+          )}
+        </div>
+        {done ? (
+          <button
+            type="button"
+            onClick={() =>
+              goTo(
+                buildPostClearScreen({
+                  areaId,
+                  stageType: stage.type,
+                  justClearedArea,
+                  hasSeen,
+                }),
+              )
+            }
+          >
+            つぎへ
+          </button>
+        ) : (
+          <button type="button" className="skip-button" data-no-tap onClick={skip}>
+            スキップ
+          </button>
+        )}
       </div>
     );
   }

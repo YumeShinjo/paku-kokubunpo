@@ -34,9 +34,14 @@ export default function App() {
   // タイトル画面のボタンで明示的にも解禁しているが、それ以外の要素が
   // 最初にタップされた場合に備え、アプリ全体で最初の1タップだけを拾って解禁する。
   useEffect(() => {
-    const handleFirstPointer = () => unlockPlayback();
-    window.addEventListener("pointerdown", handleFirstPointer, { once: true });
-    return () => window.removeEventListener("pointerdown", handleFirstPointer);
+    // iOSは pointerdown を「ユーザー操作」と認めず、click / touchend でないと音声を解禁できない。
+    // どれも1度だけ拾う(unlockPlayback は何度呼んでも安全)。
+    const handleFirstTap = () => unlockPlayback();
+    const events = ["pointerdown", "touchend", "click"] as const;
+    for (const type of events) window.addEventListener(type, handleFirstTap, { once: true });
+    return () => {
+      for (const type of events) window.removeEventListener(type, handleFirstTap);
+    };
   }, []);
 
   // 7章: ボタンタップ音。画面ごとに鳴らす実装を散らすのではなく、

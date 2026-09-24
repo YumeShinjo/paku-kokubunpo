@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { duckBgm, unlockPlayback, playSe, playBgm, stopBgm } from "./audio";
+import { duckBgm, unlockPlayback, playSe, playBgm, setBgmStarter, stopBgm } from "./audio";
 import { useSettingsStore } from "@/app/store/settingsStore";
 
 /**
@@ -172,6 +172,62 @@ describe("audio", () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  describe("解禁とバックグラウンド(iOS実機の不具合の再発防止)", () => {
+    function setVisibility(state: "visible" | "hidden") {
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => state });
+      document.dispatchEvent(new Event("visibilitychange"));
+    }
+
+    afterEach(() => {
+      setBgmStarter(null);
+      setVisibility("visible");
+    });
+
+    it("解禁のタップの中で、いまの場面のBGMを始める(別の効果音が鳴るまで待たない)", () => {
+      const starter = vi.fn(() => playBgm("/assets/audio/bgm-start.mp3"));
+      setBgmStarter(starter);
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      unlockPlayback();
+      expect(starter).toHaveBeenCalledTimes(1);
+      // 無音のプライミング再生 + 実際の曲の再生
+      expect(play.mock.calls.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("解禁前の操作で再生がブロックされて止まったままの曲は、次の解禁で鳴らし直す", () => {
+      unlockPlayback(); // 1回目(iOSでは pointerdown など、有効な操作にならない)
+      playBgm("/assets/audio/bgm-blocked.mp3"); // 再生を試みるが、要素は止まったまま
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      unlockPlayback(); // 2回目(click)。同じ曲の指定でも、止まっていれば鳴らし直す
+      expect(play).toHaveBeenCalled();
+    });
+
+    it("バックグラウンドに回るとBGMを止め、戻ると鳴らし直す", () => {
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-bg.mp3");
+      const pause = vi.mocked(window.HTMLMediaElement.prototype.pause);
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      pause.mockClear();
+      setVisibility("hidden");
+      expect(pause).toHaveBeenCalled();
+      play.mockClear();
+      setVisibility("visible");
+      expect(play).toHaveBeenCalled();
+    });
+
+    it("見えていないあいだに曲が切り替わっても、鳴らさない(戻ったときに鳴らす)", () => {
+      unlockPlayback();
+      setVisibility("hidden");
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      playBgm("/assets/audio/bgm-hidden.mp3");
+      expect(play).not.toHaveBeenCalled();
+      setVisibility("visible");
+      expect(play).toHaveBeenCalled();
     });
   });
 });

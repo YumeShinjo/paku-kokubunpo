@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { findBgm } from "@/assets/registry";
-import { playBgm, stopBgm } from "@/lib/audio";
+import { playBgm, setBgmStarter, stopBgm } from "@/lib/audio";
 import { sceneForScreen } from "./bgmScene";
 
 /**
@@ -13,6 +13,15 @@ import { sceneForScreen } from "./bgmScene";
 export function useBgm(): void {
   const screen = useNavigationStore((s) => s.screen);
   const audioUnlocked = useSettingsStore((s) => s.audioUnlocked);
+
+  // 解禁のタップの中で、いまの場面のBGMをすぐ始められるように登録しておく(9章)
+  useEffect(() => {
+    setBgmStarter(() => {
+      const track = findBgm(sceneForScreen(useNavigationStore.getState().screen));
+      if (track) playBgm(track.loop, track.intro);
+    });
+    return () => setBgmStarter(null);
+  }, []);
 
   useEffect(() => {
     if (!audioUnlocked) return;
