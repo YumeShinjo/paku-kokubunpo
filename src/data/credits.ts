@@ -38,6 +38,55 @@ export function parseAssetCredits(markdown: string): AssetCredit[] {
 
 export const assetCredits: AssetCredit[] = parseAssetCredits(assetCreditsMarkdown);
 
+/**
+ * ゲーム内クレジットの表示用(ネタバレ防止のため、曲名・効果音名・ファイル名・使用箇所は出さない)。
+ *  - BGM・効果音: 「作曲者名 - サイト名」の並びだけ。素材管理表の出典が「サイト名 / 作曲者名」の形ならその順に直し、
+ *    サイト名(または作者名)だけのときは、それだけを出す。同じ出典は1回にまとめる。
+ *  - 画像(生成AIによるキャラクター): 「キャラクターイラスト: (制作方法の1文)」に1つにまとめる。
+ *  - 画像(それ以外)・フォント: 素材名と出典・ライセンスだけ。
+ * 提出用の素材管理表(docs/ASSET_CREDITS.md)は、詳細をそのまま持つ。ここで簡略化するのは、ゲーム内の表示だけ。
+ */
+export interface CreditGroup {
+  /** 種別(画像 / BGM / SE / フォント / …) */
+  kind: string;
+  lines: string[];
+}
+
+/** 出典「サイト名 / 作曲者名」を、「作曲者名 - サイト名」に直す。「 / 」がなければ、そのまま */
+export function formatMusicCredit(source: string): string {
+  const parts = source.split(/\s+\/\s+/).map((p) => p.trim()).filter(Boolean);
+  return parts.length === 2 ? `${parts[1]} - ${parts[0]}` : source.trim();
+}
+
+/** 末尾の補足(「(…)」)を取り除く。ゲーム内の表示では、作り方の細かい注記や、ライセンスの説明書きを出さない */
+export const withoutNote = (text: string): string => text.replace(/\s*[(（][^()（）]*[)）]\s*$/, "").trim();
+
+const isGeneratedByAi = (c: AssetCredit) => c.license.startsWith("生成AI");
+const unique = (lines: string[]) => [...new Set(lines)];
+
+const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
+
+export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
+  const kinds = [...KIND_ORDER, ...credits.map((c) => c.kind).filter((k) => !KIND_ORDER.includes(k))];
+  const groups: CreditGroup[] = [];
+  for (const kind of unique(kinds)) {
+    const rows = credits.filter((c) => c.kind === kind);
+    if (rows.length === 0) continue;
+    let lines: string[];
+    if (kind === "BGM" || kind === "SE") {
+      lines = unique(rows.map((c) => formatMusicCredit(c.source)));
+    } else if (kind === "画像") {
+      const ai = unique(rows.filter(isGeneratedByAi).map((c) => c.license));
+      const others = rows.filter((c) => !isGeneratedByAi(c)).map((c) => `${withoutNote(c.name)}: ${withoutNote(c.source)}`);
+      lines = [...ai.map((license) => `キャラクターイラスト: ${license}`), ...unique(others)];
+    } else {
+      lines = unique(rows.map((c) => `${c.name}(${withoutNote(c.license)})`));
+    }
+    groups.push({ kind, lines });
+  }
+  return groups;
+}
+
 /** 制作者 */
 export const staffCredits: { role: string; name: string }[] = [
   { role: "企画・制作", name: "Yume Shinjo" },

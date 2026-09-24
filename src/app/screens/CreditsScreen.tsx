@@ -1,12 +1,11 @@
 import { useEffect } from "react";
-import { assetCredits, softwareCredits, staffCredits } from "@/data/credits";
+import { assetCredits, buildCreditGroups, softwareCredits, staffCredits } from "@/data/credits";
 import { creditsId } from "@/features/story/storyIds";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 
-const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
 const KIND_LABEL: Record<string, string> = {
   画像: "がぞう",
   BGM: "BGM",
@@ -31,11 +30,8 @@ export function CreditsScreen({
   const goTo = useNavigationStore((s) => s.goTo);
   const markSeen = useStoryStore((s) => s.markSeen);
 
-  // 種別ごとに分けて並べる(表にない種別は最後にまとめる)
-  const kinds = [
-    ...KIND_ORDER,
-    ...Array.from(new Set(assetCredits.map((c) => c.kind))).filter((k) => !KIND_ORDER.includes(k)),
-  ].filter((k) => assetCredits.some((c) => c.kind === k));
+  // ネタバレ防止のため、曲名・ファイル名・使用箇所は出さず、出典だけを種別ごとにまとめて出す
+  const groups = buildCreditGroups(assetCredits);
 
   // エンディング直後のスクロール位置を引き継がないよう、先頭に戻す
   useEffect(() => {
@@ -79,22 +75,15 @@ export function CreditsScreen({
             <Rb t="出典[しゅってん]は、素材[そざい]が揃[そろ]い次第[しだい]ここに載[の]るよ。(準備中[じゅんびちゅう])" />
           </p>
         ) : (
-          kinds.map((kind) => (
-            <div key={kind}>
-              <h4>
-                <Rb t={KIND_LABEL[kind] ?? kind} />
-              </h4>
+          groups.map((group) => (
+            <div key={group.kind}>
+              <h4>{KIND_LABEL[group.kind] ?? group.kind}</h4>
               <ul className="credits-list">
-                {assetCredits
-                  .filter((c) => c.kind === kind)
-                  .map((c, i) => (
-                    <li key={`${c.name}-${i}`}>
-                      <p className="credits-asset-name">{c.name}</p>
-                      <p className="credits-asset-detail">
-                        出典: {c.source} / ライセンス: {c.license}
-                      </p>
-                    </li>
-                  ))}
+                {group.lines.map((line) => (
+                  <li key={line}>
+                    <p className="credits-asset-detail">{line}</p>
+                  </li>
+                ))}
               </ul>
             </div>
           ))

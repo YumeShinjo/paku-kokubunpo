@@ -87,6 +87,13 @@ ruby rt {
   font-size: 0.6em;
 }
 
+/* ふりがな付きテキスト全体。親が flex / grid でも1つの塊として置かれ、中は通常の文章として折り返す */
+.ruby-text {
+  display: inline;
+  line-break: auto;
+  overflow-wrap: anywhere;
+}
+
 .area-list,
 .stage-list,
 .engine-choice-list {
@@ -188,12 +195,18 @@ button.incorrect {
 /* ストーリー演出(3章): 背景・立ち絵は本番素材が揃うまでの仮表示 */
 .screen-story {
   padding: 0;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  gap: 0;
 }
 
+/*
+ * 立ち絵の領域は、台詞の長さに関わらず高さを固定する(flex: none)。テキストボックスは、この領域の下で
+ * 下向きに伸び縮みするだけなので、台詞を送っても立ち絵は動かない。
+ */
 .story-stage {
-  flex: 1;
-  min-height: 240px;
+  flex: none;
+  height: calc(100dvh - 15.5rem);
+  min-height: 13rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -221,7 +234,8 @@ button.incorrect {
   border-radius: 16px 16px 0 0;
   background: var(--color-surface);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
-  min-height: 5.5rem;
+  /* 短い台詞でも、ボタンの位置が大きく動かないよう、4行ぶんを確保する。それ以上は下へ伸びる */
+  min-height: 9rem;
 }
 
 .story-speaker {
