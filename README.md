@@ -153,8 +153,10 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 - [lib/audio.ts](src/lib/audio.ts) の `unlockPlayback()` が実際の解禁処理を担う:
   1. `settingsStore.audioUnlocked` を true にする(アプリ側のゲート。セッションごとに再解禁が必要なため永続化しない)
   2. Web Audio APIの `AudioContext` を resume する(ブラウザ側の自動再生制限の解除。これが実質的な本体)
-- 解禁のトリガーは二重化している: [TitleScreen.tsx](src/app/screens/TitleScreen.tsx) の「はじめる」「せってい」ボタンで明示的に呼ぶのに加え、
-  [App.tsx](src/App.tsx) にアプリ全体で最初の1タップだけを拾う取りこぼし防止リスナーを設置(`{ once: true }`)
+- 解禁は、起動直後に挟む「タップしてはじめる」の1枚の導入画面([TapToStart](src/components/TapToStart.tsx))で行う。
+  そのタップ(click。iOSは pointerdown を有効な操作と認めない)の中で `unlockPlayback()` を呼び、**BGMの開始まで済ませてから**タイトル画面を出す
+  ([App.tsx](src/App.tsx) は `audioUnlocked` が false のあいだ、この画面だけを出す)。これで、タイトル画面のどのボタンを最初に押しても解禁済みになる。
+  `audioUnlocked` は端末には保存しないので、アプリを起動するたびにこの画面が出る。タイトル・設定のボタンからの `unlockPlayback()` は念のための残し
 - 未解禁の状態で `playSe`/`playBgm` を呼んでも何も鳴らさず安全に無視する(エラーにならない)
 - 7章の音量スライダー・ミュートと整合: `playSe` は毎回 `seVolume`/`muted` を読んで音量を決め、
   再生中のBGMは音量変更時に `useSettingsStore.subscribe` で即座に追従する
@@ -272,7 +274,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 
 ## 効果音の種類(13章)
 `tap` `correct` `incorrect` `clear` `subBossClear` `lastBossClear` `growth`(エリアクリアでマスコットが成長) `pageUnlock`(図鑑ページ解放) `bonus`(克服ボーナス)。
-エリアクリア時は、クリア音 → 成長音 → ページ解放音の順に、重ならないよう時間をずらして鳴る。実素材は `src/assets/audio/se/<種類>` に置けば差し替わる。
+エリアクリア時は、クリア画面ではクリア音だけを鳴らし、成長音・ページ解放音は、マップ(エリア選択・ステージ選択)に戻ってから、通知(トースト)の表示と同時に1つずつ鳴る(下の「エリアクリアの通知」)。実素材は `src/assets/audio/se/<種類>` に置けば差し替わる。
 
 ## 配色・フォント(SPEC 10章で確定)
 - フォント: **M PLUS Rounded 1c**(SIL Open Font License)。[@fontsource](https://fontsource.org/fonts/m-plus-rounded-1c) から日本語・英数字の通常/太字をアプリに同梱している(オフラインでも同じ字体で表示。日本語フォントは約0.9MBずつで、オフライン用に保存される)。
@@ -296,3 +298,14 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 ## ストーリーの見返し(ことだまの書「おもいで」)
 見終わったストーリー(導入・小ボス撃破後・真相・エリアクリアなど)を、エリアごとにいつでも見返せる([storyArchive.ts](src/features/story/storyArchive.ts) / [StoryArchive.tsx](src/features/zukan/StoryArchive.tsx))。
 まだ見ていないものは出さない(ネタバレ防止)。選択肢のあるエンディング分岐は、従来どおり「エンディングを もういちど 見る」で見返す。
+
+## エリアクリアの通知(トースト)
+クリア画面は達成メッセージとスコアだけのシンプルな表示。エリアクリアの成長・図鑑ページ解放は、マップ(エリア選択・ステージ選択)に戻ったあと、
+画面の左下に短い通知(「せいちょうした!」→「ずかんが ふえたよ!」)を1つずつ出して知らせる([Toaster](src/components/Toaster.tsx) / [toastStore](src/app/store/toastStore.ts))。
+- 通知は約2.5秒で自動的に消え、操作はふさがない(すぐ次のステージへ進める)。出る瞬間に対応する効果音(成長音・ページ解放音)が1回ずつ鳴り、前の音が鳴り終わってから次を出すので重ならない。
+- クリア音が鳴っているあいだに戻ったときは、クリア音が鳴り終わるのを待ってから出す。通知の順番待ちは端末に保存しない(アプリを閉じると消える)。
+- 効果音を聞かせるため、演出の音が鳴っているあいだ BGM を一時的に下げる(ダッキング)。
+
+## BGMの音量・バックグラウンド
+- BGMは Web Audio のゲインで音量を決める(iOS Safari は `<audio>` の volume を無視するため)。基準音量はスライダーの値の0.4倍で、効果音より控えめ。
+- アプリがバックグラウンドに回る(ホーム画面に戻る・画面ロック)とBGMを止め、戻ると続きから鳴らす。ミュート中は音量0のまま再生を続ける。

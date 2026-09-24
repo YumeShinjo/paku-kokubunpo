@@ -140,6 +140,7 @@ export function playSe(kind: SeKind): void {
 
   const ctx = getAudioContext();
   if (!ctx || ctx.state !== "running") return;
+  if (LONG_SE.has(kind)) seBusyUntil = Math.max(seBusyUntil, Date.now() + seDurationMs(kind));
 
   const buffer = seBuffers.get(kind);
   if (buffer) {
@@ -335,13 +336,13 @@ export function duckBgm(ms: number): void {
   }, until - Date.now());
 }
 
-/** ダッキングを、その場で終わらせて元の音量へ戻す(演出を飛ばしたときなど) */
-export function restoreBgm(): void {
-  if (duckTimer) clearTimeout(duckTimer);
-  duckTimer = null;
-  duckUntil = 0;
-  duckFactor = 1;
-  applyBgmLevel(DUCK_UP_SEC);
+/** 長めの効果音(演出の音)。これが鳴り終わるまで次の演出の音を待たせる(重ねない)ため、再生中を覚えておく */
+const LONG_SE = new Set<SeKind>(["clear", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]);
+let seBusyUntil = 0;
+
+/** 演出の効果音が鳴り終わるまでの残り時間(ミリ秒)。鳴っていなければ 0 */
+export function seBusyRemainingMs(): number {
+  return Math.max(0, seBusyUntil - Date.now());
 }
 
 /** 効果音の長さ(ミリ秒)。本物の素材が読み込めていればその長さ、なければ合成音の長さ */

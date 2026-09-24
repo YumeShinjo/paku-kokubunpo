@@ -1240,27 +1240,33 @@ button.incorrect {
   padding: 0.5rem 0.9rem;
 }
 
-/* クリア結果の演出(1つずつ順に出る) */
-.clear-reveal {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: center;
+/* 通知(トースト): 画面の隅に短く出て、自動で消える。操作はふさがない */
+.toast-area {
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom)); /* 右下のミュートボタンと反対側の隅 */
+  left: max(1rem, env(safe-area-inset-left));
+  z-index: 60;
+  pointer-events: none;
 }
 
-.reveal-step {
-  animation: reveal-in 0.5s ease-out both;
-  text-align: center;
+.toast {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: #f2d98a;
+  color: #4b3a2e;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(75, 58, 46, 0.25);
+  animation: toast-pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 
-.reveal-step p {
-  margin: 0.25rem 0;
+.toast.is-leaving {
+  animation: toast-out 0.3s ease-in both;
 }
 
-@keyframes reveal-in {
+@keyframes toast-pop {
   from {
     opacity: 0;
-    transform: translateY(0.75rem) scale(0.96);
+    transform: translateY(0.5rem) scale(0.8);
   }
   to {
     opacity: 1;
@@ -1268,8 +1274,61 @@ button.incorrect {
   }
 }
 
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal-step {
+  .toast,
+  .toast.is-leaving {
+    animation: none;
+  }
+  .toast.is-leaving {
+    opacity: 0;
+  }
+}
+
+/* 起動直後の「タップしてはじめる」画面 */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: #fbf4e4;
+  color: #4b3a2e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  cursor: pointer;
+}
+
+.tap-to-start-name {
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.tap-to-start-hint {
+  font-size: 1.1rem;
+  animation: tap-hint 1.6s ease-in-out infinite;
+}
+
+@keyframes tap-hint {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-to-start-hint {
     animation: none;
   }
 }

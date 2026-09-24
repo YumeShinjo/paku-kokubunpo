@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getStage } from "@/data/stages";
 import { areas } from "@/data/areas";
 import { buildStageSession } from "@/features/quiz/buildSession";
@@ -6,8 +6,8 @@ import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { buildPostClearScreen } from "@/features/story/storyFlow";
 import { syncScore } from "@/features/ranking/scoreSync";
-import { Mascot } from "@/features/mascot/Mascot";
-import { useClearSequence } from "@/features/quiz/clearSequence";
+import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
+import { useToastStore } from "@/app/store/toastStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
@@ -28,6 +28,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
   const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
   const growTo = useMascotStore((s) => s.growTo);
+  const pushToast = useToastStore((s) => s.push);
   const hasSeen = useStoryStore((s) => s.hasSeen);
 
   const stage = useMemo(() => getStage(stageId), [stageId]);
@@ -60,6 +61,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       const areaOrder = areas.find((a) => a.id === areaId)?.order ?? 0;
       growTo(areaOrder + 1);
       setJustClearedArea(true);
+      pushToast("growth", "pageUnlock"); // マップに戻ってから、成長 → 図鑑の順に通知する
     }
     setResult(r);
   }
@@ -71,9 +73,14 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     setAttempt((a) => a + 1);
   }
 
-  // クリア画面では、達成音 →(エリアクリアなら)成長 → ページ解放、を間を空けて1つずつ出し、出すたびに効果音を鳴らす(7章)
-  const clearSe = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
-  const { phase, done, skip } = useClearSequence(cleared, clearSe, justClearedArea);
+  // クリア画面に切り替わった瞬間に1度だけ達成音を鳴らす(7章: 視覚演出とセットの効果音)。
+  // 成長・図鑑ページ解放の知らせは、ここでは出さない(マップに戻ってから、通知として1つずつ出る)。
+  useEffect(() => {
+    if (!cleared) return;
+    const kind = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
+    playSe(kind);
+    duckBgm(seDurationMs(kind)); // 達成音が聞こえるよう、鳴っているあいだBGMを下げる
+  }, [cleared, stage?.type]);
 
   // ステージ選択画面でも押せないが、解放条件(先にクリアすべきステージ)を満たさない挑戦は入口で止める。
   if (!stage || !isStageUnlocked(stageId) || questions.length === 0) {
@@ -121,40 +128,21 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
           {result.correctCount} / {result.answered} もん せいかい
         </p>
         {result.maxCombo >= 2 && <p>さいだい 🔥 {result.maxCombo}れんぞく!</p>}
-        <div className="clear-reveal" aria-live="polite">
-          {justClearedArea && phase >= 1 && (
-            <section className="reveal-step">
-              <Mascot />
-              <p>エリアクリア!マスコットが成長した!</p>
-            </section>
-          )}
-          {justClearedArea && phase >= 2 && (
-            <section className="reveal-step">
-              <p>📖 ことだまの書に、あたらしい ページが ふえたよ!</p>
-            </section>
-          )}
-        </div>
-        {done ? (
-          <button
-            type="button"
-            onClick={() =>
-              goTo(
-                buildPostClearScreen({
-                  areaId,
-                  stageType: stage.type,
-                  justClearedArea,
-                  hasSeen,
-                }),
-              )
-            }
-          >
-            つぎへ
-          </button>
-        ) : (
-          <button type="button" className="skip-button" data-no-tap onClick={skip}>
-            スキップ
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() =>
+            goTo(
+              buildPostClearScreen({
+                areaId,
+                stageType: stage.type,
+                justClearedArea,
+                hasSeen,
+              }),
+            )
+          }
+        >
+          つぎへ
+        </button>
       </div>
     );
   }

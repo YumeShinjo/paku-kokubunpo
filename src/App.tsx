@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
-import { playSe, unlockPlayback } from "@/lib/audio";
+import { playSe } from "@/lib/audio";
+import { useSettingsStore } from "@/app/store/settingsStore";
 import { useBgm } from "@/features/audio/useBgm";
 import { TitleScreen } from "@/app/screens/TitleScreen";
 import { AreaSelectScreen } from "@/app/screens/AreaSelectScreen";
@@ -15,9 +16,12 @@ import { CreditsScreen } from "@/app/screens/CreditsScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
 import { MuteButton } from "@/components/MuteButton";
+import { TapToStart } from "@/components/TapToStart";
+import { Toaster } from "@/components/Toaster";
 
 export default function App() {
   const screen = useNavigationStore((s) => s.screen);
+  const audioUnlocked = useSettingsStore((s) => s.audioUnlocked);
 
   // 場面(画面)に合わせてBGMを切り替える。素材が置かれていなければ無音のまま。
   useBgm();
@@ -28,20 +32,6 @@ export default function App() {
     const handleOnline = () => void syncScore();
     window.addEventListener("online", handleOnline);
     return () => window.removeEventListener("online", handleOnline);
-  }, []);
-
-  // 9章: モバイルの音声自動再生制約対応の取りこぼし防止。
-  // タイトル画面のボタンで明示的にも解禁しているが、それ以外の要素が
-  // 最初にタップされた場合に備え、アプリ全体で最初の1タップだけを拾って解禁する。
-  useEffect(() => {
-    // iOSは pointerdown を「ユーザー操作」と認めず、click / touchend でないと音声を解禁できない。
-    // どれも1度だけ拾う(unlockPlayback は何度呼んでも安全)。
-    const handleFirstTap = () => unlockPlayback();
-    const events = ["pointerdown", "touchend", "click"] as const;
-    for (const type of events) window.addEventListener(type, handleFirstTap, { once: true });
-    return () => {
-      for (const type of events) window.removeEventListener(type, handleFirstTap);
-    };
   }, []);
 
   // 7章: ボタンタップ音。画面ごとに鳴らす実装を散らすのではなく、
@@ -61,10 +51,15 @@ export default function App() {
     return () => document.removeEventListener("click", handleButtonClick);
   }, []);
 
+  // 9章: 起動直後は「タップしてはじめる」の1枚だけを出し、そのタップで音声を解禁してから、はじめて本編(タイトル画面)を出す。
+  // audioUnlocked は端末には保存しないので、アプリを起動するたびにこの画面が出る。
+  if (!audioUnlocked) return <TapToStart />;
+
   return (
     <>
       {renderScreen(screen)}
       <MuteButton />
+      <Toaster />
     </>
   );
 }
