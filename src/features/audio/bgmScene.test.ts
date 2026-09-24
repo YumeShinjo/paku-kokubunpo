@@ -32,9 +32,17 @@ describe("sceneForScreen", () => {
     expect(sceneForScreen({ name: "stage", areaId: "ohzaNoMa", stageId: "ohzaNoMa-lastboss" })).toBe("lastBoss");
   });
 
-  it("ストーリーは既定で explore、真相究明は truth、王座の間のラスボス撃破後〜締めは ending", () => {
-    expect(sceneForScreen(story("prologue-intro"))).toBe("explore");
-    expect(sceneForScreen(story("kotobaNoIchiba-area-clear"))).toBe("explore");
+  it("王座の間以外の会話(導入・小ボス撃破後・エリアクリア)は talk、王座の間の前半は explore、真相究明は truth、ラスボス撃破後〜締めは ending", () => {
+    for (const id of [
+      "prologue-intro",
+      "kotobaNoIchiba-intro",
+      "sugatakaeNoKajiba-subboss-clear",
+      "kotobaNoIchiba-area-clear",
+      "mikakeNoMa-area-clear",
+    ]) {
+      expect(sceneForScreen(story(id)), id).toBe("talk");
+    }
+    expect(sceneForScreen(story("ohzaNoMa-intro"))).toBe("explore");
     expect(sceneForScreen(story("ohzaNoMa-subboss-clear"))).toBe("explore");
     expect(sceneForScreen(story("ohzaNoMa-truth"))).toBe("truth");
     expect(sceneForScreen(story("ohzaNoMa-lastboss-intro"))).toBe("explore");

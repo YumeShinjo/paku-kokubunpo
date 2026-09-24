@@ -175,23 +175,46 @@ function primeBgmElement(): void {
   safePlay(audio);
 }
 
+/** 導入曲が終わったらループ曲へ移るための待ち受け(曲が切り替わるとき・止めるときに外す) */
+let introEndedHandler: (() => void) | null = null;
+
+function clearIntroHandler(): void {
+  if (bgmElement && introEndedHandler) bgmElement.removeEventListener("ended", introEndedHandler);
+  introEndedHandler = null;
+}
+
 /**
  * BGMを再生する。同じ曲がすでに鳴っていれば何もしない(場面が変わっても曲が同じなら途切れない)。
+ * `introSrc` があれば、それを1回鳴らしてから `src` をくり返す(導入→ループの2曲構成)。
  * どの曲を鳴らすかは、場面から決める(features/audio/bgmScene.ts。素材の取り決めは src/assets/README.md)。
  */
-export function playBgm(src: string): void {
+export function playBgm(src: string, introSrc?: string): void {
   const { muted, bgmVolume, audioUnlocked } = useSettingsStore.getState();
   if (!audioUnlocked || bgmSrc === src) return;
 
   const audio = getBgmElement();
-  audio.src = src;
-  audio.loop = true;
+  clearIntroHandler();
   audio.volume = muted ? 0 : bgmVolume;
+  if (introSrc) {
+    audio.src = introSrc;
+    audio.loop = false;
+    introEndedHandler = () => {
+      clearIntroHandler();
+      audio.src = src;
+      audio.loop = true;
+      safePlay(audio);
+    };
+    audio.addEventListener("ended", introEndedHandler);
+  } else {
+    audio.src = src;
+    audio.loop = true;
+  }
   safePlay(audio);
   bgmSrc = src;
 }
 
 export function stopBgm(): void {
+  clearIntroHandler();
   bgmElement?.pause();
   bgmSrc = null;
 }

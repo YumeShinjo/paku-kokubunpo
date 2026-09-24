@@ -79,6 +79,17 @@ describe("audio", () => {
     expect(play).toHaveBeenCalledTimes(2);
   });
 
+  it("導入曲つきの指定は、導入曲を1回だけ鳴らし、終わったらループ曲をくり返す", () => {
+    unlockPlayback();
+    const play = vi.spyOn(window.HTMLMediaElement.prototype, "play");
+    play.mockClear();
+    playBgm("/assets/audio/explore.mp3", "/assets/audio/explore-intro.mp3");
+    expect(play).toHaveBeenCalledTimes(1);
+    // 同じループ曲の指定は、導入曲の再生中でも再生し直さない
+    playBgm("/assets/audio/explore.mp3", "/assets/audio/explore-intro.mp3");
+    expect(play).toHaveBeenCalledTimes(1);
+  });
+
   it("解禁前の playBgm は何もしない(例外にならない)", () => {
     expect(() => playBgm("/assets/audio/bgm/title.mp3")).not.toThrow();
   });

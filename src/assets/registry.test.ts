@@ -39,9 +39,23 @@ describe("素材の受け皿(registry)", () => {
   });
 
   it("BGM素材が1つも置かれていなければ、どの場面でも無音(undefined)", () => {
-    // このテストは素材が未配置の状態を前提にする。素材を置いたら、この期待を外してよい
+    // このテストは素材が未配置の状態を前提にする。素材が置かれている間は、下の配置チェックが代わりになる
     if (BGM_SCENES.some((s) => findAudio(`bgm/${s}`))) return;
     for (const scene of BGM_SCENES) expect(findBgm(scene)).toBeUndefined();
+  });
+
+  it("配置済みのBGMは、どの場面でも曲が決まり、探索・真相は導入曲つき", () => {
+    if (!BGM_SCENES.every((s) => findAudio(`bgm/${s}`))) return; // 全場面の曲が置かれているときだけ確認する
+    for (const scene of BGM_SCENES) expect(findBgm(scene)?.loop, scene).toBeTruthy();
+    expect(findBgm("explore")?.intro).toBeTruthy();
+    expect(findBgm("truth")?.intro).toBeTruthy();
+    expect(findBgm("stage")?.intro).toBeUndefined();
+  });
+
+  it("効果音は9種すべてに実ファイルが置かれている(SeKind と同じ名前)", () => {
+    for (const kind of ["tap", "correct", "incorrect", "clear", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]) {
+      expect(findAudio(seAssetName(kind)), kind).toBeTruthy();
+    }
   });
 
   it("成長アクセサリーの段階数は、エリア数から序章を除いた数と一致する", () => {

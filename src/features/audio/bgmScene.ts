@@ -44,6 +44,8 @@ export function sceneForScreen(screen: Screen): BgmScene {
     }
     case "story":
       if (screen.eventId.endsWith("-truth")) return "truth";
-      return isEndingStory(screen.eventId) ? "ending" : "explore";
+      if (isEndingStory(screen.eventId)) return "ending";
+      // 最終エリア以外の7エリアの会話(導入・小ボス撃破後・エリアクリア)は、会話用の曲。王座の間の前半は探索の曲のまま
+      return FINAL_AREA_ID && screen.eventId.startsWith(`${FINAL_AREA_ID}-`) ? "explore" : "talk";
   }
 }

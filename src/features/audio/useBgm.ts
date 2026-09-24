@@ -16,8 +16,8 @@ export function useBgm(): void {
 
   useEffect(() => {
     if (!audioUnlocked) return;
-    const url = findBgm(sceneForScreen(screen));
-    if (url) playBgm(url);
+    const track = findBgm(sceneForScreen(screen));
+    if (track) playBgm(track.loop, track.intro);
     else stopBgm();
   }, [screen, audioUnlocked]);
 }

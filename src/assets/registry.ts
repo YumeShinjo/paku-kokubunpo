@@ -92,6 +92,7 @@ export const MASCOT_ACCESSORY_STAGES = 7;
 export const BGM_SCENES = [
   "title",
   "explore",
+  "talk",
   "stage",
   "subBoss",
   "lastBoss",
@@ -107,6 +108,7 @@ export type BgmScene = (typeof BGM_SCENES)[number];
 export const BGM_FALLBACK: Record<BgmScene, BgmScene[]> = {
   title: [],
   explore: ["title"],
+  talk: ["explore", "title"],
   stage: ["explore", "title"],
   subBoss: ["stage", "explore", "title"],
   lastBoss: ["subBoss", "stage", "explore", "title"],
@@ -114,11 +116,20 @@ export const BGM_FALLBACK: Record<BgmScene, BgmScene[]> = {
   ending: ["explore", "title"],
 };
 
-/** 場面に使うBGMのURL。専用曲も代わりの曲もなければ undefined(無音)。 */
-export function findBgm(scene: BgmScene): string | undefined {
+/**
+ * 場面で鳴らす曲。`intro` があれば、それを1回鳴らしてから `loop` をくり返す
+ * (例: 通常探索は「始まりの村 A → B → B…」。A が intro、B が loop)。
+ */
+export interface BgmTrack {
+  intro?: string;
+  loop: string;
+}
+
+/** 場面に使うBGM。専用曲も代わりの曲もなければ undefined(無音)。導入曲は `bgm/<場面>-intro` に置く。 */
+export function findBgm(scene: BgmScene): BgmTrack | undefined {
   for (const s of [scene, ...BGM_FALLBACK[scene]]) {
-    const url = findAudio(`bgm/${s}`);
-    if (url) return url;
+    const loop = findAudio(`bgm/${s}`);
+    if (loop) return { intro: findAudio(`bgm/${s}-intro`), loop };
   }
   return undefined;
 }
