@@ -38,7 +38,7 @@ export function ZukanPages() {
   return (
     <section className="zukan-pages">
       <h3>
-        <Rb t="言葉[ことば]の図鑑[ずかん]" />
+        ことばの ずかん
       </h3>
       <p className="zukan-pages-lead">
         <Rb t={`エリアをクリアすると、ページが増[ふ]えるよ。(${unlocked} / ${zukanPages.length}ページ)`} />
@@ -50,7 +50,7 @@ export function ZukanPages() {
             <p key={page.areaId} className="zukan-page-locked">
               🔒 {area ? <Rb t={areaNameText(area)} /> : page.title}{" "}
                 <small>
-                  <Rb t="クリアすると開[ひら]くよ" />
+                  クリアすると ひらくよ
                 </small>
             </p>
           );

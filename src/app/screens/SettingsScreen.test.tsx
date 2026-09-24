@@ -40,16 +40,17 @@ describe("設定画面: データの初期化", () => {
     expect(reset.resetAllData).not.toHaveBeenCalled();
   });
 
-  it("確認で「やめる」を押すと、何も消さずにもとへ戻る", () => {
+  it("確認で「いいえ」を押すと、何も消さずにもとへ戻る", () => {
     act(() => byText("データを初期化")!.click());
-    act(() => byText("やめる")!.click());
+    act(() => byText("いいえ")!.click());
     expect(container.querySelector('[role="alertdialog"]')).toBeNull();
     expect(reset.resetAllData).not.toHaveBeenCalled();
     expect(reset.reloadApp).not.toHaveBeenCalled();
   });
 
-  it("確認で「初期化する」を押すと、データを消して、画面を読み込み直す", async () => {
+  it("確認は「本当に初期化しますか?」+「はい/いいえ」。「はい」を押すと、データを消して、画面を読み込み直す", async () => {
     act(() => byText("データを初期化")!.click());
+    expect(container.querySelector(".reset-question")?.textContent).toContain("本当に初期化");
     await act(async () => {
       container.querySelector<HTMLButtonElement>(".quit-yes")!.click();
     });

@@ -128,6 +128,9 @@ const PATTERN = new RegExp(
   "gu",
 );
 
+/** ふりがなを付ける文法用語の一覧(辞書の見出し語)。画面のふりがな表示の絞り込み(rubyPolicy.ts)でも使う */
+export const GRAMMAR_TERMS: ReadonlySet<string> = new Set(Object.keys(TERMS));
+
 export function autoRuby(source: string): string {
   return source.replace(PATTERN, (term) => `${term}[${TERMS[term]}]`);
 }

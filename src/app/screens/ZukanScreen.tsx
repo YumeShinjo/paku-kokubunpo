@@ -18,6 +18,7 @@ import { ENDING_CHOICE_EVENT_ID, getEndingTitle } from "@/data/titles";
 import { buildEndingReplayScreen } from "@/features/story/storyFlow";
 import { Rb } from "@/components/Rb";
 import { areaNameText } from "@/data/areaText";
+import { BackButton } from "@/components/BackButton";
 
 /**
  * ことだまの書(図鑑)。6章の「苦手単元の可視化・自由練習」:
@@ -51,21 +52,24 @@ export function ZukanScreen() {
     [unitRecent],
   );
   const areaOrder = areas.filter((a) => rows.some((r) => r.areaId === a.id));
+  // 苦手かもしれない単元(直近の正答率が低いもの)。正答率の低い順
+  const weakRows = rows.filter((r) => r.weak).sort((x, y) => (x.rate ?? 1) - (y.rate ?? 1));
 
   return (
     <div className="screen screen-zukan">
+      <BackButton onClick={() => goTo({ name: "title" })} />
       <h2>
-        <Rb t="ことだまの書[しょ]" />
+        ことだまの書
       </h2>
       {/* 初回だけ、使い方を出す(設定の「操作の説明をもう一度見る」でもう一度出せる) */}
       {!guideSeen && <EngineGuide guideKey="zukan" onDismiss={() => markGuideSeen("zukan")} />}
       <p className="zukan-title">
-        <Rb t="称号[しょうごう]:" />{" "}
+        しょうごう:{" "}
         {title ? (
           <TitleBadge title={title} />
         ) : (
           <span className="zukan-title-none">
-            <Rb t="？？？(エンディングで手[て]に入[はい]るよ)" />
+            ？？？(エンディングで てにはいるよ)
           </span>
         )}
       </p>
@@ -75,20 +79,32 @@ export function ZukanScreen() {
             type="button"
             onClick={() => goTo(buildEndingReplayScreen("ohzaNoMa", { name: "zukan" }))}
           >
-            <Rb t="エンディングをもう一度[いちど]見[み]る" />
+            エンディングを もういちど 見る
           </button>
           <p className="settings-note">
             <Rb t="分[わ]かれ道[みち]で選[えら]びなおすと、称号[しょうごう]も変[か]わるよ。" />
           </p>
         </div>
       )}
-      <p className="zukan-review">
-        <Rb t="⭐ 苦手[にがて]問題[もんだい]:" /> <strong>{starredIds.length}</strong>
-        <Rb t="問[もん](コトの好物[こうぶつ]!正解[せいかい]すると克服[こくふく]できるよ)" />
-      </p>
-      <ZukanPages />
-
-      <StoryArchive />
+      {/* 苦手かもしれない単元(直近の正答率が低い単元)を、いちばん上で知らせる。タップでその単元の自由練習へ */}
+      {weakRows.length > 0 && (
+        <section className="zukan-weak-callout" role="status">
+          <p className="zukan-weak-callout-title">⚠ にがてかも?</p>
+          <p className="zukan-weak-callout-lead">
+            <Rb t="正答率[せいとうりつ]が低[ひく]い単元[たんげん]があるよ。タップして練習[れんしゅう]してみよう!" />
+          </p>
+          <ul className="zukan-weak-callout-list">
+            {weakRows.map((row) => (
+              <li key={row.unitId}>
+                <button type="button" onClick={() => goTo({ name: "freePractice", unitId: row.unitId })}>
+                  <Ruby text={row.label} />
+                  {row.rate !== null && <small>{Math.round(row.rate * 100)}%</small>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <h3>
         <Rb t="単元[たんげん]ごとの正答率[せいとうりつ]" />
@@ -118,7 +134,7 @@ export function ZukanScreen() {
                         <Ruby text={row.label} />
                         {row.weak && (
                           <span className="zukan-weak">
-                            <Rb t="苦手[にがて]" />
+                            にがて
                           </span>
                         )}
                         {(starsByUnit.get(row.unitId) ?? 0) > 0 && (
@@ -148,9 +164,13 @@ export function ZukanScreen() {
         </section>
       ))}
 
-      <button type="button" onClick={() => goTo({ name: "title" })}>
-        <Rb t="戻[もど]る" />
-      </button>
+      <p className="zukan-review">
+        <Rb t="⭐ 苦手[にがて]問題[もんだい]:" /> <strong>{starredIds.length}</strong>
+        <Rb t="問[もん](コトの好物[こうぶつ]!正解[せいかい]すると克服[こくふく]できるよ)" />
+      </p>
+      <ZukanPages />
+
+      <StoryArchive />
     </div>
   );
 }

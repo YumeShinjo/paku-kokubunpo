@@ -26,5 +26,5 @@ export function pickMessage(
 /** 連続正解のコンボ表示に使う文言。2連続未満は表示しない(画面を止めず、小さく伸びていく演出)。 */
 export function comboLabel(combo: number): string | null {
   if (combo < 2) return null;
-  return `${combo}連続[れんぞく]!`;
+  return `${combo}れんぞく!`;
 }

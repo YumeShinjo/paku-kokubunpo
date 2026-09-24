@@ -50,7 +50,7 @@ describe("comboLabel", () => {
   });
 
   it("2連続から表示する", () => {
-    expect(comboLabel(2)).toBe("2連続[れんぞく]!");
-    expect(comboLabel(10)).toBe("10連続[れんぞく]!");
+    expect(comboLabel(2)).toBe("2れんぞく!");
+    expect(comboLabel(10)).toBe("10れんぞく!");
   });
 });

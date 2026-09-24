@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it } from "vitest";
 import { rb } from "@/data/ruby";
-import { splitTargets } from "@/data/targetText";
+import { splitTargets, targetOnly } from "@/data/targetText";
 import { TargetText } from "./TargetText";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -46,5 +46,14 @@ describe("TargetText", () => {
     expect(container.textContent).not.toContain("「");
     act(() => root.unmount());
     container.remove();
+  });
+});
+
+describe("targetOnly(対象の語だけ。カゴの中・ドラッグ中の小さな表示用)", () => {
+  it("「」の内側だけを取り出す。複数あれば順に並べる。ない文は null", () => {
+    const text = (t: ReturnType<typeof targetOnly>) => t?.map((s) => s.text).join("") ?? null;
+    expect(text(targetOnly(rb("校庭に「桜」が咲いている。")))).toBe("桜");
+    expect(text(targetOnly(rb("「花」と「山」")))).toBe("花山");
+    expect(targetOnly(rb("何も無い文。"))).toBeNull();
   });
 });

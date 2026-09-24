@@ -1575,3 +1575,174 @@ button.incorrect {
     animation: none;
   }
 }
+
+/* ---- もどるボタン: 画面の上に、スクロールしても見える位置で ---- */
+.back-button {
+  position: sticky;
+  top: 0.4rem;
+  z-index: 30;
+  align-self: flex-start;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-primary-strong);
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.2);
+}
+
+/* ---- 「こたえる」: 選択肢から離して、画面の下に固定する。色も選択肢(ミント)と変えて、押し間違えにくくする ---- */
+.answer-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin-top: auto;
+  padding: 0.9rem 0 0.4rem;
+  background: linear-gradient(to bottom, transparent, var(--color-bg) 35%);
+}
+
+.answer-bar .answer-submit {
+  /* 右下の固定ミュートボタンに重ならない幅にする */
+  width: calc(100% - 3.9rem);
+  min-height: 3rem;
+  font-size: 1.1rem;
+  background: var(--color-gold);
+  border: 2px solid var(--color-gold-line);
+  color: var(--color-text);
+}
+
+.answer-bar .answer-submit:disabled {
+  background: var(--color-bar-track);
+  border-color: transparent;
+}
+
+/* ---- 仕分けゲーム: 1画面に収まるように詰める ---- */
+.screen-stage.is-compact {
+  gap: 0.45rem;
+  padding-top: 0.5rem;
+}
+
+.is-compact .engine-flavor-situation {
+  display: none;
+}
+
+.is-compact .stage-header {
+  min-height: 1.5rem;
+}
+
+.engine-sorting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.engine-sorting .engine-prompt {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.engine-sorting .sorting-items {
+  gap: 0.3rem;
+}
+
+.sorting-item {
+  font-size: 0.9rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.sorting-categories {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+}
+
+.sorting-basket {
+  min-height: 2.6rem;
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+
+.sorting-basket-label {
+  min-height: 1.9rem;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.85rem;
+}
+
+.sorting-basket-items .sorting-item {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.sorting-basket-items .target-card {
+  margin: 0;
+  border-width: 1.5px;
+}
+
+/* ドラッグ中の複製: 折り返さず、対象の語だけを小さく出す */
+.sorting-ghost {
+  white-space: nowrap;
+  width: max-content;
+  max-width: 90vw;
+}
+
+/* ことだまの書: 苦手かもしれない単元の注意喚起(いちばん上に出す) */
+.zukan-weak-callout {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-gold-line);
+  border-radius: 12px;
+  background: var(--color-gold-soft);
+}
+
+.zukan-weak-callout p {
+  margin: 0;
+}
+
+.zukan-weak-callout-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-gold-text);
+}
+
+.zukan-weak-callout-lead {
+  font-size: 0.9rem;
+  margin: 0.2rem 0 0.5rem;
+}
+
+.zukan-weak-callout-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.zukan-weak-callout-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-incorrect);
+}
+
+/* 仕分け画面: 下の余白は、右下のミュートボタンを避けるための広い余白ではなく、「こたえる」の枠(.answer-bar)が担う */
+.screen-stage.is-compact {
+  padding-bottom: 0.4rem;
+}
+
+.screen-stage.is-compact .sorting-item {
+  padding: 0.2rem 0.6rem;
+}
+
+.screen-stage.is-compact .sorting-basket-label {
+  min-height: 1.7rem;
+}
+
+/* データ初期化の確認: 「本当に初期化しますか?」を目立たせる */
+.reset-question {
+  font-weight: bold;
+  font-size: 1.1rem;
+}

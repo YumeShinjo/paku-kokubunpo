@@ -27,7 +27,7 @@ export function BossEncounter({
       <div className="boss-panel boss-encounter-panel">
         <BossPortrait type="subBoss" areaId={areaId} />
         <p className="boss-encounter-message" role="status">
-          {bossName}が <Rb t="現[あらわ]れた!" />
+          {bossName}が あらわれた!
         </p>
         <p className="boss-name">
           <Rb t={`${label}: ${title}`} />
@@ -47,7 +47,7 @@ export function BossEncounter({
         </p>
       </div>
       <button type="button" onClick={onStart}>
-        <Rb t="戦[たたか]う" />
+        たたかう
       </button>
     </div>
   );

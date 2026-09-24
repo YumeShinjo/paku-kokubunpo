@@ -11,6 +11,7 @@ import { useSessionStore } from "@/app/store/sessionStore";
 import { restoreSession } from "@/features/quiz/session";
 import { Rb } from "@/components/Rb";
 import { areaNameText, stageTitleText } from "@/data/areaText";
+import { BackButton } from "@/components/BackButton";
 
 /** ステージ選択画面。エリア内のステージ(通常+ボス)を順に一覧表示する(3章)。 */
 export function StageSelectScreen({ areaId }: { areaId: string }) {
@@ -34,6 +35,7 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
 
   return (
     <div className="screen screen-stage-select" style={areaAccentStyle(areaId)}>
+      <BackButton onClick={() => goTo({ name: "areaSelect" })} />
       <ScreenBackground name={areaId} />
       <h2>{area && <Rb t={areaNameText(area)} />}</h2>
       <ul className="stage-list">
@@ -56,17 +58,17 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                   <Rb t={label ? `${label}: ${stageTitleText(stage)}` : stageTitleText(stage)} />
                 </strong>
                 <span>
-                  <Rb t={`${stageQuestionCount(stage)}問[もん]`} />
+                  {stageQuestionCount(stage)}問
                 </span>
                 {isStageCleared(stage.id) && (
                   <span>
                     {" "}
-                    <Rb t="✓クリア済[ず]み" />
+                    ✓クリア済み
                   </span>
                 )}
                 {resumable && (
                   <span className="stage-resume">
-                    <Rb t={`▶ 続[つづ]きから遊[あそ]べるよ(${resumable.progress.index + 1}問目[もんめ]〜)`} />
+                    ▶ つづきから あそべるよ({resumable.progress.index + 1}もんめ〜)
                   </span>
                 )}
                 {!unlocked && (
@@ -77,16 +79,13 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
               </button>
               {resumable && unlocked && (
                 <button type="button" className="stage-restart" onClick={clearSession}>
-                  <Rb t="はじめからやり直[なお]す" />
+                  はじめから やりなおす
                 </button>
               )}
             </li>
           );
         })}
       </ul>
-      <button type="button" onClick={() => goTo({ name: "areaSelect" })}>
-        <Rb t="戻[もど]る" />
-      </button>
     </div>
   );
 }

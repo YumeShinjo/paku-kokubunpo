@@ -24,7 +24,7 @@ const t = (text: string): RubyText => rb(autoRuby(text));
 
 export const engineGuides: Record<GuideKey, EngineGuide> = {
   sorting: {
-    title: t("仕分[しわ]けの遊[あそ]び方[かた]"),
+    title: t("しわけの あそびかた"),
     steps: [
       t("言葉[ことば]を、ドラッグして、合[あ]うグループ(点線[てんせん]のカゴ)に入[い]れる"),
       t("ドラッグしにくいときは、言葉[ことば]をタップして選[えら]び、カゴの名前[なまえ]のボタンをタップしてもOK"),
@@ -33,7 +33,7 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
     ],
   },
   assembly: {
-    title: t("組[く]み立[た]ての遊[あそ]び方[かた]"),
+    title: t("くみたての あそびかた"),
     steps: [
       t("文[ぶん]の空欄[くうらん](＿＿＿)に入[はい]るカードを、タップして選[えら]ぶ"),
       t("ちがうカードをタップすれば、選[えら]びなおせる"),
@@ -41,14 +41,14 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
     ],
   },
   choice: {
-    title: t("選[えら]ぶ遊[あそ]び方[かた]"),
+    title: t("えらぶ あそびかた"),
     steps: [
       t("問題[もんだい]や場面[ばめん]をよく読[よ]む"),
       t("答[こた]えだと思[おも]う選択肢[せんたくし]をタップ。すぐに答[こた]え合[あ]わせができるよ"),
     ],
   },
   tapInSentence: {
-    title: t("文[ぶん]の中[なか]から選[えら]ぶ遊[あそ]び方[かた]"),
+    title: t("ぶんの中[なか]から えらぶ あそびかた"),
     steps: [
       t("問題[もんだい]を読[よ]んで、文[ぶん]の中[なか]から答[こた]えだと思[おも]う言葉[ことば]を、直接[ちょくせつ]タップ"),
       t("下線[かせん]のついた太[ふと]い言葉[ことば]は、問題[もんだい]の基準[きじゅん](ヒント)。そこはタップしなくていいよ"),
@@ -57,7 +57,7 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
   },
   // ことだまの書(図鑑)の、初回に出す使い方
   zukan: {
-    title: t("ことだまの書[しょ]の使[つか]い方[かた]"),
+    title: t("ことだまの書の つかいかた"),
     steps: [
       t("ここは、これまでの成果[せいか]をまとめる「ことだまの書[しょ]」だよ"),
       t("エリアをクリアすると、言葉[ことば]の図鑑[ずかん]のページが増[ふ]えるよ"),
@@ -69,7 +69,7 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
 };
 
 /** 全ガイド共通の、最後のひとこと(まちがえても失敗にならない: 3章) */
-export const guideFooter: RubyText = t("まちがえても大丈夫[だいじょうぶ]。何度[なんど]でもやりなおせるよ!");
+export const guideFooter: RubyText = t("まちがえても だいじょうぶ。何度[なんど]でも やりなおせるよ!");
 
 export const guideKeys = Object.keys(engineGuides) as GuideKey[];
 

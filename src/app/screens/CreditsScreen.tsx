@@ -4,12 +4,13 @@ import { creditsId } from "@/features/story/storyIds";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { Rb } from "@/components/Rb";
+import { BackButton } from "@/components/BackButton";
 
 const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
 const KIND_LABEL: Record<string, string> = {
-  画像: "画像[がぞう]",
+  画像: "がぞう",
   BGM: "BGM",
-  SE: "効果音[こうかおん]",
+  SE: "こうかおん",
   フォント: "フォント",
 };
 
@@ -48,16 +49,17 @@ export function CreditsScreen({
 
   return (
     <div className="screen screen-credits">
+      {!ending && <BackButton onClick={close} />}
       <h2>クレジット</h2>
       {ending && (
         <p className="credits-lead">
-          <Rb t="パクっと国文法[こくぶんぽう]を遊[あそ]んでくれてありがとう!" />
+          パクっと国文法を遊んでくれてありがとう!
         </p>
       )}
 
       <section className="credits-section">
         <h3>
-          <Rb t="制作[せいさく]" />
+          せいさく
         </h3>
         <ul className="credits-list">
           {staffCredits.map((s) => (
@@ -70,7 +72,7 @@ export function CreditsScreen({
 
       <section className="credits-section">
         <h3>
-          <Rb t="使用[しよう]した素材[そざい]" />
+          しようした そざい
         </h3>
         {assetCredits.length === 0 ? (
           <p className="credits-placeholder">
@@ -89,7 +91,7 @@ export function CreditsScreen({
                     <li key={`${c.name}-${i}`}>
                       <p className="credits-asset-name">{c.name}</p>
                       <p className="credits-asset-detail">
-                        <Rb t="出典[しゅってん]" />: {c.source} / ライセンス: {c.license}
+                        出典: {c.source} / ライセンス: {c.license}
                       </p>
                     </li>
                   ))}
@@ -101,7 +103,7 @@ export function CreditsScreen({
 
       <section className="credits-section">
         <h3>
-          <Rb t="使[つか]ったソフトウェア" />
+          つかった ソフトウェア
         </h3>
         <ul className="credits-list">
           {softwareCredits.map((s) => (
@@ -112,9 +114,11 @@ export function CreditsScreen({
         </ul>
       </section>
 
-      <button type="button" onClick={close}>
-        <Rb t={ending ? "終[お]わる" : "戻[もど]る"} />
-      </button>
+      {ending && (
+        <button type="button" onClick={close}>
+          おわる
+        </button>
+      )}
     </div>
   );
 }

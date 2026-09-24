@@ -7,6 +7,7 @@ import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { Rb } from "@/components/Rb";
 import { areaNameText, unitLabelText } from "@/data/areaText";
+import { BackButton } from "@/components/BackButton";
 
 /** エリア選択画面。出題データが組み込み済みのエリアを表示する。 */
 export function AreaSelectScreen() {
@@ -20,8 +21,9 @@ export function AreaSelectScreen() {
 
   return (
     <div className="screen screen-area-select">
+      <BackButton onClick={() => goTo({ name: "title" })} />
       <h2>
-        <Rb t="エリアを選[えら]ぼう" />
+        エリアをえらぼう
       </h2>
       <HungryBadge />
       <ul className="area-list">
@@ -37,7 +39,7 @@ export function AreaSelectScreen() {
               {isAreaCleared(area.id) && (
                 <span>
                   {" "}
-                  <Rb t="✓クリア済[ず]み" />
+                  ✓クリア済み
                 </span>
               )}
             </button>
@@ -45,10 +47,7 @@ export function AreaSelectScreen() {
         ))}
       </ul>
       <button type="button" onClick={() => goTo({ name: "zukan" })}>
-        <Rb t="ことだまの書[しょ]" />
-      </button>
-      <button type="button" onClick={() => goTo({ name: "title" })}>
-        <Rb t="戻[もど]る" />
+        ことだまの書
       </button>
     </div>
   );

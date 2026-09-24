@@ -5,8 +5,6 @@ import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { Ruby } from "@/components/Ruby";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { Rb } from "@/components/Rb";
-import { rb } from "@/data/ruby";
 
 /**
  * 自由練習(6章): ことだまの書から、選んだ単元の問題プールだけを解くセッション。
@@ -37,10 +35,10 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
     return (
       <div className="screen">
         <p>
-          <Rb t="この単元[たんげん]の問題[もんだい]が見[み]つかりません。" />
+          この単元の問題が見つかりません。
         </p>
         <button type="button" onClick={() => goTo({ name: "zukan" })}>
-          <Rb t="ことだまの書[しょ]へ" />
+          ことだまの書へ
         </button>
       </div>
     );
@@ -50,24 +48,24 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
     return (
       <div className="screen screen-stage-result">
         <h2>
-          <Rb t="練習[れんしゅう]おわり!" />
+          れんしゅう おわり!
         </h2>
         <p>
           <Ruby text={meta.label} />
         </p>
         <p>
-          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい]`} />
+          {result.correctCount} / {result.answered} もん せいかい
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            <Rb t={`最大[さいだい] 🔥 ${result.maxCombo}連続[れんぞく]!`} />
+            さいだい 🔥 {result.maxCombo}れんぞく!
           </p>
         )}
         <button type="button" onClick={again}>
-          <Rb t="もう一度[いちど]" />
+          もういちど
         </button>
         <button type="button" onClick={() => goTo({ name: "zukan" })}>
-          <Rb t="ことだまの書[しょ]へ" />
+          ことだまの書へ
         </button>
       </div>
     );
@@ -78,7 +76,7 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
       key={attempt}
       areaId={meta.areaId}
       questions={questions}
-      heading={[...rb("自由[じゆう]練習[れんしゅう]: "), ...meta.label]}
+      heading={[{ text: "じゆうれんしゅう: " }, ...meta.label]}
       onComplete={setResult}
       onQuit={() => goTo({ name: "zukan" })}
     />

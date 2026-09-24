@@ -9,7 +9,6 @@ import { useReviewStore } from "@/app/store/reviewStore";
 import { titleExpression } from "@/features/mascot/mood";
 import { getEndingTitle } from "@/data/titles";
 import { useStoryStore } from "@/app/store/storyStore";
-import { Rb } from "@/components/Rb";
 
 /**
  * タイトル画面。9章のモバイル音声自動再生制約対応として、
@@ -40,7 +39,7 @@ export function TitleScreen() {
         {logoUrl ? (
           <img className="title-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
         ) : (
-          <Rb t="パクっと国文法[こくぶんぽう]" />
+          "パクっと国文法"
         )}
       </h1>
       <Mascot size="large" expression={titleExpression(starCount)} />
@@ -51,7 +50,7 @@ export function TitleScreen() {
         </p>
       )}
       <button type="button" onClick={handleStart}>
-        <Rb t="始[はじ]める" />
+        はじめる
       </button>
       <button
         type="button"
@@ -60,13 +59,13 @@ export function TitleScreen() {
           goTo({ name: "zukan" });
         }}
       >
-        <Rb t="ことだまの書[しょ]" />
+        ことだまの書
       </button>
       <button type="button" onClick={() => goTo({ name: "ranking" })}>
         ランキング
       </button>
       <button type="button" onClick={handleSettings}>
-        <Rb t="設定[せってい]" />
+        せってい
       </button>
       <button type="button" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
         クレジット

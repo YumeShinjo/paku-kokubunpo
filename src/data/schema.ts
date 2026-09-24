@@ -108,6 +108,8 @@ export interface AreaMeta {
   nameRuby?: string;
   /** 単元(大分類)の表示名 */
   unitLabel: string;
+  /** 単元名のふりがな付き表記(辞書の自動付与で漏れる語があるときだけ指定。画面表示用) */
+  unitLabelRuby?: string;
   /** 小ボスの役職名。序章のように小ボスがいないエリアは undefined */
   subBoss?: string;
   /** 小ボスの役職名のふりがな付き表記(画面表示用。なければ subBoss のまま) */

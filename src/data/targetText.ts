@@ -40,3 +40,12 @@ export function splitTargets(text: RubyText): Piece[] {
   return pieces;
 }
 
+
+/**
+ * 文の中の対象の語(「」の内側)だけを取り出す。複数あれば順に並べる。対象がなければ null。
+ * カゴの中やドラッグ中の小さな表示に使う(文全体は長く、カゴが大きくなったり、ドラッグ中に折り返したりするため)。
+ */
+export function targetOnly(text: RubyText): RubyText | null {
+  const targets = splitTargets(text).filter((piece) => piece.target);
+  return targets.length > 0 ? targets.flatMap((piece) => piece.text) : null;
+}

@@ -10,7 +10,8 @@ import type { AreaMeta, Stage } from "./schema";
 export const areaNameText = (area: Pick<AreaMeta, "name" | "nameRuby">): string => area.nameRuby ?? area.name;
 
 /** 単元(大分類)の表示名。文法用語には、辞書(furigana.ts)でふりがなを自動で付ける */
-export const unitLabelText = (area: Pick<AreaMeta, "unitLabel">): string => autoRuby(area.unitLabel);
+export const unitLabelText = (area: Pick<AreaMeta, "unitLabel" | "unitLabelRuby">): string =>
+  area.unitLabelRuby ?? autoRuby(area.unitLabel);
 
 /** 小ボスの表示名(例: 「鍛冶見習い・レル」) */
 export function subBossTitleText(area: Pick<AreaMeta, "subBoss" | "subBossRuby" | "subBossName">): string {

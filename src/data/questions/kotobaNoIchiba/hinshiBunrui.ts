@@ -3,7 +3,7 @@ import type { SortingQuestion } from "@/data/schema";
 
 const UNIT = "hinshi-bunrui";
 const INSTRUCTION =
-  "次の文の「」内の言葉を、正しい品詞[ひんし]のカゴに分けましょう。";
+  "次の文の、白いカードになっている言葉を、正しい品詞[ひんし]のカゴに分けましょう。";
 
 /** 品詞10種(4章)。仕分けゲームの基本カゴとして全バッチで共通利用する。 */
 const CATEGORIES = [

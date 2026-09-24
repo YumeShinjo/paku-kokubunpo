@@ -35,8 +35,8 @@ describe("App: タップしてはじめる", () => {
     expect(container.textContent).toContain("タップして");
     const names = buttons();
     expect(names.some((n) => n.includes("タップして"))).toBe(true);
-    // タイトル画面のボタン(ふりがなの文字も含めて照合する)は、まだ出ない
-    for (const title of ["始はじめる", "設定せってい", "クレジット", "ことだまの書しょ", "ランキング"]) {
+    // タイトル画面のボタンは、まだ出ない
+    for (const title of ["はじめる", "せってい", "クレジット", "ことだまの書", "ランキング"]) {
       expect(names.includes(title), title).toBe(false);
     }
     expect(useSettingsStore.getState().audioUnlocked).toBe(false);
@@ -48,7 +48,7 @@ describe("App: タップしてはじめる", () => {
     expect(useSettingsStore.getState().audioUnlocked).toBe(true);
     expect(container.textContent).not.toContain("タップして");
     const names = buttons();
-    for (const title of ["始はじめる", "設定せってい", "クレジット"]) expect(names, title).toContain(title);
+    for (const title of ["はじめる", "せってい", "クレジット"]) expect(names, title).toContain(title);
   });
 
   it("導入画面をタップしただけでは、押した場所のタイトルのボタンが反応しない(画面遷移しない)", () => {

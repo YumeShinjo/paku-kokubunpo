@@ -185,7 +185,10 @@ export function QuizPlayer({
   }
 
   return (
-    <div className="screen screen-stage" style={areaAccentStyle(areaId)}>
+    <div
+      className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}`}
+      style={areaAccentStyle(areaId)}
+    >
       <ScreenBackground name={areaId} />
       {heading && (
         <p className="quiz-heading">
@@ -229,7 +232,7 @@ export function QuizPlayer({
         <p className="combo" aria-live="polite">
           {comboText && (
             <span key={combo} className="combo-badge">
-              🔥 <Rb t={comboText} />
+              🔥 {comboText}
             </span>
           )}
         </p>
@@ -239,7 +242,7 @@ export function QuizPlayer({
           aria-pressed={starred}
           onClick={() => toggleStar(question.id)}
         >
-          <Rb t={starred ? "⭐ 苦手[にがて]問題[もんだい]" : "☆ 苦手[にがて]問題[もんだい]に入[い]れる"} />
+          {starred ? "⭐ にがてもんだい" : "☆ にがてもんだいに いれる"}
         </button>
         {onQuit && (
           <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>
@@ -264,7 +267,7 @@ export function QuizPlayer({
               やめる
             </button>
             <button type="button" onClick={() => setConfirmingQuit(false)}>
-              <Rb t="続[つづ]ける" />
+              つづける
             </button>
           </div>
         </div>
@@ -312,7 +315,7 @@ export function QuizPlayer({
           </p>
           {feedback.review && (
             <p className="feedback-overcome">
-              <Rb t="⭐ 苦手[にがて]を克服[こくふく]した!" />
+              ⭐ にがてを こくふくした!
             </p>
           )}
           {question.explanation && (
@@ -321,7 +324,7 @@ export function QuizPlayer({
             </p>
           )}
           <button type="button" onClick={handleNext}>
-            <Rb t="次[つぎ]へ" />
+            つぎへ
           </button>
         </div>
       )}

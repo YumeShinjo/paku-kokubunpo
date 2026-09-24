@@ -8,6 +8,7 @@ import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { IconPicker } from "@/components/IconPicker";
 import { syncScore } from "@/features/ranking/scoreSync";
 import { Rb } from "@/components/Rb";
+import { BackButton } from "@/components/BackButton";
 
 /** 設定画面。BGM/SE音量とミュートを端末ローカルに保存する(7章)。 */
 export function SettingsScreen() {
@@ -39,13 +40,14 @@ export function SettingsScreen() {
 
   return (
     <div className="screen screen-settings">
+      <BackButton onClick={() => goTo({ name: "title" })} />
       <h2>
-        <Rb t="設定[せってい]" />
+        せってい
       </h2>
 
       <div className="settings-icon">
         <span>
-          <Rb t="アイコン(ランキングに出[で]るよ)" />
+          アイコン(ランキングに でるよ)
         </span>
         <IconPicker
           value={iconId}
@@ -57,7 +59,7 @@ export function SettingsScreen() {
       </div>
 
       <label>
-        <Rb t="BGM音量[おんりょう]" />
+        BGMおんりょう
         <input
           type="range"
           min={0}
@@ -69,7 +71,7 @@ export function SettingsScreen() {
       </label>
 
       <label>
-        <Rb t="効果音[こうかおん]音量[おんりょう]" />
+        こうかおんおんりょう
         <input
           type="range"
           min={0}
@@ -80,7 +82,7 @@ export function SettingsScreen() {
         />
       </label>
       <button type="button" onClick={handleTestSe}>
-        <Rb t="効果音[こうかおん]を試[ため]す" />
+        こうかおんをためす
       </button>
 
       <label>
@@ -93,7 +95,7 @@ export function SettingsScreen() {
       </label>
 
       <button type="button" onClick={resetGuides} disabled={guidesPending}>
-        <Rb t="操作[そうさ]の説明[せつめい]をもう一度[いちど]見[み]る" />
+        そうさの せつめいを もういちど 見る
       </button>
       {guidesPending && (
         <p className="settings-note">
@@ -108,14 +110,17 @@ export function SettingsScreen() {
       {confirmingReset ? (
         <div className="quit-confirm" role="alertdialog" aria-label="データの初期化の確認">
           <p>
-            <Rb t="進[すす]み具合[ぐあい]・得点[とくてん]・ストーリー・図鑑[ずかん]・アイコン・ランキング参加[さんか]など、保存[ほぞん]したデータをすべて消[け]して、最初[さいしょ]の状態[じょうたい]に戻[もど]すよ。音量[おんりょう]の設定[せってい]は残[のこ]るよ。ランキングに参加[さんか]中[ちゅう]なら、順位表[じゅんいひょう]からも抜[ぬ]けるよ(通信[つうしん]できないときは、順位表[じゅんいひょう]にデータが残[のこ]るよ)。本当[ほんとう]に初期化[しょきか]する?" />
+            <Rb t="進[すす]み具合[ぐあい]・得点[とくてん]・ストーリー・図鑑[ずかん]・アイコン・ランキング参加[さんか]など、保存[ほぞん]したデータをすべて消[け]して、最初[さいしょ]の状態[じょうたい]に戻[もど]すよ。音量[おんりょう]の設定[せってい]は残[のこ]るよ。ランキングに参加[さんか]中[ちゅう]なら、順位表[じゅんいひょう]からも抜[ぬ]けるよ(通信[つうしん]できないときは、順位表[じゅんいひょう]にデータが残[のこ]るよ)。" />
+          </p>
+          <p className="reset-question">
+            <Rb t="本当[ほんとう]に初期化[しょきか]しますか?" />
           </p>
           <div className="quit-confirm-buttons">
             <button type="button" className="quit-yes" disabled={resetting} onClick={() => void handleReset()}>
-              <Rb t={resetting ? "処理中[しょりちゅう]…" : "初期化[しょきか]する"} />
+              {resetting ? "しょりちゅう…" : "はい"}
             </button>
-            <button type="button" disabled={resetting} onClick={() => setConfirmingReset(false)}>
-              やめる
+            <button type="button" disabled={resetting} autoFocus onClick={() => setConfirmingReset(false)}>
+              いいえ
             </button>
           </div>
         </div>
@@ -125,9 +130,6 @@ export function SettingsScreen() {
         </button>
       )}
 
-      <button type="button" onClick={() => goTo({ name: "title" })}>
-        <Rb t="戻[もど]る" />
-      </button>
     </div>
   );
 }

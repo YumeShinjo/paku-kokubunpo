@@ -20,6 +20,7 @@ import {
   type RankingSnapshot,
 } from "@/lib/rankingApi";
 import { Rb } from "@/components/Rb";
+import { BackButton } from "@/components/BackButton";
 
 const ERROR_MESSAGES: Record<RankingErrorCode, string> = {
   "not-configured": "ランキングはまだ使[つか]えないよ。",
@@ -46,13 +47,11 @@ export function RankingScreen() {
   if (!configured) {
     return (
       <div className="screen screen-ranking">
+        <BackButton onClick={() => goTo({ name: "title" })} />
         <h2>ランキング</h2>
         <p>
           <Rb t={ERROR_MESSAGES["not-configured"]} />
         </p>
-        <button type="button" onClick={() => goTo({ name: "title" })}>
-          <Rb t="戻[もど]る" />
-        </button>
       </div>
     );
   }
@@ -132,6 +131,7 @@ function JoinForm({
 
   return (
     <div className="screen screen-ranking">
+      <BackButton onClick={onBack} />
       <h2>ランキング</h2>
       <p className="ranking-lead">
         <Rb t="先生[せんせい]が決[き]めた「クラスコード」を入[い]れると、同[おな]じクラスのみんなと得点[とくてん]を比[くら]べられるよ。名前[なまえ]はニックネームでOK(本名[ほんみょう]は入[い]れないでね)。" />
@@ -152,7 +152,7 @@ function JoinForm({
           </small>
         </label>
         <label>
-          <Rb t={`ニックネーム(${NICKNAME_MAX}文字[もじ]まで)`} />
+          ニックネーム({NICKNAME_MAX}もじまで)
           <input
             type="text"
             value={nameInput}
@@ -163,7 +163,7 @@ function JoinForm({
         </label>
         <div className="ranking-icon-field">
           <span>
-            <Rb t="アイコン(ランキングに出[で]るよ)" />
+            アイコン(ランキングに でるよ)
           </span>
           <IconPicker value={iconId} onChange={setIcon} />
         </div>
@@ -173,12 +173,9 @@ function JoinForm({
           </p>
         )}
         <button type="submit" disabled={busy}>
-          <Rb t={busy ? "通信中[つうしんちゅう]…" : "参加[さんか]する"} />
+          {busy ? "つうしんちゅう…" : "さんかする"}
         </button>
       </form>
-      <button type="button" onClick={onBack}>
-        <Rb t="戻[もど]る" />
-      </button>
     </div>
   );
 }
@@ -242,12 +239,13 @@ function JoinedView({
 
   return (
     <div className="screen screen-ranking">
+      <BackButton onClick={onBack} />
       <h2>ランキング</h2>
       <p className="ranking-class">
         クラスコード: <strong>{classCode}</strong>
       </p>
       <p className="ranking-class ranking-profile">
-        <PlayerIcon iconId={iconId} size={28} label="あなたのアイコン" /> <Rb t="ニックネーム:" /> <strong>{nickname}</strong>
+        <PlayerIcon iconId={iconId} size={28} label="あなたのアイコン" /> ニックネーム: <strong>{nickname}</strong>
       </p>
       {editingName ? (
         <form
@@ -270,7 +268,7 @@ function JoinedView({
           }}
         >
           <label>
-            <Rb t={`新[あたら]しいニックネーム(${NICKNAME_MAX}文字[もじ]まで)`} />
+            あたらしい ニックネーム({NICKNAME_MAX}もじまで)
             <input
               type="text"
               value={nameInput}
@@ -286,7 +284,7 @@ function JoinedView({
           )}
           <div className="quit-confirm-buttons">
             <button type="submit" disabled={renaming}>
-              <Rb t={renaming ? "通信中[つうしんちゅう]…" : "変[か]える"} />
+              {renaming ? "つうしんちゅう…" : "かえる"}
             </button>
             <button type="button" disabled={renaming} onClick={() => setEditingName(false)}>
               やめる
@@ -302,12 +300,12 @@ function JoinedView({
             setEditingName(true);
           }}
         >
-          <Rb t="ニックネームを変[か]える" />
+          ニックネームを かえる
         </button>
       )}
       <div className="ranking-icon-field">
         <span>
-          <Rb t="アイコンを変[か]える" />
+          アイコンを かえる
         </span>
         <IconPicker
           value={iconId}
@@ -318,11 +316,11 @@ function JoinedView({
         />
       </div>
       <p className="ranking-score">
-        <Rb t="あなたの得点[とくてん]:" /> <strong>{totalScore}</strong>
+        あなたの とくてん: <strong>{totalScore}</strong>
         {snapshot?.me && (
           <>
             {" "}
-            <Rb t="(いま" /> <strong>{snapshot.me.rank}</strong> <Rb t="位[い])" />
+            (いま <strong>{snapshot.me.rank}</strong> い)
           </>
         )}
       </p>
@@ -334,7 +332,7 @@ function JoinedView({
 
       {loading && !snapshot && (
         <p>
-          <Rb t="読[よ]み込[こ]み中[ちゅう]…" />
+          よみこみちゅう…
         </p>
       )}
       {error && (
@@ -351,7 +349,7 @@ function JoinedView({
       {snapshot &&
         (snapshot.entries.length === 0 ? (
           <p>
-            <Rb t="まだ誰[だれ]もいないよ。" />
+            まだ だれも いないよ。
           </p>
         ) : (
           <ol className="ranking-list">
@@ -365,7 +363,7 @@ function JoinedView({
                 <span className="ranking-name">{entry.nickname}</span>
                 <span className="ranking-points">
                   {entry.score}
-                  <Rb t="点[てん]" />
+                  てん
                 </span>
               </li>
             ))}
@@ -373,7 +371,7 @@ function JoinedView({
         ))}
 
       <button type="button" onClick={() => void load()} disabled={loading}>
-        <Rb t="更新[こうしん]" />
+        こうしん
       </button>
 
       {confirmingLeave ? (
@@ -383,7 +381,7 @@ function JoinedView({
           </p>
           <div className="quit-confirm-buttons">
             <button type="button" className="quit-yes" disabled={busy} onClick={onLeave}>
-              <Rb t="抜[ぬ]ける" />
+              ぬける
             </button>
             <button type="button" onClick={() => setConfirmingLeave(false)}>
               やめる
@@ -392,13 +390,10 @@ function JoinedView({
         </div>
       ) : (
         <button type="button" className="quit-button" onClick={() => setConfirmingLeave(true)}>
-          <Rb t="クラスを抜[ぬ]ける" />
+          クラスを ぬける
         </button>
       )}
 
-      <button type="button" onClick={onBack}>
-        <Rb t="戻[もど]る" />
-      </button>
     </div>
   );
 }

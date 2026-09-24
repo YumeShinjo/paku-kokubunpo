@@ -295,5 +295,56 @@ describe("仕分け: ドラッグ&ドロップ", () => {
       expect(basketTexts("c2")).toEqual(["山 ◎"]);
     });
   });
+
+  describe("文の中の対象語(「」)を持つ項目", () => {
+    const sentenceQuestion: SortingQuestion = {
+      id: "t-sentence",
+      unit: "u",
+      engine: "sorting",
+      instruction: t("仕分け"),
+      categories: [
+        { id: "c1", label: t("動詞") },
+        { id: "c2", label: t("名詞") },
+      ],
+      items: [
+        { id: "s1", text: t("校庭に「桜」が咲いている。"), correctCategoryId: "c2", explanation: t("解説") },
+        { id: "s2", text: t("彼は「走る」のが好きだ。"), correctCategoryId: "c1", explanation: t("解説") },
+      ],
+    };
+
+    beforeEach(() => {
+      act(() => root.render(<SortingEngine question={sentenceQuestion} onAnswer={onAnswer} />));
+    });
+
+    it("まだ入れていない項目は文全体(対象語はカード、「」は出さない)", () => {
+      expect(poolTexts()).toEqual(["校庭に桜が咲いている。", "彼は走るのが好きだ。"]);
+      expect(container.querySelectorAll(".sorting-items .target-card")).toHaveLength(2);
+      expect(container.textContent).not.toContain("「");
+    });
+
+    it("カゴに入れると、対象語だけの小さなカードになる(カゴが文で大きくならない)", () => {
+      drag(chip("校庭"), 150);
+      expect(basketTexts("c2")).toEqual(["桜"]);
+      expect(poolTexts()).toEqual(["彼は走るのが好きだ。"]);
+    });
+
+    it("ドラッグ中の複製は、対象語だけで、「」を含まない", () => {
+      const el = chip("彼は");
+      pointer(el, "pointerdown", 50);
+      pointer(el, "pointermove", 150);
+      const ghost = container.querySelector(".sorting-ghost");
+      expect(ghost?.textContent).toBe("走る");
+      expect(ghost?.querySelector(".target-card")).not.toBeNull();
+      expect(ghost?.textContent).not.toContain("「");
+      pointer(el, "pointerup", 150);
+    });
+  });
+
+  it("「こたえる」は、選択肢とは別の、画面の下に固定する枠(.answer-bar)に入っている", () => {
+    const submit = buttons().find((b) => b.textContent?.includes("こたえる"))!;
+    expect(submit.closest(".answer-bar")).not.toBeNull();
+    expect(submit.classList.contains("answer-submit")).toBe(true);
+    expect(container.querySelector(".sorting-categories")?.contains(submit)).toBe(false);
+  });
 });
 

@@ -17,7 +17,7 @@ export function StoryArchive() {
   return (
     <section className="zukan-memories">
       <h3>
-        <Rb t="思[おも]い出[で](ストーリー)" />
+        おもいで(ストーリー)
       </h3>
       <p className="zukan-pages-lead">
         <Rb t={`見[み]たストーリーを、もう一度[いちど]見[み]られるよ。(${seenCount} / ${countReplayableStories()})`} />

@@ -40,7 +40,7 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
   }
 
   async function openRenameForm() {
-    act(() => byText("ニックネームを変")!.click());
+    act(() => byText("ニックネームを かえる")!.click());
     return container.querySelector<HTMLInputElement>(".ranking-rename input")!;
   }
 
@@ -115,7 +115,7 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
     type(input, "じろう");
     await submitRename();
     expect(useRankingStore.getState().nickname).toBe("たろう");
-    expect(container.querySelector(".ranking-rename .ranking-error")?.textContent).toContain("つうしん");
+    expect(container.querySelector(".ranking-rename .ranking-error")?.textContent).toContain("通信");
   });
 
   it("同じ名前のままなら通信せず、フォームを閉じる。「やめる」でも変わらない", async () => {

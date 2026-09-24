@@ -96,7 +96,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
           <Rb t="このステージはまだ挑戦[ちょうせん]できません。" />
         </p>
         <button type="button" onClick={() => goTo({ name: "stageSelect", areaId })}>
-          <Rb t="ステージ選択[せんたく]へ" />
+          ステージせんたくへ
         </button>
       </div>
     );
@@ -107,19 +107,19 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       <div className="screen screen-stage-result">
         <MascotFace expression="sad" size="large" />
         <h2>
-          <Rb t="もう少[すこ]し!" />
+          もう少し!
         </h2>
         <p>
           <Rb t="あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ!" />
         </p>
         <p>
-          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい](ボスのHP 残[のこ]り ${result.hpLeft})`} />
+          {result.correctCount} / {result.answered} もん せいかい(ボスのHP のこり {result.hpLeft})
         </p>
         <button type="button" onClick={retry}>
-          <Rb t="もう一度[いちど]挑戦[ちょうせん]" />
+          もういちどちょうせん
         </button>
         <button type="button" onClick={() => goTo({ name: "stageSelect", areaId })}>
-          <Rb t="ステージ選択[せんたく]へ" />
+          ステージせんたくへ
         </button>
       </div>
     );
@@ -139,11 +139,11 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
           )}
         </h2>
         <p>
-          <Rb t={`${result.correctCount} / ${result.answered} 問[もん] 正解[せいかい]`} />
+          {result.correctCount} / {result.answered} もん せいかい
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            <Rb t={`最大[さいだい] 🔥 ${result.maxCombo}連続[れんぞく]!`} />
+            さいだい 🔥 {result.maxCombo}れんぞく!
           </p>
         )}
         <button
@@ -159,7 +159,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
             )
           }
         >
-          <Rb t="次[つぎ]へ" />
+          つぎへ
         </button>
       </div>
     );

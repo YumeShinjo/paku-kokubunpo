@@ -4,6 +4,7 @@ import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
 import { PosChip } from "@/components/PosChip";
 import { TargetText } from "@/components/TargetText";
+import { targetOnly } from "@/data/targetText";
 import { findPartOfSpeech } from "@/data/partOfSpeech";
 import { Rb } from "@/components/Rb";
 
@@ -239,8 +240,20 @@ export function SortingEngine({ question, onAnswer }: Props) {
   const categoryLabel = (categoryId: string) =>
     question.categories.find((c) => c.id === categoryId)?.label;
 
-  /** 単語のカード。プールにも、カゴの中にも同じものを出す(どちらからでもドラッグ・タップできる) */
-  function renderItem(item: SortingItem) {
+  /** 小さな表示(カゴの中・ドラッグ中): 対象の語だけをカードで出す。対象がない(単語だけの)ときは、そのまま */
+  function renderCompact(item: SortingItem) {
+    const target = targetOnly(item.text);
+    return target ? (
+      <span className="target-card">
+        <Ruby text={target} />
+      </span>
+    ) : (
+      <Ruby text={item.text} />
+    );
+  }
+
+  /** 単語のカード。まだ入れていないものは文全体、カゴの中に入れたものは対象の語だけを出す(どちらからでもドラッグ・タップできる) */
+  function renderItem(item: SortingItem, compact = false) {
     const placedCategory = placements[item.id];
     const isCorrect = placedCategory === item.correctCategoryId;
     const resultClass = submitted ? (isCorrect ? "correct" : "incorrect") : "";
@@ -264,7 +277,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onPointerCancel={handlePointerCancel}
         onClick={() => handleItemClick(item.id)}
       >
-        <TargetText text={item.text} />
+        {compact ? renderCompact(item) : <TargetText text={item.text} />}
         {submitted && (isCorrect ? " ◎" : " ×")}
       </button>
     );
@@ -280,9 +293,9 @@ export function SortingEngine({ question, onAnswer }: Props) {
       </p>
 
       <div className="sorting-items" aria-label="まだ 入れていない言葉">
-        {unplaced.map(renderItem)}
+        {unplaced.map((item) => renderItem(item))}
         {unplaced.length === 0 && !submitted && <p className="sorting-empty">
-            <Rb t="ぜんぶ入[い]れたよ!まちがいがないか見[み]てから「答[こた]える」を押[お]してね。" />
+            <Rb t="ぜんぶ入れたよ!まちがいがないか見てから「こたえる」を押してね。" />
           </p>}
       </div>
 
@@ -302,22 +315,25 @@ export function SortingEngine({ question, onAnswer }: Props) {
               <Ruby text={category.label} />
             </button>
             <div className="sorting-basket-items">
-              {question.items.filter((item) => placements[item.id] === category.id).map(renderItem)}
+              {question.items.filter((item) => placements[item.id] === category.id).map((item) => renderItem(item, true))}
             </div>
           </div>
         ))}
       </div>
 
       {draggedItem && drag && (
-        <div className="sorting-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          <Ruby text={draggedItem.text} />
+        <div className="sorting-ghost" style={{ left: Math.min(Math.max(drag.x, 56), window.innerWidth - 56), top: drag.y }} aria-hidden="true">
+          {renderCompact(draggedItem)}
         </div>
       )}
 
+      {/* 「こたえる」は、カゴから離した画面の下に固定して、選択肢のすぐ下で押し間違えないようにする */}
       {!submitted && (
-        <button type="button" data-no-tap disabled={!allPlaced} onClick={handleSubmit}>
-          <Rb t="答[こた]える" />
-        </button>
+        <div className="answer-bar">
+          <button type="button" className="answer-submit" data-no-tap disabled={!allPlaced} onClick={handleSubmit}>
+            こたえる
+          </button>
+        </div>
       )}
 
       {submitted && (

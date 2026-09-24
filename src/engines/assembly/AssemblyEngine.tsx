@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import type { AssemblyQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
-import { Rb } from "@/components/Rb";
 
 interface Props {
   question: AssemblyQuestion;
@@ -66,14 +65,18 @@ export function AssemblyEngine({ question, onAnswer }: Props) {
         ))}
       </div>
 
-      <button
-        type="button"
-        data-no-tap
-        disabled={!selectedCardId || submitted}
-        onClick={handleSubmit}
-      >
-        <Rb t="答[こた]える" />
-      </button>
+      {/* 「こたえる」は、カードから離した画面の下に固定して、押し間違えないようにする */}
+      <div className="answer-bar">
+        <button
+          type="button"
+          className="answer-submit"
+          data-no-tap
+          disabled={!selectedCardId || submitted}
+          onClick={handleSubmit}
+        >
+          こたえる
+        </button>
+      </div>
     </div>
   );
 }

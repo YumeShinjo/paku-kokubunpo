@@ -1,6 +1,5 @@
 import { engineGuides, guideFooter, type GuideKey } from "@/data/engineGuide";
 import { Ruby } from "@/components/Ruby";
-import { Rb } from "@/components/Rb";
 
 /**
  * 初回プレイ時だけ、その出題形式の操作を問題の上に出すカード。
@@ -24,7 +23,7 @@ export function EngineGuide({ guideKey, onDismiss }: { guideKey: GuideKey; onDis
         <Ruby text={guide.footer ?? guideFooter} />
       </p>
       <button type="button" onClick={onDismiss}>
-        <Rb t="わかった!" />
+        わかった!
       </button>
     </aside>
   );

@@ -29,7 +29,7 @@ describe("小ボス戦の始まりの画面", () => {
       ),
     );
     expect(container.querySelector(".boss-encounter-message")?.textContent).toContain("レル");
-    expect(container.querySelector(".boss-encounter-message")?.textContent).toContain("現");
+    expect(container.querySelector(".boss-encounter-message")?.textContent).toContain("あらわれた");
     expect(container.querySelector(".boss-name")?.textContent).toContain("鍛冶");
     expect(container.querySelector(".hp-text")?.textContent).toBe(`HP ${hpMax} / ${hpMax}`);
     expect(container.querySelector<HTMLElement>(".hp-fill")?.style.width).toBe("100%");
