@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { unlockPlayback, playSe, playBgm, stopBgm } from "./audio";
+import { duckBgm, unlockPlayback, playSe, playBgm, stopBgm } from "./audio";
 import { useSettingsStore } from "@/app/store/settingsStore";
 
 /**
@@ -92,5 +92,86 @@ describe("audio", () => {
 
   it("解禁前の playBgm は何もしない(例外にならない)", () => {
     expect(() => playBgm("/assets/audio/bgm/title.mp3")).not.toThrow();
+  });
+
+  describe("BGMの音量(iOSでは <audio> の volume が効かないため、GainNode が使えない環境=jsdomでは要素の volume で代用)", () => {
+    // BGMの基準音量(audio.ts の BGM_BASE_GAIN)。スライダーの値にかけて鳴らす
+    const BASE = 0.4;
+
+    function trackVolume() {
+      const set = vi.spyOn(window.HTMLMediaElement.prototype, "volume", "set");
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-vol.mp3");
+      return set;
+    }
+
+    it("スライダーを動かすと、基準音量をかけた値がBGMに反映される", () => {
+      const set = trackVolume();
+      useSettingsStore.getState().setBgmVolume(0.5);
+      expect(set).toHaveBeenLastCalledWith(0.5 * BASE);
+    });
+
+    it("BGMの基準音量は、スライダーが最大でも効果音より小さい", () => {
+      const set = trackVolume();
+      useSettingsStore.getState().setBgmVolume(1);
+      expect(set).toHaveBeenLastCalledWith(BASE);
+      expect(BASE).toBeLessThan(1);
+    });
+
+    it("ミュートで0になり、解除すると元の音量に戻り、止まっていたBGMは鳴らし直す", () => {
+      const set = trackVolume();
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      useSettingsStore.getState().setMuted(true);
+      expect(set).toHaveBeenLastCalledWith(0);
+      play.mockClear();
+      useSettingsStore.getState().setMuted(false);
+      expect(set).toHaveBeenLastCalledWith(0.7 * BASE);
+      expect(play).toHaveBeenCalledTimes(1); // jsdomでは要素が止まった状態のまま。解除で再生を促す
+    });
+
+    it("ミュート中に曲が切り替わっても、解除後に新しい曲が鳴る", () => {
+      trackVolume();
+      useSettingsStore.getState().setMuted(true);
+      playBgm("/assets/audio/bgm-vol2.mp3");
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      useSettingsStore.getState().setMuted(false);
+      expect(play).toHaveBeenCalled();
+    });
+
+    it("ダッキング: 指定の時間だけBGMを下げ、過ぎたら元の音量に戻る。ミュート中は0のまま", () => {
+      vi.useFakeTimers();
+      try {
+        const set = trackVolume();
+        duckBgm(1000);
+        const ducked = set.mock.calls.at(-1)?.[0] as number;
+        expect(ducked).toBeGreaterThan(0);
+        expect(ducked).toBeLessThan(0.7 * BASE * 0.2);
+        vi.advanceTimersByTime(1001);
+        expect(set).toHaveBeenLastCalledWith(0.7 * BASE);
+        useSettingsStore.getState().setMuted(true);
+        duckBgm(500);
+        expect(set).toHaveBeenLastCalledWith(0);
+        vi.advanceTimersByTime(501);
+        expect(set).toHaveBeenLastCalledWith(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("ダッキングを続けて呼んでも、いちばん遅い終わりまで下げたままにする", () => {
+      vi.useFakeTimers();
+      try {
+        const set = trackVolume();
+        duckBgm(2000);
+        duckBgm(300); // 短い呼び出しで、長いほうを打ち切らない
+        vi.advanceTimersByTime(1000);
+        expect((set.mock.calls.at(-1)?.[0] as number) < 0.7 * BASE * 0.2).toBe(true);
+        vi.advanceTimersByTime(1001);
+        expect(set).toHaveBeenLastCalledWith(0.7 * BASE);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

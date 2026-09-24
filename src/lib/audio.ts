@@ -20,6 +20,16 @@ import { findAudio, seAssetName } from "@/assets/registry";
 
 let audioContext: AudioContext | null = null;
 
+/**
+ * BGMと効果音の基準音量のバランス。BGMは効果音(特にクリア音・成長音)を邪魔しないよう、
+ * スライダーの値に、この係数をかけて鳴らす(スライダーの最大でも効果音より控えめ)。
+ */
+const BGM_BASE_GAIN = 0.4;
+/** 効果音でBGMをダッキング(一時的に下げる)するときの音量の倍率と、下げる・戻すときの速さ(秒) */
+const DUCK_FACTOR = 0.08;
+const DUCK_DOWN_SEC = 0.05;
+const DUCK_UP_SEC = 0.4;
+
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const Ctor =
@@ -144,6 +154,16 @@ export function playSe(kind: SeKind): void {
 /** BGM用の <audio> 要素は1つを使い回す(iOSで、最初のタップで再生を始めた要素を引き継ぐため)。 */
 let bgmElement: HTMLAudioElement | null = null;
 let bgmSrc: string | null = null;
+/**
+ * BGMの音量は GainNode で決める。iOS の Safari は <audio> の volume を無視する(常に最大)ため、
+ * スライダーやミュートを効かせるには、要素の音を Web Audio に通して、その音量を変える必要がある。
+ * つなげない環境(jsdom など)では、要素の volume で代用する。
+ */
+let bgmGain: GainNode | null = null;
+/** 効果音のあいだ BGM を下げる倍率(1=通常)。ミュート・スライダーとは別に、かけ合わせる */
+let duckFactor = 1;
+let duckTimer: ReturnType<typeof setTimeout> | null = null;
+let duckUntil = 0;
 
 function getBgmElement(): HTMLAudioElement {
   if (!bgmElement) {
@@ -151,6 +171,49 @@ function getBgmElement(): HTMLAudioElement {
     bgmElement.loop = true;
   }
   return bgmElement;
+}
+
+/** BGM要素を GainNode 経由にする(1要素につき1回だけできる)。できなければ要素の volume で代用する */
+function attachBgmGain(): void {
+  if (bgmGain) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const source = ctx.createMediaElementSource(getBgmElement());
+    const gain = ctx.createGain();
+    source.connect(gain).connect(ctx.destination);
+    bgmGain = gain;
+    getBgmElement().volume = 1;
+    applyBgmLevel();
+  } catch {
+    bgmGain = null;
+  }
+}
+
+/** いまのBGMの音量(ミュート・スライダー・基準・ダッキングをかけ合わせたもの) */
+function bgmLevel(): number {
+  const { muted, bgmVolume } = useSettingsStore.getState();
+  return muted ? 0 : bgmVolume * BGM_BASE_GAIN * duckFactor;
+}
+
+/** いまの音量をBGMへ反映する。seconds は、その秒数かけて滑らかに変える(0なら即時) */
+function applyBgmLevel(seconds = 0): void {
+  const level = bgmLevel();
+  if (bgmGain && audioContext) {
+    const param = bgmGain.gain;
+    const now = audioContext.currentTime;
+    param.cancelScheduledValues(now);
+    if (seconds > 0) param.setTargetAtTime(level, now, seconds / 3);
+    else param.setValueAtTime(level, now);
+  } else if (bgmElement) {
+    bgmElement.volume = Math.min(1, level);
+  }
+}
+
+/** 止まっている AudioContext を動かす。ミュート解除などユーザー操作の中で呼ぶと、iOSでも再開できる */
+function resumeAudioContext(): void {
+  const ctx = audioContext;
+  if (ctx && ctx.state !== "running") void ctx.resume().catch(() => {});
 }
 
 /** play() はブラウザによって Promise を返さない/同期的に例外を投げることがあるため、両対応で呼ぶ */
@@ -170,6 +233,7 @@ function safePlay(audio: HTMLAudioElement): void {
 /** タップの中で、BGM要素を無音で一度再生しておく(unlockPlayback から呼ぶ) */
 function primeBgmElement(): void {
   const audio = getBgmElement();
+  attachBgmGain();
   if (bgmSrc !== null) return; // すでにBGMが鳴っている(または指定済み)なら触らない
   audio.src = SILENT_WAV;
   safePlay(audio);
@@ -189,12 +253,14 @@ function clearIntroHandler(): void {
  * どの曲を鳴らすかは、場面から決める(features/audio/bgmScene.ts。素材の取り決めは src/assets/README.md)。
  */
 export function playBgm(src: string, introSrc?: string): void {
-  const { muted, bgmVolume, audioUnlocked } = useSettingsStore.getState();
+  const { audioUnlocked } = useSettingsStore.getState();
   if (!audioUnlocked || bgmSrc === src) return;
 
   const audio = getBgmElement();
+  attachBgmGain();
+  resumeAudioContext();
   clearIntroHandler();
-  audio.volume = muted ? 0 : bgmVolume;
+  applyBgmLevel();
   if (introSrc) {
     audio.src = introSrc;
     audio.loop = false;
@@ -219,9 +285,45 @@ export function stopBgm(): void {
   bgmSrc = null;
 }
 
-// 音量スライダー・ミュート(7章)の変更を、再生中のBGMへ即時反映する
-useSettingsStore.subscribe((state) => {
-  if (bgmElement) {
-    bgmElement.volume = state.muted ? 0 : state.bgmVolume;
+/**
+ * 効果音を聞かせるため、BGMを `ms` ミリ秒のあいだ一時的に下げる(ダッキング)。終わると、滑らかに元の音量へ戻る。
+ * 続けて呼ばれたら、いちばん遅い終了時刻に合わせる。ミュート中は何も変わらない。
+ */
+export function duckBgm(ms: number): void {
+  const until = Date.now() + Math.max(0, ms);
+  if (duckTimer && until <= duckUntil) return; // すでに、もっと長く下げる予定がある
+  duckUntil = until;
+  duckFactor = DUCK_FACTOR;
+  applyBgmLevel(DUCK_DOWN_SEC);
+  if (duckTimer) clearTimeout(duckTimer);
+  duckTimer = setTimeout(() => {
+    duckTimer = null;
+    duckFactor = 1;
+    applyBgmLevel(DUCK_UP_SEC);
+  }, until - Date.now());
+}
+
+/** 効果音の長さ(ミリ秒)。本物の素材が読み込めていればその長さ、なければ合成音の長さ */
+export function seDurationMs(kind: SeKind): number {
+  const buffer = seBuffers.get(kind);
+  return (buffer ? buffer.duration : TONE_PARAMS[kind].duration) * 1000;
+}
+
+// 音量スライダー・ミュート(7章)の変更を、再生中のBGMへ即時反映する。
+// ミュートを解除したときは、止まっていた AudioContext と BGM も動かし直す(解除のタップの中なので、iOSでも再開できる)。
+useSettingsStore.subscribe((state, prev) => {
+  applyBgmLevel(0.02);
+  if (prev.muted && !state.muted) {
+    resumeAudioContext();
+    if (bgmElement && bgmSrc && bgmElement.paused) safePlay(bgmElement);
   }
 });
+
+// 画面を閉じて戻ってきたとき(電話・ロック解除など)、止まってしまった音を動かし直す
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible" || !useSettingsStore.getState().audioUnlocked) return;
+    resumeAudioContext();
+    if (bgmElement && bgmSrc && bgmElement.paused) safePlay(bgmElement);
+  });
+}

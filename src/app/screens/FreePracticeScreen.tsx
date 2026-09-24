@@ -3,7 +3,7 @@ import { getUnitMeta } from "@/data/units";
 import { buildFreePracticeSession } from "@/features/quiz/buildSession";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { Ruby } from "@/components/Ruby";
-import { playSe } from "@/lib/audio";
+import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
 
 /**
@@ -20,7 +20,9 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
   const [result, setResult] = useState<SessionResult | null>(null);
 
   useEffect(() => {
-    if (result) playSe("clear");
+    if (!result) return;
+    playSe("clear");
+    duckBgm(seDurationMs("clear"));
   }, [result]);
 
   function again() {

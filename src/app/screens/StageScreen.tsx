@@ -6,7 +6,7 @@ import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { buildPostClearScreen } from "@/features/story/storyFlow";
 import { syncScore } from "@/features/ranking/scoreSync";
-import { playSe } from "@/lib/audio";
+import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
@@ -73,15 +73,20 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   // クリア画面に切り替わった瞬間に1度だけ達成音を鳴らす(7章: 視覚演出とセットの効果音)。
   useEffect(() => {
     if (!cleared) return;
-    playSe(stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear");
+    const kind = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
+    playSe(kind);
+    duckBgm(seDurationMs(kind)); // 達成音が聞こえるよう、鳴っているあいだBGMを下げる
   }, [cleared, stage?.type]);
 
   // エリアクリアのときは、クリア音のあとに、マスコットの成長音 → 図鑑のページが開く音、の順に重ならないよう鳴らす
   useEffect(() => {
     if (!justClearedArea) return;
     const start = stage?.type === "lastBoss" ? 1000 : 600; // ラスボスのクリア音は長いので、少し待つ
+    const pageAt = start + 700;
     const growth = setTimeout(() => playSe("growth"), start);
-    const page = setTimeout(() => playSe("pageUnlock"), start + 700);
+    const page = setTimeout(() => playSe("pageUnlock"), pageAt);
+    // クリア音・成長音・ページ解放音が流れ終わるまで、BGMを下げたままにする(何が起きたか聞き分けやすくする)
+    duckBgm(pageAt + seDurationMs("pageUnlock"));
     return () => {
       clearTimeout(growth);
       clearTimeout(page);
