@@ -19,6 +19,7 @@ const plain = (event: { lines: { text: { text: string }[] }[] }) =>
 /** STORY.md に登場する発話者(ナレーションは speaker なし) */
 const KNOWN_SPEAKERS = [
   "コト",
+  "コレット",
   "メイ",
   "レル",
   "オンヴィン",
@@ -112,11 +113,51 @@ describe("表記の統一", () => {
 });
 
 describe("STORY.md の台詞の反映(抜粋の照合)", () => {
-  it("序章導入は5行で、最初の行はナレーション", () => {
+  it("序章導入は10行(記憶がないこと・ことだま使いの説明)で、最初の行はナレーション、最後は主人公がうなずくナレーション", () => {
     const event = getStoryEvent(introStoryId("prologue"))!;
-    expect(event.lines).toHaveLength(5);
+    expect(event.lines).toHaveLength(10);
     expect(event.lines[0].speaker).toBeUndefined();
     expect(plain(event)[0]).toBe("目を覚ますと、そこは見知らぬ草原だった。");
+    const texts = plain(event);
+    expect(texts[3]).toBe("主人公は、静かに首を横に振った。");
+    expect(event.lines[3].speaker).toBeUndefined();
+    expect(texts.some((t) => t.includes("ことだま使いっていうのはね"))).toBe(true);
+    expect(texts[9]).toBe("主人公は、小さくうなずいた。");
+    expect(event.lines[9].speaker).toBeUndefined();
+    // 主人公は喋らない: 台詞はコトだけ、あとはナレーション
+    for (const line of event.lines) expect([undefined, "コト"]).toContain(line.speaker);
+  });
+
+  it("絆の間の導入に、黒幕・王様への伏線(陛下の御前に誰も通されない)の1行がある", () => {
+    const texts = plain(getStoryEvent(introStoryId("kizunaNoMa"))!);
+    expect(texts.some((t) => t.includes("陛下の御前に、誰も通されない"))).toBe(true);
+    expect(texts.at(-1)).toContain("きな臭いね");
+  });
+
+  it("宰相の撃破後に、乱れを招いた告白(3行)が、正体判明の台詞「あなた様こそ」の直前にある", () => {
+    const event = getStoryEvent(subBossClearStoryId("ohzaNoMa"))!;
+    const texts = plain(event);
+    const reveal = texts.findIndex((t) => t.includes("あなた様こそ"));
+    expect(reveal).toBeGreaterThan(0);
+    expect(texts[reveal - 3]).toContain("この乱れを、王座に招き入れたのは、わたくしです");
+    expect(texts[reveal - 2]).toContain("正しい言葉を、誰よりも守ろうとしました");
+    expect(texts[reveal - 1]).toContain("執着そのものが、乱れにつけ込まれておりました");
+    for (const i of [reveal - 3, reveal - 2, reveal - 1]) expect(event.lines[i].speaker).toBe("ニジュヴェール");
+  });
+
+  it("王様の浄化後に、コレットがたぬきの姿になっていた理由(ヴェルバルト3行+コレット1行)が、分岐の前にある", () => {
+    const event = getStoryEvent(lastBossClearStoryId("ohzaNoMa"))!;
+    const texts = plain(event);
+    const at = texts.findIndex((t) => t.includes("思い出した。乱れが王座に忍び込んだあの日"));
+    expect(at).toBeGreaterThan(0);
+    expect(event.lines.slice(at, at + 3).map((l) => l.speaker)).toEqual(["ヴェルバルト", "ヴェルバルト", "ヴェルバルト"]);
+    expect(texts[at + 1]).toContain("化け狸の姿を宿すもの");
+    expect(texts[at + 2]).toContain("すまない、気づいてやれなかった");
+    expect(event.lines[at + 3].speaker).toBe("コレット");
+    expect(texts[at + 3]).toContain("思い出せた");
+    // 「お父さん?」のあと、王様が静かに問いかけて分岐へ進む前に置かれている
+    expect(texts.findIndex((t) => t.includes("お父さん"))).toBeLessThan(at);
+    expect(texts.findIndex((t) => t.includes("静かに問いかける"))).toBeGreaterThan(at + 3);
   });
 
   it("序章のエリアクリアは、ナレーション→コトの台詞(ユーザー提供の文面)", () => {
