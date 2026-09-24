@@ -3,7 +3,8 @@ import { getFirebaseApp, isFirebaseConfigured } from "@/lib/firebase";
 /**
  * ランキング(8章)のFirestoreアクセス。
  *
- * データの形: classes/{クラスコード}/members/{匿名認証のuid} = { nickname, score, updatedAt }
+ * データの形: classes/{クラスコード}/members/{匿名認証のuid} = { nickname, icon, score, updatedAt }
+ *  (icon は主人公のアイコンの id。古い版が書いたデータには無いことがある)
  *  - クラスコードをパスにしているので、「同じクラスコードのグループ内だけ」を読み書きでき、
  *    クラスの一覧は取れない(合言葉を知っている人だけがそのクラスの順位を見られる)。
  *  - 自分のドキュメントだけを書き換え・削除できる(firestore.rules で強制)。
@@ -78,9 +79,17 @@ export function toRankingError(error: unknown): RankingError {
   return new RankingError("unknown", error);
 }
 
+/** 順位表に出る、自分の情報(ニックネームと、主人公のアイコンの id) */
+export interface RankingProfile {
+  nickname: string;
+  icon: string;
+}
+
 export interface RankingEntry {
   uid: string;
   nickname: string;
+  /** アイコンの id。古いデータで無いときは空文字(表示側が標準のアイコンにする) */
+  icon: string;
   score: number;
   /** 同点は同じ順位(1, 2, 2, 4 …) */
   rank: number;
@@ -90,23 +99,26 @@ export interface RankingEntry {
 export interface RankingSnapshot {
   entries: RankingEntry[];
   /** 自分の情報。ランキングに自分のデータがなければ null(退出済みなど) */
-  me: { nickname: string; score: number; rank: number } | null;
+  me: { nickname: string; icon: string; score: number; rank: number } | null;
 }
 
 /** 画面・同期処理が使うAPI。テストでは偽物に差し替える。 */
 export interface RankingApi {
   isConfigured(): boolean;
-  /** クラスに参加する(すでにあればニックネームを更新し、得点は大きいほうを残す)。参加後の得点を返す */
-  joinClass(classCode: string, nickname: string, localScore: number): Promise<number>;
+  /** クラスに参加する(すでにあればニックネーム・アイコンを更新し、得点は大きいほうを残す)。参加後の得点を返す。ニックネームの変更にも使う */
+  joinClass(classCode: string, profile: RankingProfile, localScore: number): Promise<number>;
   /** 自分の得点を送る(ドキュメントがなければ作り直す) */
-  submitScore(classCode: string, nickname: string, score: number): Promise<void>;
+  submitScore(classCode: string, profile: RankingProfile, score: number): Promise<void>;
   fetchRanking(classCode: string, limit?: number): Promise<RankingSnapshot>;
   /** クラスから抜ける(自分のデータを削除する) */
   leaveClass(classCode: string): Promise<void>;
 }
 
 /** 同点を同順位にして、1, 2, 2, 4 … の順位をつける(得点の高い順に並んでいる前提) */
-export function assignRanks(rows: { uid: string; nickname: string; score: number }[], myUid: string | null): RankingEntry[] {
+export function assignRanks(
+  rows: { uid: string; nickname: string; score: number; icon?: string }[],
+  myUid: string | null,
+): RankingEntry[] {
   let rank = 0;
   let previous: number | null = null;
   return rows.map((row, index) => {
@@ -114,7 +126,7 @@ export function assignRanks(rows: { uid: string; nickname: string; score: number
       rank = index + 1;
       previous = row.score;
     }
-    return { ...row, rank, isMe: row.uid === myUid };
+    return { ...row, icon: row.icon ?? "", rank, isMe: row.uid === myUid };
   });
 }
 
@@ -161,24 +173,25 @@ async function ensureUid(): Promise<string> {
 export const rankingApi: RankingApi = {
   isConfigured: () => isFirebaseConfigured(),
 
-  joinClass(classCode, nickname, localScore) {
+  joinClass(classCode, profile, localScore) {
     return guard(async () => {
       const uid = await ensureUid();
       const { db, fs } = await loadSdk();
       const ref = fs.doc(db, ...MEMBERS(classCode), uid);
       const existing = await fs.getDoc(ref);
       const score = Math.max(localScore, existing.exists() ? Number(existing.data().score) || 0 : 0);
-      await fs.setDoc(ref, { nickname, score, updatedAt: fs.serverTimestamp() });
+      await fs.setDoc(ref, { nickname: profile.nickname, icon: profile.icon, score, updatedAt: fs.serverTimestamp() });
       return score;
     });
   },
 
-  submitScore(classCode, nickname, score) {
+  submitScore(classCode, profile, score) {
     return guard(async () => {
       const uid = await ensureUid();
       const { db, fs } = await loadSdk();
       await fs.setDoc(fs.doc(db, ...MEMBERS(classCode), uid), {
-        nickname,
+        nickname: profile.nickname,
+        icon: profile.icon,
         score,
         updatedAt: fs.serverTimestamp(),
       });
@@ -194,12 +207,13 @@ export const rankingApi: RankingApi = {
       const rows = top.docs.map((d) => ({
         uid: d.id,
         nickname: String(d.data().nickname ?? ""),
+        icon: String(d.data().icon ?? ""),
         score: Number(d.data().score) || 0,
       }));
       const entries = assignRanks(rows, uid);
 
       const mine = entries.find((e) => e.isMe);
-      if (mine) return { entries, me: { nickname: mine.nickname, score: mine.score, rank: mine.rank } };
+      if (mine) return { entries, me: { nickname: mine.nickname, icon: mine.icon, score: mine.score, rank: mine.rank } };
 
       // 上位に入っていないとき: 自分のデータと、自分より得点が高い人数から順位を出す
       const own = await fs.getDoc(fs.doc(db, ...MEMBERS(classCode), uid));
@@ -208,7 +222,12 @@ export const rankingApi: RankingApi = {
       const higher = await fs.getCountFromServer(fs.query(members, fs.where("score", ">", score)));
       return {
         entries,
-        me: { nickname: String(own.data().nickname ?? ""), score, rank: higher.data().count + 1 },
+        me: {
+          nickname: String(own.data().nickname ?? ""),
+          icon: String(own.data().icon ?? ""),
+          score,
+          rank: higher.data().count + 1,
+        },
       };
     });
   },

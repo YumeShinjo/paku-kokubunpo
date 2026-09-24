@@ -2,7 +2,7 @@ rules_version = '2';
 
 // ランキング(SPEC 8章)のセキュリティルール。
 //
-// データの形: classes/{クラスコード}/members/{匿名認証のuid} = { nickname, score, updatedAt }
+// データの形: classes/{クラスコード}/members/{匿名認証のuid} = { nickname, score, updatedAt, icon(あってもなくてもよい) }
 //  - クラスの一覧は取れない(/classes/{classCode} 自体にはルールがなく、拒否される)。
 //    クラスコード(合言葉)を知っている人だけが、そのクラスの members を読める。
 //  - 書き込み・削除は、自分のドキュメント(ドキュメントIDが自分のuid)だけ。他人のデータは変更できない。
@@ -17,10 +17,12 @@ service cloud.firestore {
         return request.auth != null && request.auth.uid == uid;
       }
 
-      // 形式: nickname(文字列・1〜48。アプリ側は12文字まで)/ score(0〜200000の整数)/ updatedAt(サーバー時刻)
+      // 形式: nickname(文字列・1〜48。アプリ側は12文字まで)/ score(0〜200000の整数)/ updatedAt(サーバー時刻)/
+      //       icon(主人公のアイコンの id。文字列・1〜32。古い版が書いたデータには無い)
       function validShape(data) {
-        return data.keys().hasOnly(['nickname', 'score', 'updatedAt'])
+        return data.keys().hasOnly(['nickname', 'score', 'updatedAt', 'icon'])
           && data.keys().hasAll(['nickname', 'score', 'updatedAt'])
+          && (!('icon' in data) || (data.icon is string && data.icon.size() >= 1 && data.icon.size() <= 32))
           && data.nickname is string
           && data.nickname.size() >= 1
           && data.nickname.size() <= 48

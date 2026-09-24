@@ -2,12 +2,18 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
+import { useProfileStore } from "@/app/store/profileStore";
+import { IconPicker } from "@/components/IconPicker";
+import { syncScore } from "@/features/ranking/scoreSync";
 
 /** 設定画面。BGM/SE音量とミュートを端末ローカルに保存する(7章)。 */
 export function SettingsScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const { bgmVolume, seVolume, muted, setBgmVolume, setSeVolume, setMuted } =
     useSettingsStore();
+
+  const iconId = useProfileStore((s) => s.iconId);
+  const setIcon = useProfileStore((s) => s.setIcon);
 
   const resetGuides = useTutorialStore((s) => s.resetGuides);
   const guidesPending = useTutorialStore((s) => s.seenGuides.length === 0);
@@ -22,6 +28,17 @@ export function SettingsScreen() {
   return (
     <div className="screen screen-settings">
       <h2>せってい</h2>
+
+      <div className="settings-icon">
+        アイコン(ランキングに でるよ)
+        <IconPicker
+          value={iconId}
+          onChange={(id) => {
+            setIcon(id);
+            void syncScore(); // ランキングに参加中なら、順位表のアイコンも変わる(通信できないときは、あとで自動で送られる)
+          }}
+        />
+      </div>
 
       <label>
         BGMおんりょう

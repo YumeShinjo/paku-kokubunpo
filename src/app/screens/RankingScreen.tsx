@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useRankingStore } from "@/app/store/rankingStore";
-import { hasPendingScore, syncScore } from "@/features/ranking/scoreSync";
+import { hasPendingIcon, hasPendingScore, syncScore } from "@/features/ranking/scoreSync";
+import { useProfileStore } from "@/app/store/profileStore";
+import { IconPicker } from "@/components/IconPicker";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import {
   readClassCodeFromUrl,
   validateClassCode,
@@ -57,6 +60,11 @@ export function RankingScreen() {
       nickname={nickname}
       totalScore={totalScore}
       pending={totalScore > lastSyncedScore}
+      onRename={async (newName) => {
+        // サーバーの自分のデータを書き換える(得点は大きいほうが残る)。通信できないときは、変えずにエラーを返す
+        const synced = await rankingApi.joinClass(classCode, { nickname: newName, icon: useProfileStore.getState().iconId }, totalScore);
+        join(classCode, newName, synced, useProfileStore.getState().iconId);
+      }}
       onLeave={async () => {
         setBusy(true);
         setMessage(null);
@@ -76,7 +84,7 @@ export function RankingScreen() {
   ) : (
     <JoinForm
       totalScore={totalScore}
-      onJoined={(code, name, score) => join(code, name, score)}
+      onJoined={(code, name, score, icon) => join(code, name, score, icon)}
       onBack={() => goTo({ name: "title" })}
     />
   );
@@ -90,13 +98,15 @@ function JoinForm({
   onBack,
 }: {
   totalScore: number;
-  onJoined: (classCode: string, nickname: string, syncedScore: number) => void;
+  onJoined: (classCode: string, nickname: string, syncedScore: number, icon: string) => void;
   onBack: () => void;
 }) {
   const [codeInput, setCodeInput] = useState(classCodeFromUrl);
   const [nameInput, setNameInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const iconId = useProfileStore((s) => s.iconId);
+  const setIcon = useProfileStore((s) => s.setIcon);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -108,8 +118,8 @@ function JoinForm({
     setBusy(true);
     setError(null);
     try {
-      const synced = await rankingApi.joinClass(code.value, name.value, totalScore);
-      onJoined(code.value, name.value, synced);
+      const synced = await rankingApi.joinClass(code.value, { nickname: name.value, icon: iconId }, totalScore);
+      onJoined(code.value, name.value, synced, iconId);
     } catch (e) {
       setError(ERROR_MESSAGES[toRankingError(e).code]);
     } finally {
@@ -149,6 +159,10 @@ function JoinForm({
             onChange={(e) => setNameInput(e.target.value)}
           />
         </label>
+        <div className="ranking-icon-field">
+          アイコン(ランキングに でるよ)
+          <IconPicker value={iconId} onChange={setIcon} />
+        </div>
         {error && (
           <p className="ranking-error" role="alert">
             {error}
@@ -172,6 +186,7 @@ function JoinedView({
   pending,
   busy,
   message,
+  onRename,
   onLeave,
   onBack,
 }: {
@@ -181,6 +196,7 @@ function JoinedView({
   pending: boolean;
   busy: boolean;
   message: string | null;
+  onRename: (nickname: string) => Promise<void>;
   onLeave: () => void;
   onBack: () => void;
 }) {
@@ -188,6 +204,12 @@ function JoinedView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const iconId = useProfileStore((s) => s.iconId);
+  const setIcon = useProfileStore((s) => s.setIcon);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(nickname);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -200,7 +222,7 @@ function JoinedView({
     } finally {
       setLoading(false);
     }
-    if (hasPendingScore() && (await syncScore()) === "synced") {
+    if ((hasPendingScore() || hasPendingIcon()) && (await syncScore()) === "synced") {
       try {
         setSnapshot(await rankingApi.fetchRanking(classCode));
         setError(null);
@@ -218,8 +240,77 @@ function JoinedView({
     <div className="screen screen-ranking">
       <h2>ランキング</h2>
       <p className="ranking-class">
-        クラスコード: <strong>{classCode}</strong> / ニックネーム: <strong>{nickname}</strong>
+        クラスコード: <strong>{classCode}</strong>
       </p>
+      <p className="ranking-class ranking-profile">
+        <PlayerIcon iconId={iconId} size={28} label="あなたの アイコン" /> ニックネーム: <strong>{nickname}</strong>
+      </p>
+      {editingName ? (
+        <form
+          className="ranking-form ranking-rename"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const name = validateNickname(nameInput);
+            if (!name.ok) return setNameError(name.message);
+            if (name.value === nickname) return setEditingName(false);
+            setRenaming(true);
+            setNameError(null);
+            try {
+              await onRename(name.value);
+              setEditingName(false);
+            } catch (e) {
+              setNameError(ERROR_MESSAGES[toRankingError(e).code]);
+            } finally {
+              setRenaming(false);
+            }
+          }}
+        >
+          <label>
+            あたらしい ニックネーム({NICKNAME_MAX}もじまで)
+            <input
+              type="text"
+              value={nameInput}
+              maxLength={NICKNAME_MAX * 2}
+              autoComplete="off"
+              onChange={(e) => setNameInput(e.target.value)}
+            />
+          </label>
+          {nameError && (
+            <p className="ranking-error" role="alert">
+              {nameError}
+            </p>
+          )}
+          <div className="quit-confirm-buttons">
+            <button type="submit" disabled={renaming}>
+              {renaming ? "つうしんちゅう…" : "かえる"}
+            </button>
+            <button type="button" disabled={renaming} onClick={() => setEditingName(false)}>
+              やめる
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setNameInput(nickname);
+            setNameError(null);
+            setEditingName(true);
+          }}
+        >
+          ニックネームを かえる
+        </button>
+      )}
+      <div className="ranking-icon-field">
+        アイコンを かえる
+        <IconPicker
+          value={iconId}
+          onChange={(id) => {
+            setIcon(id);
+            void syncScore().then(() => void load()); // 通信できないときは、あとで自動で送られる
+          }}
+        />
+      </div>
       <p className="ranking-score">
         あなたの とくてん: <strong>{totalScore}</strong>
         {snapshot?.me && (
@@ -256,6 +347,7 @@ function JoinedView({
                 className={[entry.isMe ? "ranking-me" : "", entry.rank <= 3 ? "ranking-top" : ""].filter(Boolean).join(" ")}
               >
                 <span className="ranking-rank">{entry.rank}</span>
+                <PlayerIcon iconId={entry.isMe ? iconId : entry.icon} size={24} />
                 <span className="ranking-name">{entry.nickname}</span>
                 <span className="ranking-points">{entry.score}てん</span>
               </li>

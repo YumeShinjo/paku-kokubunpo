@@ -1,4 +1,5 @@
 import { useProgressStore } from "@/app/store/progressStore";
+import { useProfileStore } from "@/app/store/profileStore";
 import { useRankingStore } from "@/app/store/rankingStore";
 import { rankingApi, type RankingApi } from "@/lib/rankingApi";
 
@@ -6,6 +7,7 @@ import { rankingApi, type RankingApi } from "@/lib/rankingApi";
  * 得点の同期(9章: スコアは一旦ローカルに貯めて、ネット接続時に自動でFirestoreへ送る)。
  * 得点は累計(progressStore.totalScore)なので、送るのは「いまの累計」だけでよい。
  * 未送信の得点があるか = totalScore が lastSyncedScore を超えているか(別途キューは持たない)。
+ * 主人公のアイコンも同じ仕組みで送る(選んだアイコンが、送信済みのアイコンと違っていれば未送信)。
  * ステージクリア時・アプリ起動時・通信が戻ったときに呼ぶ。
  */
 export type SyncResult = "not-joined" | "up-to-date" | "offline" | "synced" | "failed";
@@ -15,6 +17,12 @@ let inFlight: Promise<SyncResult> | null = null;
 export function hasPendingScore(): boolean {
   const { classCode, lastSyncedScore } = useRankingStore.getState();
   return classCode !== null && useProgressStore.getState().totalScore > lastSyncedScore;
+}
+
+/** 選んだアイコンが、まだサーバーへ送られていないか(参加中のときだけ) */
+export function hasPendingIcon(): boolean {
+  const { classCode, syncedIcon } = useRankingStore.getState();
+  return classCode !== null && useProfileStore.getState().iconId !== syncedIcon;
 }
 
 export function syncScore(api: RankingApi = rankingApi): Promise<SyncResult> {
@@ -29,7 +37,7 @@ export function syncScore(api: RankingApi = rankingApi): Promise<SyncResult> {
 /** 送信している間に得点が増えていたら、続けてもう一度送る(取りこぼし防止。無限に続けないよう最大3回) */
 async function runUntilCaughtUp(api: RankingApi): Promise<SyncResult> {
   let result = await run(api);
-  for (let i = 0; i < 2 && result === "synced" && hasPendingScore(); i++) {
+  for (let i = 0; i < 2 && result === "synced" && (hasPendingScore() || hasPendingIcon()); i++) {
     result = await run(api);
   }
   return result;
@@ -38,13 +46,17 @@ async function runUntilCaughtUp(api: RankingApi): Promise<SyncResult> {
 async function run(api: RankingApi): Promise<SyncResult> {
   const { classCode, nickname } = useRankingStore.getState();
   if (classCode === null || nickname === null) return "not-joined";
+  const { lastSyncedScore, syncedIcon } = useRankingStore.getState();
   const total = useProgressStore.getState().totalScore;
-  if (total <= useRankingStore.getState().lastSyncedScore) return "up-to-date";
+  const icon = useProfileStore.getState().iconId;
+  if (total <= lastSyncedScore && icon === syncedIcon) return "up-to-date";
   if (!api.isConfigured()) return "failed";
   if (typeof navigator !== "undefined" && navigator.onLine === false) return "offline";
   try {
-    await api.submitScore(classCode, nickname, total);
-    useRankingStore.getState().markSynced(total);
+    // アイコンだけを送るとき、別の端末で貯めた得点のほうが高いこともある(得点はサーバー側で減らせない)ので、送信済みの得点を下回らせない
+    const score = Math.max(total, lastSyncedScore);
+    await api.submitScore(classCode, { nickname, icon }, score);
+    useRankingStore.getState().markSynced(score, icon);
     return "synced";
   } catch {
     // 失敗しても得点はローカルに残っているので、次の機会に再送される

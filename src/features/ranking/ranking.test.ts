@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useProgressStore } from "@/app/store/progressStore";
+import { useProfileStore } from "@/app/store/profileStore";
 import { useRankingStore } from "@/app/store/rankingStore";
+import { DEFAULT_ICON_ID, findPlayerIcon, isPlayerIconId, PLAYER_ICONS } from "@/data/playerIcons";
 import { afterEach } from "vitest";
 import { assignRanks, RankingError, toRankingError, withTimeout, type RankingApi } from "@/lib/rankingApi";
 import { containsNgWord, normalizeForNgCheck } from "./ngWords";
 import { normalizeClassCode, readClassCodeFromUrl, validateClassCode, validateNickname } from "./inputRules";
-import { hasPendingScore, syncScore } from "./scoreSync";
+import { hasPendingIcon, hasPendingScore, syncScore } from "./scoreSync";
 
 describe("NGワード判定", () => {
   it("表記をそろえて判定する(全角半角・カタカナ・記号や空白・大文字小文字)", () => {
@@ -110,7 +112,8 @@ function fakeApi(overrides: Partial<RankingApi> = {}): RankingApi & { submitScor
 describe("得点の同期(オフラインで貯めて、つながったら送る)", () => {
   beforeEach(() => {
     useProgressStore.setState({ clearedStageIds: [], totalScore: 0 });
-    useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0 });
+    useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0, syncedIcon: DEFAULT_ICON_ID });
+    useProfileStore.setState({ iconId: DEFAULT_ICON_ID });
     Object.defineProperty(navigator, "onLine", { value: true, configurable: true });
   });
 
@@ -127,7 +130,7 @@ describe("得点の同期(オフラインで貯めて、つながったら送る
     useProgressStore.setState({ totalScore: 120 });
     expect(hasPendingScore()).toBe(true);
     expect(await syncScore(api)).toBe("synced");
-    expect(api.submitScore).toHaveBeenCalledWith("3a", "たろう", 120);
+    expect(api.submitScore).toHaveBeenCalledWith("3a", { nickname: "たろう", icon: DEFAULT_ICON_ID }, 120);
     expect(useRankingStore.getState().lastSyncedScore).toBe(120);
     expect(hasPendingScore()).toBe(false);
   });
@@ -169,8 +172,8 @@ describe("得点の同期(オフラインで貯めて、つながったら送る
     useRankingStore.setState({ classCode: "3a", nickname: "たろう", lastSyncedScore: 0 });
     useProgressStore.setState({ totalScore: 50 });
     expect(await syncScore(api)).toBe("synced");
-    expect(submit).toHaveBeenNthCalledWith(1, "3a", "たろう", 50);
-    expect(submit).toHaveBeenNthCalledWith(2, "3a", "たろう", 90);
+    expect(submit).toHaveBeenNthCalledWith(1, "3a", { nickname: "たろう", icon: DEFAULT_ICON_ID }, 50);
+    expect(submit).toHaveBeenNthCalledWith(2, "3a", { nickname: "たろう", icon: DEFAULT_ICON_ID }, 90);
     expect(useRankingStore.getState().lastSyncedScore).toBe(90);
   });
 
@@ -181,10 +184,100 @@ describe("得点の同期(オフラインで貯めて、つながったら送る
   });
 
   it("参加・退出で、クラスとニックネームと送信済み得点が切り替わる", () => {
-    useRankingStore.getState().join("3a", "たろう", 70);
-    expect(useRankingStore.getState()).toMatchObject({ classCode: "3a", nickname: "たろう", lastSyncedScore: 70 });
+    useRankingStore.getState().join("3a", "たろう", 70, "pink-heart");
+    expect(useRankingStore.getState()).toMatchObject({
+      classCode: "3a",
+      nickname: "たろう",
+      lastSyncedScore: 70,
+      syncedIcon: "pink-heart",
+    });
     useRankingStore.getState().leave();
-    expect(useRankingStore.getState()).toMatchObject({ classCode: null, nickname: null, lastSyncedScore: 0 });
+    expect(useRankingStore.getState()).toMatchObject({
+      classCode: null,
+      nickname: null,
+      lastSyncedScore: 0,
+      syncedIcon: null,
+    });
+  });
+
+  it("同じクラスのままニックネームを変えても(join)、送信済みの得点は減らない", () => {
+    useRankingStore.setState({ classCode: "3a", nickname: "たろう", lastSyncedScore: 100 });
+    useRankingStore.getState().join("3a", "はなこ", 80, DEFAULT_ICON_ID);
+    expect(useRankingStore.getState()).toMatchObject({ nickname: "はなこ", lastSyncedScore: 100 });
+  });
+});
+
+describe("主人公のアイコンの同期", () => {
+  beforeEach(() => {
+    useProgressStore.setState({ clearedStageIds: [], totalScore: 100 });
+    useRankingStore.setState({ classCode: "3a", nickname: "たろう", lastSyncedScore: 100, syncedIcon: DEFAULT_ICON_ID });
+    useProfileStore.setState({ iconId: DEFAULT_ICON_ID });
+    Object.defineProperty(navigator, "onLine", { value: true, configurable: true });
+  });
+
+  it("アイコンを変えると未送信になり、次の同期でアイコンつきで送られる(得点が同じでも)", async () => {
+    const api = fakeApi();
+    expect(hasPendingIcon()).toBe(false);
+    useProfileStore.getState().setIcon("gold-star");
+    expect(hasPendingIcon()).toBe(true);
+    expect(await syncScore(api)).toBe("synced");
+    expect(api.submitScore).toHaveBeenCalledWith("3a", { nickname: "たろう", icon: "gold-star" }, 100);
+    expect(useRankingStore.getState().syncedIcon).toBe("gold-star");
+    expect(hasPendingIcon()).toBe(false);
+  });
+
+  it("アイコンだけを送るとき、送信済みの得点を下回る得点は送らない(別の端末で貯めた得点が消えない)", async () => {
+    const api = fakeApi();
+    useProgressStore.setState({ totalScore: 20 }); // この端末の累計は少ないが、サーバーには500点ある
+    useRankingStore.setState({ lastSyncedScore: 500 });
+    useProfileStore.getState().setIcon("blue-square");
+    await syncScore(api);
+    expect(api.submitScore).toHaveBeenCalledWith("3a", { nickname: "たろう", icon: "blue-square" }, 500);
+  });
+
+  it("オフラインでアイコンを変えても失われず、通信が戻ったら送られる", async () => {
+    Object.defineProperty(navigator, "onLine", { value: false, configurable: true });
+    const api = fakeApi();
+    useProfileStore.getState().setIcon("sky-drop");
+    expect(await syncScore(api)).toBe("offline");
+    expect(hasPendingIcon()).toBe(true);
+    Object.defineProperty(navigator, "onLine", { value: true, configurable: true });
+    expect(await syncScore(api)).toBe("synced");
+    expect(api.submitScore).toHaveBeenCalledTimes(1);
+  });
+
+  it("参加していないときは、アイコンを変えても何も送らない", async () => {
+    const api = fakeApi();
+    useRankingStore.setState({ classCode: null, nickname: null });
+    useProfileStore.getState().setIcon("gold-star");
+    expect(hasPendingIcon()).toBe(false);
+    expect(await syncScore(api)).toBe("not-joined");
+    expect(api.submitScore).not.toHaveBeenCalled();
+  });
+
+  it("古い版が書いたデータ(アイコンなし)の順位表は、標準のアイコンで表示できる", () => {
+    const entries = assignRanks([{ uid: "a", nickname: "たろう", score: 10 }], "a");
+    expect(entries[0].icon).toBe("");
+    expect(findPlayerIcon(entries[0].icon).id).toBe(DEFAULT_ICON_ID);
+    expect(findPlayerIcon("no-such-icon").id).toBe(DEFAULT_ICON_ID);
+  });
+});
+
+describe("プロフィール(アイコン)の保存", () => {
+  it("一覧にない id は選べず、いまのアイコンのまま", () => {
+    useProfileStore.setState({ iconId: "pink-heart" });
+    useProfileStore.getState().setIcon("no-such-icon");
+    expect(useProfileStore.getState().iconId).toBe("pink-heart");
+  });
+
+  it("一覧のすべてのアイコンが、重複しない id と名前を持つ", () => {
+    expect(new Set(PLAYER_ICONS.map((i) => i.id)).size).toBe(PLAYER_ICONS.length);
+    expect(PLAYER_ICONS.length).toBeGreaterThanOrEqual(4);
+    for (const icon of PLAYER_ICONS) {
+      expect(isPlayerIconId(icon.id)).toBe(true);
+      expect(icon.label.length).toBeGreaterThan(0);
+      expect(icon.id.length).toBeLessThanOrEqual(32); // firestore.rules の icon の長さの上限
+    }
   });
 });
 
