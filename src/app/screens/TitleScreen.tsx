@@ -5,6 +5,7 @@ import { ScreenBackground } from "@/components/ScreenBackground";
 import { findImage, IMAGE } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
+import { useReviewStore } from "@/app/store/reviewStore";
 import { getEndingTitle } from "@/data/titles";
 import { useStoryStore } from "@/app/store/storyStore";
 
@@ -18,6 +19,7 @@ export function TitleScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const title = getEndingTitle(useStoryStore((s) => s.choices));
   const logoUrl = findImage(IMAGE.titleLogo);
+  const hungry = useReviewStore((s) => s.starredQuestionIds.length > 0); // 星の問題が残っているあいだは、おなかがすいて眠そう
 
   function handleStart() {
     unlockPlayback();
@@ -39,7 +41,7 @@ export function TitleScreen() {
           "パクっと国文法"
         )}
       </h1>
-      <Mascot />
+      <Mascot size="large" expression={hungry ? "sleepy" : undefined} />
       <HungryBadge />
       {title && (
         <p className="title-owned">

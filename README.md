@@ -212,8 +212,8 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 ### いまの仮素材(プレースホルダー)の所在
 | 種類 | いまの仮表示 | 場所 | 本番素材の置き場所 |
 | --- | --- | --- | --- |
-| マスコット | 絵文字(🥚→…→👑、本来の姿は👸) | [Mascot.tsx](src/features/mascot/Mascot.tsx) の `growthEmoji` / `TRUE_FORM_EMOJI` | `src/assets/images/mascot/` |
-| 小ボス・ラスボス | 立ち絵なし(文字とHPゲージのみ) | [QuizPlayer.tsx](src/features/quiz/QuizPlayer.tsx) のボスパネル | `src/assets/images/boss/` |
+| マスコット | **本番画像に差し替え済み**(ベース・表情5種・本来の姿)。成長アクセサリー7段階は未調達で、それまでは絵で成長が見えない(絵文字は素材がないときの仮表示として残してある) | [Mascot.tsx](src/features/mascot/Mascot.tsx) の `growthEmoji` / `TRUE_FORM_EMOJI` | `src/assets/images/mascot/` |
+| 小ボス・ラスボス | **本番画像に差し替え済み**(小ボス7人・王様2形態) | [BossPortrait.tsx](src/features/quiz/BossPortrait.tsx) | `src/assets/images/boss/` |
 | 背景 | 単色・グラデーション | [global.css](src/styles/global.css) の `--color-bg` と `.story-stage` | `src/assets/images/bg/` |
 | タイトルロゴ・称号バッジ | 文字の見出し・🏅 | [TitleScreen.tsx](src/app/screens/TitleScreen.tsx) / [TitleBadge.tsx](src/components/TitleBadge.tsx) | `src/assets/images/ui/` |
 | BGM | なし(無音) | (素材が置かれるまで鳴らさない) | `src/assets/audio/bgm/` |
@@ -329,4 +329,10 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 - 8px 以上動かしたらドラッグ、それ未満はタップ扱い。ドラッグの終わりに続けて届く click は選択として扱わない。
 - カゴが画面に収まらないとき(品詞分類は10個)に備え、ドラッグ中に画面の上下の端へ寄ると自動でスクロールする。単語のカードは `touch-action: none` で、触ったまま動かしてもページが動かない。
 - 答え合わせのあとは、単語・カゴとも押せない(1問につき判定は1回だけ)。初回の操作ガイドも、この操作に合わせた。
+
+## キャラクター画像の使いどころ(10章)
+- **マスコット**: タイトル・ストーリー・結果画面の本体はベース画像。表情は [MascotFace](src/features/mascot/Mascot.tsx) / `Mascot` の `expression` で出し分ける
+  (正解=喜び、不正解=しょんぼり、苦手を克服=もぐもぐ、エリアクリア・成長の通知=びっくり、星の問題が残っているタイトル=眠そう、「もう少し!」=しょんぼり)。表情の画像がなければ、ベースのまま(または何も出さない)。
+- **小ボス**: エリアごとの1枚絵を、小ボス戦のパネルと、ストーリーでそのボスが話すとき(台詞の話者名から [bosses.ts](src/data/bosses.ts) で引く)に出す。**ラスボス**は取り憑かれた姿をパネルに、王様の台詞では浄化後/取り憑かれた姿を出し分ける。
+- 画像は 512×512 の WebP に変換して置いている(詳しくは [src/assets/README.md](src/assets/README.md))。ゲーム内の画像は Git に含まれない(配信は Firebase Hosting)。
 

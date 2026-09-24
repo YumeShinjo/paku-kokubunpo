@@ -8,6 +8,7 @@ import { buildPostClearScreen } from "@/features/story/storyFlow";
 import { syncScore } from "@/features/ranking/scoreSync";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useToastStore } from "@/app/store/toastStore";
+import { MascotFace } from "@/features/mascot/Mascot";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
@@ -97,6 +98,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   if (result && isBoss && !result.bossDefeated) {
     return (
       <div className="screen screen-stage-result">
+        <MascotFace expression="sad" size="large" />
         <h2>もう少し!</h2>
         <p>あと少しで浄化できたよ。何度でも挑戦できるよ!</p>
         <p>
@@ -115,6 +117,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   if (result) {
     return (
       <div className="screen screen-stage-result">
+        <MascotFace expression={justClearedArea ? "surprised" : "happy"} size="large" />
         <h2>
           {label === null ? (
             "クリア!"

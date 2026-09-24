@@ -21,7 +21,8 @@ describe("素材の受け皿(registry)", () => {
     expect(IMAGE.mascotBase).toBe("mascot/base");
     expect(IMAGE.mascotAccessory(3)).toBe("mascot/accessory-3");
     expect(IMAGE.mascotTrue).toBe("mascot/true");
-    expect(IMAGE.subBossRole("ohzaNoMa")).toBe("boss/subboss-ohzaNoMa");
+    expect(IMAGE.subBoss("ohzaNoMa")).toBe("boss/subboss-ohzaNoMa");
+    expect(IMAGE.mascotExpression("happy")).toBe("mascot/happy");
     expect(IMAGE.background("kotobaNoIchiba")).toBe("bg/kotobaNoIchiba");
     expect(IMAGE.background("title")).toBe("bg/title");
     expect(IMAGE.titleBadge("castle")).toBe("ui/badge-castle");

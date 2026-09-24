@@ -4,13 +4,15 @@ import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
 import { Mascot } from "@/features/mascot/Mascot";
 import { findImage, IMAGE } from "@/assets/registry";
+import { subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import type { Screen } from "@/app/store/navigationStore";
 
 /**
  * ストーリー演出画面(3章: ステージ間のストーリーテキストは短く、必ずスキップ可能)。
- * 背景・キャラクターは本番素材が揃うまでの仮表示(単色パネル+マスコットの仮絵)。
+ * 背景・キャラクターは素材(src/assets/images/)があればその絵を、なければ仮表示(単色パネル+マスコットの絵文字)。
+ * 立ち絵は、コト(マスコット)・王様・小ボスの台詞のとき、話者に合わせて出す。
  *
  * 選択肢を持つイベント(王座の間のエンディング分岐)は、最後の行のあとに選択肢を出す。
  * スキップは選択肢の手前までしか進めない(選択そのものは飛ばせない)。
@@ -55,6 +57,9 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         ? IMAGE.lastBossPossessed
         : "",
   );
+  // 小ボスの台詞のときは、そのボスの立ち絵(素材があれば)。
+  const bossAreaId = subBossAreaOf(line.speaker);
+  const bossUrl = bossAreaId ? findImage(IMAGE.subBoss(bossAreaId)) : undefined;
   const lastIndex = event.lines.length - 1;
   const isLast = lineIndex >= lastIndex;
   const options = event.choice?.options;
@@ -86,6 +91,11 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         {kingUrl && (
           <div className="story-character">
             <img className="story-king" src={kingUrl} alt="" draggable={false} />
+          </div>
+        )}
+        {bossUrl && (
+          <div className="story-character">
+            <img className="story-king" src={bossUrl} alt="" draggable={false} />
           </div>
         )}
         {line.showMascot && (

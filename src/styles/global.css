@@ -811,18 +811,84 @@ button.incorrect {
   margin: 0 auto;
 }
 
+/* マスコットの絵の大きさ(既定=normal 8rem)。small=表情アイコン程度、large=タイトル・結果画面の見せ場 */
+.mascot {
+  --mascot-size: 8rem;
+}
+
+.mascot-small {
+  --mascot-size: 3.25rem;
+}
+
+.mascot-large {
+  --mascot-size: 11rem;
+}
+
 .mascot-layers {
   position: relative;
   display: inline-block;
-  width: 8rem;
-  height: 8rem;
+  width: var(--mascot-size);
+  height: var(--mascot-size);
 }
 
 .mascot-image {
   display: block;
-  width: 8rem;
-  height: 8rem;
+  width: var(--mascot-size);
+  height: var(--mascot-size);
   object-fit: contain;
+}
+
+.mascot-face {
+  --mascot-size: 3.25rem;
+  display: inline-block;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.mascot-face.mascot-large {
+  --mascot-size: 9rem;
+}
+
+.mascot-face.mascot-normal {
+  --mascot-size: 6rem;
+}
+
+.screen-stage-result .mascot-face {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 通知の中の顔は、文字と同じ高さに収める */
+.toast .mascot-face {
+  --mascot-size: 2.2rem;
+}
+
+/* 正誤フィードバックの中の顔 */
+.feedback > .mascot-face {
+  display: block;
+  margin: 0 auto 0.25rem;
+}
+
+/* 画像のマスコットの、ストーリー演出(淡く光る・本来の姿) */
+.mascot-glow .mascot-image {
+  animation: mascot-glow-image 1.8s ease-in-out infinite;
+}
+
+@keyframes mascot-glow-image {
+  50% {
+    filter: drop-shadow(0 0 0.8rem #fff3b0) brightness(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-glow .mascot-image {
+    animation: none;
+    filter: drop-shadow(0 0 0.6rem #fff3b0);
+  }
+}
+
+.story-character .mascot {
+  --mascot-size: 12rem;
 }
 
 .mascot-layers .mascot-image {
@@ -832,8 +898,8 @@ button.incorrect {
 
 .boss-portrait {
   position: relative;
-  width: 6rem;
-  height: 6rem;
+  width: 8rem;
+  height: 8rem;
   margin: 0 auto 0.4rem;
 }
 
@@ -845,9 +911,10 @@ button.incorrect {
   object-fit: contain;
 }
 
+/* ストーリーの立ち絵(王様・小ボス) */
 .story-king {
   display: block;
-  max-height: 12rem;
+  max-height: 14rem;
   width: auto;
 }
 

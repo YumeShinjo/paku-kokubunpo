@@ -61,6 +61,10 @@ export const listAudio = (): string[] => [...audioIndex.keys()].sort();
 
 /* ---------------- 素材の名前(置き場所とファイル名の取り決め) ---------------- */
 
+/** マスコットの表情(ベースの「通常」以外の差分): 喜び・しょんぼり・もぐもぐ・びっくり・眠そう */
+export const MASCOT_EXPRESSIONS = ["happy", "sad", "eating", "surprised", "sleepy"] as const;
+export type MascotExpression = (typeof MASCOT_EXPRESSIONS)[number];
+
 /** 画像の名前。src/assets/images/<名前>.png など */
 export const IMAGE = {
   /** マスコットのベース(成長に関わらず常に下に敷く) */
@@ -69,10 +73,10 @@ export const IMAGE = {
   mascotAccessory: (stage: number) => `mascot/accessory-${stage}`,
   /** 本来の姿(真エンディング用の1枚) */
   mascotTrue: "mascot/true",
-  /** 小ボスの共通ベース。役職ごとの装飾差分を上に重ねる */
-  subBossBase: "boss/subboss-base",
-  /** 小ボスの役職ごとの装飾差分(エリアidごと) */
-  subBossRole: (areaId: string) => `boss/subboss-${areaId}`,
+  /** 表情の差分(ベースと同じキャンバスサイズ。ベースの代わりに表示する) */
+  mascotExpression: (expression: MascotExpression) => `mascot/${expression}`,
+  /** 小ボスの立ち絵(エリアidごとに、役職ごとの1枚絵) */
+  subBoss: (areaId: string) => `boss/subboss-${areaId}`,
   /** ラスボス(王様)。取り憑かれた姿 */
   lastBossPossessed: "boss/lastboss-possessed",
   /** ラスボス(王様)。浄化後の元の姿 */

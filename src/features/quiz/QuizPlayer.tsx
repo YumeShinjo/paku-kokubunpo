@@ -11,6 +11,7 @@ import { useTutorialStore } from "@/app/store/tutorialStore";
 import { guideKeyOf } from "@/data/engineGuide";
 import { EngineGuide } from "./EngineGuide";
 import { BossPortrait } from "./BossPortrait";
+import { MascotFace } from "@/features/mascot/Mascot";
 import { recordReviewResult, type ReviewOutcome } from "./review";
 import type { QuizProgress } from "./session";
 import { ScreenBackground } from "@/components/ScreenBackground";
@@ -296,6 +297,11 @@ export function QuizPlayer({
               <span>✨</span>
             </span>
           )}
+          {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ)、不正解=しょんぼり */}
+          <MascotFace
+            expression={feedback.correct ? (feedback.review?.bonusGained ? "eating" : "happy") : "sad"}
+            size="small"
+          />
           <p className="feedback-message">{feedback.message}</p>
           {feedback.review && (
             <p className="feedback-overcome">

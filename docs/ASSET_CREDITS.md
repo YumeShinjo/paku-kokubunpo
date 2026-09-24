@@ -11,6 +11,10 @@
 | 素材名 | 種別(画像/BGM/SE) | 出典・生成方法 | ライセンス | 使用箇所 |
 | --- | --- | --- | --- | --- |
 | (例)相棒_通常.png | 画像 | 生成AIツール名を記載 | 利用規約確認済み | マスコット全般 |
+| マスコット コト(通常・喜び・しょんぼり・もぐもぐ・びっくり・眠そう) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | マスコットの表示全般(タイトル・ストーリー・正誤フィードバック・結果画面) |
+| マスコット 本来の姿(コレット) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ラスボス撃破後・エンディング結果 |
+| 王様ヴェルバルト(取り憑かれた姿・浄化後) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ラスボス戦のパネル、ストーリーの王様の台詞 |
+| 小ボス7人(メイ・レル・オンヴィン・ジョゼット・ネジラルド・サイラス・ニジュヴェール) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | 小ボス戦のパネル、ストーリーの小ボスの台詞 |
 | アプリアイコン(仮) | 画像 | 自作(scripts/generate-icons.py で生成) | 自作のため制限なし | ホーム画面のアイコン |
 | M PLUS Rounded 1c | フォント | Google Fonts(npmパッケージ @fontsource/m-plus-rounded-1c から同梱) | SIL Open Font License 1.1(自由に使用・再配布可) | アプリ全体の文字 |
 | 爽やかなアイリッシュ的なBGM_2 | BGM | OpenTracks / 鷹尾まさき(タカオマサキ) | 配布元の利用規約に従う(利用条件は要確認) | タイトル・設定・図鑑・ランキング・通常のクレジット(title) |

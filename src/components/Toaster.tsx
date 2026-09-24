@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useToastStore, type Toast } from "@/app/store/toastStore";
 import { duckBgm, playSe, seBusyRemainingMs, seDurationMs } from "@/lib/audio";
+import { MascotFace } from "@/features/mascot/Mascot";
+import { findImage, IMAGE } from "@/assets/registry";
 
 /** 通知が見えている時間と、次の通知までの間(ミリ秒) */
 export const TOAST_VISIBLE_MS = 2500;
@@ -66,7 +68,12 @@ export function Toaster() {
   return (
     <div className="toast-area" role="status" aria-live="polite">
       <div key={shown.id} className={`toast ${leaving ? "is-leaving" : ""}`.trim()}>
-        <span aria-hidden="true">{shown.icon}</span> {shown.message}
+        {shown.face && findImage(IMAGE.mascotExpression(shown.face)) ? (
+          <MascotFace expression={shown.face} size="small" />
+        ) : (
+          <span aria-hidden="true">{shown.icon}</span>
+        )}{" "}
+        {shown.message}
       </div>
     </div>
   );

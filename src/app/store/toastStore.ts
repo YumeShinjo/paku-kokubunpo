@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { SeKind } from "@/lib/audio";
+import type { MascotExpression } from "@/assets/registry";
 
 /**
  * 画面の隅に出す短い通知(トースト)の順番待ち。
@@ -11,11 +12,13 @@ export interface Toast {
   icon: string;
   message: string;
   se: SeKind;
+  /** マスコットの表情(素材があれば、アイコンの代わりに出す) */
+  face?: MascotExpression;
 }
 
 /** エリアクリアで出す通知の内容 */
 export const TOAST_CONTENT = {
-  growth: { icon: "✨", message: "せいちょうした!", se: "growth" },
+  growth: { icon: "✨", message: "せいちょうした!", se: "growth", face: "surprised" },
   pageUnlock: { icon: "📖", message: "ずかんが ふえたよ!", se: "pageUnlock" },
 } as const satisfies Record<string, Omit<Toast, "id">>;
 

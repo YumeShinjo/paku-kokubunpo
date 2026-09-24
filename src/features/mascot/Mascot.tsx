@@ -1,12 +1,15 @@
 import type { MascotForm } from "@/data/story/schema";
 import { useMascotStore } from "@/app/store/mascotStore";
-import { findImage, IMAGE, MASCOT_ACCESSORY_STAGES } from "@/assets/registry";
+import { findImage, IMAGE, MASCOT_ACCESSORY_STAGES, type MascotExpression } from "@/assets/registry";
 
 /**
  * マスコット表示(6章: ベース画像+アクセサリー画像のレイヤー方式)。
  * 素材(src/assets/images/mascot/)が置かれていればその画像を、なければ絵文字で仮表示する。
  *  - base + accessory-1〜N を重ねて表示(N=序章を除いてクリアしたエリア数。上限は MASCOT_ACCESSORY_STAGES=7)
  *  - true(本来の姿)は専用の1枚絵
+ *
+ * expression は表情の差分(喜び・しょんぼり・もぐもぐ・びっくり・眠そう)。素材(mascot/<表情>)があれば、ベースの代わりにその絵を出す
+ * (なければ通常の絵のまま)。size で大きさを変える(small=アイコン程度 / large=見せ場)。
  *
  * form はストーリー演出用(2章「変身のタイミング」):
  *  - "glow": 宰相撃破の予兆として、成長姿のまま淡く光る
@@ -15,13 +18,24 @@ import { findImage, IMAGE, MASCOT_ACCESSORY_STAGES } from "@/assets/registry";
 const growthEmoji = ["🥚", "🐣", "🐥", "🐤", "🐦", "🦜", "🦚", "👑"];
 const TRUE_FORM_EMOJI = "👸";
 
-export function Mascot({ form }: { form?: MascotForm }) {
+export function Mascot({
+  form,
+  expression,
+  size = "normal",
+}: {
+  form?: MascotForm;
+  expression?: MascotExpression;
+  size?: "small" | "normal" | "large";
+}) {
   const growthStage = useMascotStore((s) => s.growthStage);
   const bonusAccessoryIds = useMascotStore((s) => s.bonusAccessoryIds);
 
   const label = form === "true" ? "王女コレット" : `マスコット 成長段階${growthStage}`;
   const trueUrl = form === "true" ? findImage(IMAGE.mascotTrue) : undefined;
-  const baseUrl = form !== "true" ? findImage(IMAGE.mascotBase) : undefined;
+  const baseUrl =
+    form !== "true"
+      ? ((expression && findImage(IMAGE.mascotExpression(expression))) || findImage(IMAGE.mascotBase))
+      : undefined;
 
   let body;
   if (trueUrl) {
@@ -50,11 +64,25 @@ export function Mascot({ form }: { form?: MascotForm }) {
   }
 
   return (
-    <div className={`mascot ${form ? `mascot-${form}` : ""}`.trim()} aria-label={label}>
+    <div className={["mascot", form ? `mascot-${form}` : "", `mascot-${size}`].filter(Boolean).join(" ")} aria-label={label}>
       {body}
       {form === undefined && bonusAccessoryIds.length > 0 && (
         <span className="mascot-bonus-count">✨{bonusAccessoryIds.length}</span>
       )}
     </div>
+  );
+}
+
+/**
+ * マスコットの表情だけを、小さく出す(正誤フィードバック・結果画面・通知など)。表情の素材がなければ何も出さない
+ * (絵文字の仮表示は、ここでは出さない)。アクセサリーは重ねない。
+ */
+export function MascotFace({ expression, size = "small" }: { expression: MascotExpression; size?: "small" | "normal" | "large" }) {
+  const url = findImage(IMAGE.mascotExpression(expression));
+  if (!url) return null;
+  return (
+    <span className={`mascot-face mascot-${size}`} aria-hidden="true">
+      <img className="mascot-image" src={url} alt="" draggable={false} />
+    </span>
   );
 }
