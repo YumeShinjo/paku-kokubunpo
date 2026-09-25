@@ -267,4 +267,29 @@ describe("getQuestionsForStage", () => {
       expect(areaQuestionIds.has(q.id)).toBe(true);
     }
   });
+
+  it("カ変動詞「来る」の「来」の直後に、空欄(___)を置いた問題がない(「来こない」のような、日本語の表記として成り立たない表示を防ぐ)", () => {
+    const plain = (t: { text: string }[] | undefined) => (t ?? []).map((s) => s.text).join("");
+    for (const q of getAllQuestions()) {
+      const texts =
+        q.engine === "choice"
+          ? [plain(q.prompt), plain(q.situation), ...q.choices.map((c) => plain(c.text))]
+          : q.engine === "assembly"
+            ? [plain(q.instruction), plain(q.sentenceTemplate)]
+            : [plain(q.instruction), ...q.items.map((i) => plain(i.text))];
+      for (const text of texts) expect(text, `${q.id}: ${text}`).not.toMatch(/来___|来＿＿＿/);
+    }
+  });
+
+  it("「来」の読み(こ・き・く)を問う問題は、「来ない」と自然に書いた文で、読みを選ばせる形になっている", () => {
+    const q = getAllQuestions().find((x) => x.id === "kaji-doushi-shurui-11")!;
+    expect(q.engine).toBe("choice");
+    if (q.engine !== "choice") return;
+    const plain = (t: { text: string }[] | undefined) => (t ?? []).map((s) => s.text).join("");
+    expect(plain(q.situation)).toBe("友達が来ない。");
+    expect(plain(q.prompt)).toContain("「来」の読み");
+    expect(q.choices.map((c) => plain(c.text))).toEqual(["こ", "き", "く"]);
+    expect(plain(q.choices.find((c) => c.id === q.correctChoiceId)!.text)).toBe("こ");
+  });
 });
+

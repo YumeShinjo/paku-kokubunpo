@@ -13,11 +13,13 @@ function q(
   katsuyouShurui: string,
   point: string,
   explanation: string,
+  /** 問いの文を、既定の「空欄にあてはまる音を選ぶ」形から変えたいとき(カ変「来る」など、読みそのものが変わる動詞) */
+  prompt?: string,
 ): ChoiceQuestion {
   return choiceQ({
     id,
     unit: UNIT,
-    prompt: PROMPT_PREFIX.replace("%", word),
+    prompt: prompt ?? PROMPT_PREFIX.replace("%", word),
     situation,
     choices,
     correctIndex,
@@ -130,12 +132,15 @@ export const doushiShuruiQuestions: ChoiceQuestion[] = [
   q(
     "kaji-doushi-shurui-11",
     "来る",
-    "来___ない",
+    // 「来」は漢字のまま読みが変わる(こ・き・く)ので、「来___ない」のように後ろへ仮名を続ける形にはできない。
+    // 「来ない」と自然に書いた文の、「来」の読みを問う形にする。
+    "友達が来ない。",
     ["こ", "き", "く"],
     0,
     "カ行変格活用",
     "読みそのものが変わる",
-    "「く(来)」が「こ(来)ない」に変わる、この動詞だけの特殊な変化。",
+    "「来る」は、「く(る)」「こ(ない)」「き(ます)」「く(れば)」のように、漢字は同じでも読みそのものが変わる、この動詞だけの特殊な変化。「ない」が続くときは「こ」と読む。",
+    "「来る」に「ない」が続くとき、文中の「来」の読みはどれでしょう。活用の種類を確かめましょう。",
   ),
   q(
     "kaji-doushi-shurui-12",

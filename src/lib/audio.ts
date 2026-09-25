@@ -53,10 +53,10 @@ const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAE
 /** タイトル画面などでの最初のタップ/クリックのハンドラ内で呼び出す(9章)。 */
 export function unlockPlayback(): void {
   useSettingsStore.getState().unlockAudio();
-  const ctx = getAudioContext();
-  if (ctx && ctx.state === "suspended") {
-    void ctx.resume();
-  }
+  getAudioContext(); // (なければ作る)
+  // 止まっていれば動かす。iOS(Safari)は、止まった状態を "suspended" ではなく "interrupted" と呼ぶことがあり
+  // (画面の読み込み直し・電話・ロックのあとなど)、"suspended" だけを見ていると再開できず、BGMも効果音も無音のままになる。
+  resumeAudioContext();
   primeBgmElement();
   void preloadSeFiles();
   // 解禁のタップの中で、いまの場面のBGMを始める。iOSは、タップの中で始めた再生でないとブロックすることがあり、
@@ -139,7 +139,11 @@ export function playSe(kind: SeKind): void {
   if (muted || seVolume <= 0 || !audioUnlocked) return;
 
   const ctx = getAudioContext();
-  if (!ctx || ctx.state !== "running") return;
+  if (!ctx) return;
+  if (ctx.state !== "running") {
+    resumeAudioContext(); // このタップの中で動かしておく(この1回は間に合わなくても、次からは鳴る)
+    return;
+  }
   if (LONG_SE.has(kind)) seBusyUntil = Math.max(seBusyUntil, Date.now() + seDurationMs(kind));
 
   const buffer = seBuffers.get(kind);
@@ -373,4 +377,40 @@ if (typeof document !== "undefined") {
     resumeAudioContext();
     ensureBgmPlaying();
   });
+}
+
+// 解禁のあと、止まってしまった音(iOSの "interrupted"・読み込み直しのあとなど)を、画面をタップするたびに動かし直す。
+// 音の再開は、ユーザー操作の中でないと、iOSが受け付けないことがあるため。
+if (typeof document !== "undefined") {
+  const wake = () => {
+    if (!useSettingsStore.getState().audioUnlocked) return;
+    resumeAudioContext();
+    ensureBgmPlaying();
+  };
+  document.addEventListener("click", wake, true);
+  document.addEventListener("touchend", wake, true);
+}
+
+/**
+ * 音の後始末。データの初期化のあと、画面を読み込み直す前に呼ぶ。鳴っているBGMを止め、AudioContext を閉じて、
+ * 古い音声の状態(iOSの音声セッション)を持ち越さないようにする。次に解禁したときは、新しく作り直される。
+ */
+export function shutdownAudio(): void {
+  clearIntroHandler();
+  if (duckTimer) clearTimeout(duckTimer);
+  duckTimer = null;
+  duckUntil = 0;
+  duckFactor = 1;
+  if (bgmElement) {
+    bgmElement.pause();
+    bgmElement.removeAttribute("src");
+  }
+  bgmElement = null;
+  bgmSrc = null;
+  bgmGain = null;
+  seBuffers.clear();
+  sePreloadStarted = false;
+  const ctx = audioContext;
+  audioContext = null;
+  void ctx?.close().catch(() => {});
 }

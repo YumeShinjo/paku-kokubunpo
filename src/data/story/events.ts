@@ -152,7 +152,6 @@ export const storyEvents: StoryEvent[] = [
   {
     id: subBossClearStoryId("namerakaNoTaki"),
     lines: [
-      line("オンヴィン", "(乱れが晴れて)……失礼いたしました。少々、頭が混乱していたようです。"),
       koto("よかった、元通りだ!"),
     ],
   },

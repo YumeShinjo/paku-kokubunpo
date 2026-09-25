@@ -82,12 +82,22 @@ describe("ストーリーイベント(全エリア)", () => {
     expect(speakers.has("相棒")).toBe(false);
   });
 
-  it("小ボスの撃破ストーリーの発話者は、そのエリアの小ボス名になっている", () => {
+  it("小ボスの戦闘前・撃破後のストーリーの発話者に、そのエリアの小ボス名(の表記)が使われている", () => {
     for (const area of areas.filter((a) => a.subBossName)) {
-      const event = getStoryEvent(subBossClearStoryId(area.id))!;
-      const speakers = new Set(event.lines.map((l) => l.speaker));
+      const speakers = new Set(
+        [subBossIntroStoryId(area.id), subBossClearStoryId(area.id)].flatMap((id) =>
+          getStoryEvent(id)!.lines.map((l) => l.speaker),
+        ),
+      );
       expect(speakers.has(area.subBossName), `${area.id} に ${area.subBossName} の台詞がない`).toBe(true);
     }
+  });
+
+  it("オンヴィンの撃破後には、「(乱れが晴れて)……失礼いたしました」の台詞がない(コトの台詞だけ)", () => {
+    const event = getStoryEvent(subBossClearStoryId("namerakaNoTaki"))!;
+    expect(plain(event).some((t) => t.includes("失礼いたしました"))).toBe(false);
+    expect(plain(event).some((t) => t.includes("頭が混乱していた"))).toBe(false);
+    expect(event.lines.every((l) => l.speaker === "コト")).toBe(true);
   });
 
   it("コトが話す行は立ち絵(マスコット)を出す", () => {
