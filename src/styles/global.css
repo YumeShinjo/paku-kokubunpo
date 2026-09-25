@@ -79,6 +79,27 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/*
+ * ボタンのタップ演出(共通): 押している間だけ少し縮み(scale 0.95)、離すと元に戻る(約120ms)。
+ * すべての <button> に効く。個別のボタンには何も書かなくてよい。
+ *  - 押せない状態(disabled)のボタンには付けない(押せないのに動くと違和感があるため)。1回目の解答後に入力を無効化する処理とは独立。
+ *  - 画面いっぱいの「タップしてはじめる」ボタンは、縮むと不自然なので除く。
+ *  - OSの「動きを減らす」設定では、アニメーションをやめて、すぐに切り替える(下の media)。
+ */
+button {
+  transition: transform 0.12s ease-out;
+}
+
+button:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {
+  transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
+
 button.selected {
   outline: 3px solid var(--color-gold-line);
 }

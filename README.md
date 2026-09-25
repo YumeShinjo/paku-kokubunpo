@@ -385,3 +385,10 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 iOS(Safari)の AudioContext は、画面の読み込み直しや電話・ロックのあとに、"suspended" ではなく "interrupted" という状態で止まることがある。この状態を放っておくと、BGMも効果音も無音のままになる。
 そのため、解禁のとき・効果音を鳴らそうとしたとき・解禁後の画面タップのたびに、running でなければ再開を試みる([audio.ts](src/lib/audio.ts) の `resumeAudioContext`)。
 
+## ボタンのタップ演出
+すべての `<button>` に、共通のCSS([global.css](src/styles/global.css) の `button`)で、押している間だけ少し縮む(scale 0.95)→離すと元に戻る(約120ms)演出がつく。個別のボタンには何も書かなくてよい。
+- 押せない(`disabled` / `aria-disabled`)ボタンには付かない。1回目の解答後に入力を無効化する処理とは独立に、自然に外れる。
+- 画面いっぱいの「タップして はじめる」ボタンは、縮むと不自然なので除く(`.tap-to-start`)。
+- OSの「動きを減らす」設定(prefers-reduced-motion)では transition をやめて、すぐに切り替える。
+- iOS(Safari)で押している間の見た目(`:active`)を働かせるため、`main.tsx` に何もしない touchstart リスナーを1つ置いている。
+
