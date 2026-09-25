@@ -18,6 +18,7 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
   const goTo = useNavigationStore((s) => s.goTo);
   const isStageCleared = useProgressStore((s) => s.isStageCleared);
   const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
+  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
   const hasSeen = useStoryStore((s) => s.hasSeen);
   const savedSession = useSessionStore((s) => s.active);
   const clearSession = useSessionStore((s) => s.clear);
@@ -32,6 +33,16 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
     const label = bossLabel(required.type);
     return label ? `${label} ${stageTitleText(required)}` : stageTitleText(required);
   };
+
+  // まだ開放されていないエリアには入れない(エリアは固定の順番でしか進めない)
+  if (!isAreaUnlocked(areaId)) {
+    return (
+      <div className="screen screen-stage-select" style={areaAccentStyle(areaId)}>
+        <BackButton onClick={() => goTo({ name: "areaSelect" })} />
+        <p>このエリアは、まだ入れないよ。ひとつ前のエリアを先にクリアしてね。</p>
+      </div>
+    );
+  }
 
   return (
     <div className="screen screen-stage-select" style={areaAccentStyle(areaId)}>
@@ -73,7 +84,12 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                 )}
                 {!unlocked && (
                   <span className="stage-locked">
-                    <Rb t={`🔒 ${(stage.requires ?? []).map(requirementLabel).join("・")}を浄化[じょうか]すると挑戦[ちょうせん]できるよ`} />
+                    {stage.type === "subBoss" ? (
+                      // 小ボスは、そのエリアの通常ステージをすべてクリアしてから
+                      <Rb t="🔒 通常ステージをすべてクリアすると挑戦[ちょうせん]できるよ" />
+                    ) : (
+                      <Rb t={`🔒 ${(stage.requires ?? []).map(requirementLabel).join("・")}を浄化[じょうか]すると挑戦[ちょうせん]できるよ`} />
+                    )}
                   </span>
                 )}
               </button>

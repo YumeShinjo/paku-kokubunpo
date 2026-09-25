@@ -49,27 +49,31 @@ export function TitleScreen() {
           <TitleBadge title={title} />
         </p>
       )}
-      <button type="button" onClick={handleStart}>
+      {/* いちばん大きい主役のボタン。ほかより縦幅が大きく、やや濃いミントで、優先アクションだと分かるようにする */}
+      <button type="button" className="title-primary" onClick={handleStart}>
         はじめる
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          unlockPlayback();
-          goTo({ name: "zukan" });
-        }}
-      >
-        ことだまの書
-      </button>
-      <button type="button" onClick={() => goTo({ name: "ranking" })}>
-        ランキング
-      </button>
-      <button type="button" onClick={handleSettings}>
-        せってい
-      </button>
-      <button type="button" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
-        クレジット
-      </button>
+      {/* サブ機能は、ひと回り小さく、2×2のグリッドにまとめる */}
+      <div className="title-sub-buttons">
+        <button
+          type="button"
+          onClick={() => {
+            unlockPlayback();
+            goTo({ name: "zukan" });
+          }}
+        >
+          ことだまの書
+        </button>
+        <button type="button" onClick={() => goTo({ name: "ranking" })}>
+          ランキング
+        </button>
+        <button type="button" onClick={handleSettings}>
+          せってい
+        </button>
+        <button type="button" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
+          クレジット
+        </button>
+      </div>
     </div>
   );
 }

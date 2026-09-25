@@ -165,12 +165,19 @@ describe("ラスボス(王座の間)", () => {
     expect(lastBosses[0].requires).toEqual([subBossOf("ohzaNoMa")!.id]);
   });
 
-  it("解放条件を持つのはラスボスだけで、条件のステージはすべて実在する", () => {
+  it("解放条件: 通常ステージは条件なし、小ボスは同じエリアの通常ステージすべて、ラスボスは宰相(小ボス)。条件のステージはすべて実在する", () => {
     const all = ALL_AREA_IDS.flatMap((id) => getStagesForArea(id));
     for (const stage of all) {
-      if (stage.type !== "lastBoss") expect(stage.requires, stage.id).toBeUndefined();
+      const sameArea = getStagesForArea(stage.areaId);
+      if (stage.type === "normal") expect(stage.requires, stage.id).toBeUndefined();
+      if (stage.type === "subBoss") {
+        const normalIds = sameArea.filter((s) => s.type === "normal").map((s) => s.id);
+        expect([...(stage.requires ?? [])].sort(), stage.id).toEqual([...normalIds].sort());
+      }
+      if (stage.type === "lastBoss") expect(stage.requires, stage.id).toEqual([`${stage.areaId}-subboss`]);
       for (const required of stage.requires ?? []) {
         expect(getStage(required), `${stage.id} の条件 ${required}`).toBeDefined();
+        expect(getStage(required)!.areaId, `${stage.id} の条件は同じエリアのステージ`).toBe(stage.areaId);
       }
     }
   });

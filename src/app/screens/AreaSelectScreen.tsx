@@ -13,6 +13,7 @@ import { BackButton } from "@/components/BackButton";
 export function AreaSelectScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
+  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
   const hasSeen = useStoryStore((s) => s.hasSeen);
 
   function enterArea(areaId: string) {
@@ -27,9 +28,13 @@ export function AreaSelectScreen() {
       </h2>
       <HungryBadge />
       <ul className="area-list">
-        {playableAreas.map((area) => (
+        {playableAreas.map((area, index) => {
+          // エリアは固定の順番でしか進めない。1つ前のエリアの関門(小ボス撃破。序章はクリア)を越えるまで、入れない
+          const unlocked = isAreaUnlocked(area.id);
+          const previous = index > 0 ? playableAreas[index - 1] : undefined;
+          return (
           <li key={area.id} style={areaAccentStyle(area.id)}>
-            <button type="button" onClick={() => enterArea(area.id)}>
+            <button type="button" disabled={!unlocked} onClick={() => enterArea(area.id)}>
               <strong>
                 <Rb t={areaNameText(area)} />
               </strong>
@@ -42,9 +47,15 @@ export function AreaSelectScreen() {
                   ✓クリア済み
                 </span>
               )}
+              {!unlocked && previous && (
+                <span className="area-locked">
+                  <Rb t={`🔒 ${areaNameText(previous)}${previous.subBoss ? "の小ボスを浄化[じょうか]" : "をクリア"}すると開[ひら]くよ`} />
+                </span>
+              )}
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
       <button type="button" onClick={() => goTo({ name: "zukan" })}>
         ことだまの書

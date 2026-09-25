@@ -52,6 +52,9 @@ describe("ことだまの書: 苦手かもしれない単元の注意喚起と�
   it("正答率が低い単元があると、いちばん上に「にがてかも?」が出て、その単元の練習に入れる", async () => {
     const { useStatsStore } = await import("@/app/store/statsStore");
     useTutorialStore.getState().markSeen("zukan");
+    // 品詞分類(ことばの市場)の練習に入れるよう、序章をクリア済みにして、市場を開放しておく
+    const { useProgressStore } = await import("@/app/store/progressStore");
+    useProgressStore.setState({ clearedStageIds: ["prologue-stage1", "prologue-stage2"] });
     // 品詞分類の直近の解答を、ほとんど不正解にする(苦手判定: 3問以上で6割未満)
     useStatsStore.setState({ unitRecent: { "hinshi-bunrui": [false, false, false, true] } });
     const el = document.createElement("div");

@@ -91,6 +91,7 @@ const LAST_BOSS_PICKS = 16;
  * 小ボスステージ(3章: そのエリアでこれまでに学んだ内容を複合出題する中間復習ステージ)。
  * プールは通常ステージの全問題。実際の出題は挑戦のたびに、単元ごとに均等になるよう
  * 層化抽出する(5章の出題選定ロジック。再挑戦のたびに別の問題の組み合わせになる)。
+ * そのエリアの通常ステージをすべてクリアするまでは挑戦できない(requires)。
  */
 function buildSubBossStage(
   areaId: string,
@@ -105,6 +106,7 @@ function buildSubBossStage(
     title,
     questionIds,
     pickCount: Math.min(questionIds.length, SUB_BOSS_PICKS),
+    requires: normalStages.map((stage) => stage.id),
   };
 }
 

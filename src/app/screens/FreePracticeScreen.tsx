@@ -5,6 +5,7 @@ import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { Ruby } from "@/components/Ruby";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
+import { useProgressStore } from "@/app/store/progressStore";
 
 /**
  * 自由練習(6章): ことだまの書から、選んだ単元の問題プールだけを解くセッション。
@@ -31,11 +32,15 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
     setAttempt((a) => a + 1);
   }
 
-  if (!meta || questions.length === 0) {
+  const areaUnlocked = useProgressStore((s) => (meta ? s.isAreaUnlocked(meta.areaId) : false));
+
+  if (!meta || !areaUnlocked || questions.length === 0) {
     return (
       <div className="screen">
         <p>
-          この単元の問題が見つかりません。
+          {meta && !areaUnlocked
+            ? "このエリアは、まだ入れないよ。ひとつ前のエリアを先にクリアしてね。"
+            : "この単元の問題が見つかりません。"}
         </p>
         <button type="button" onClick={() => goTo({ name: "zukan" })}>
           ことだまの書へ

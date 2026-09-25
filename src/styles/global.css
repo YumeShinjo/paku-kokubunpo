@@ -1781,3 +1781,39 @@ button.incorrect {
   font-weight: bold;
   font-size: 1.1rem;
 }
+
+/* エリア選択: まだ入れないエリア */
+.area-list button:disabled {
+  opacity: 0.55;
+}
+
+.area-locked {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ---- タイトル画面: 「はじめる」を主役に、サブ機能は小さく2×2 ---- */
+.title-primary {
+  min-height: 4.5rem;
+  font-size: 1.4rem;
+  /* 主役: 他のボタンより、やや濃いめのミント。彩度は抑えたパステルトーンのまま */
+  background: #7fcaa9;
+  border: 2px solid #5fb896;
+  box-shadow: 0 3px 0 rgba(95, 184, 150, 0.55);
+}
+
+.title-sub-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.title-sub-buttons button {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  /* サブ機能: ひと回り小さく、主役より薄いミント */
+  background: #cfeee0;
+  border: 1px solid #a8e0c8;
+}

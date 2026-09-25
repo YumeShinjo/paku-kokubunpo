@@ -10,6 +10,7 @@ import { EngineGuide } from "@/features/quiz/EngineGuide";
 import { useStatsStore } from "@/app/store/statsStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { useReviewStore } from "@/app/store/reviewStore";
+import { useProgressStore } from "@/app/store/progressStore";
 import { getAllQuestions } from "@/data/questionLoader";
 import { TitleBadge } from "@/components/TitleBadge";
 import { ZukanPages } from "@/features/zukan/ZukanPages";
@@ -31,6 +32,7 @@ export function ZukanScreen() {
   const unitRecent = useStatsStore((s) => s.unitRecent);
   const choices = useStoryStore((s) => s.choices);
   const starredIds = useReviewStore((s) => s.starredQuestionIds);
+  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
   const guideSeen = useTutorialStore((s) => s.seenGuides.includes("zukan"));
   const markGuideSeen = useTutorialStore((s) => s.markSeen);
   // 単元ごとの星の数(単元名の横に表示)
@@ -53,7 +55,7 @@ export function ZukanScreen() {
   );
   const areaOrder = areas.filter((a) => rows.some((r) => r.areaId === a.id));
   // 苦手かもしれない単元(直近の正答率が低いもの)。正答率の低い順
-  const weakRows = rows.filter((r) => r.weak).sort((x, y) => (x.rate ?? 1) - (y.rate ?? 1));
+  const weakRows = rows.filter((r) => r.weak && isAreaUnlocked(r.areaId)).sort((x, y) => (x.rate ?? 1) - (y.rate ?? 1));
 
   return (
     <div className="screen screen-zukan">
@@ -128,6 +130,8 @@ export function ZukanScreen() {
                     <button
                       type="button"
                       className="zukan-row"
+                      // まだ開放されていないエリアの単元には、入れない(エリアは固定の順番でしか進めない)
+                      disabled={!isAreaUnlocked(area.id)}
                       onClick={() => goTo({ name: "freePractice", unitId: row.unitId })}
                     >
                       <span className="zukan-row-label">
