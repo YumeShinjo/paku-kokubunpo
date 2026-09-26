@@ -60,7 +60,7 @@ export const jiritsuFuzokuQuestions: ChoiceQuestion[] = [
   q(
     "ichiba-jiritsu-05",
     "られる",
-    "先生が来「られる」。",
+    "先生が来「られる」ので、生徒たちは立って迎えた。",
     1,
     "尊敬の意味を付け加える助動詞。「来(られる)」と分けられる。",
     "「来られる」全体を動詞1語と思い込みやすい",
@@ -71,7 +71,7 @@ export const jiritsuFuzokuQuestions: ChoiceQuestion[] = [
     "食べ「ない」。",
     1,
     "打消しの助動詞。「食べ」(未然形[みぜんけい])に付属し、単独で意味を持たない。",
-    "問7の「ない」と混同しやすい",
+    "「美しくない」のように、形容詞の「ない」もある(そちらは自立語)",
   ),
   q(
     "ichiba-jiritsu-07",
@@ -79,7 +79,7 @@ export const jiritsuFuzokuQuestions: ChoiceQuestion[] = [
     "彼は美しく「ない」。",
     0,
     "補助形容詞。「美しくはない」と「は」を挟める＝それ自体で独立した語。",
-    "問6の「ない」と混同しやすい",
+    "「食べない」のように、打消しの助動詞の「ない」もある(そちらは付属語)",
   ),
   q(
     "ichiba-jiritsu-08",

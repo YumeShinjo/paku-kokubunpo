@@ -32,8 +32,16 @@ function make(prefix: string, unit: string) {
   };
 }
 
-const sonkei = make("sonkei", "sonkeigo");
-const kenjou = make("kenjou", "kenjougo");
+const makeSonkei = make("sonkei", "sonkeigo");
+const makeKenjou = make("kenjou", "kenjougo");
+/**
+ * 尊敬語・謙譲語の問い。「〜ます」(丁寧語)も文としては正しい言い方なので、「正しい形」とは問わず、
+ * 「尊敬語は?」「謙譲語は?」と種類を示して問う(正解が複数にならないようにする)。
+ */
+const sonkei = (...args: Parameters<typeof makeSonkei>) =>
+  makeSonkei(args[0], args[1], args[2].replace("の正しい形は?", "の尊敬語は?"), ...args.slice(3) as [string, string[], string]);
+const kenjou = (...args: Parameters<typeof makeKenjou>) =>
+  makeKenjou(args[0], args[1], args[2].replace("の正しい形は?", "の謙譲語は?"), ...args.slice(3) as [string, string[], string]);
 const shikibetsu = make("shikibetsu", "keigo-shikibetsu");
 const teinei = make("teinei", "teineigo");
 
@@ -58,7 +66,7 @@ export const kenjougoQuestions: ChoiceQuestion[] = [
 ];
 
 export const keigoShikibetsuQuestions: ChoiceQuestion[] = [
-  shikibetsu(1, "質問に答えられない場面", "「分かりません」と「存[ぞん]じません」、「自分が知らない」を表す正しい丁寧な言い方は?", "どちらも使えるが、存[ぞん]じませんの方がより丁寧", ["分かりませんは誤用"], "「存じません」は「知る」の謙譲語+丁寧語。「分かりません」は素朴な丁寧語で、場面によって使い分ける。"),
+  shikibetsu(1, "お客様に、知らないことを伝える場面", "「分かりません」と「存[ぞん]じません」は、どちらが使える言い方?", "どちらも使えるが、「存[ぞん]じません」のほうがより丁寧", ["「分かりません」は誤用"], "「存じません」は「知る」の謙譲語+丁寧語。「分かりません」は素朴な丁寧語で、場面によって使い分ける。"),
   shikibetsu(2, "敬語の乱れが疑われる発言", "「先生がおっしゃられました」という言い方は正しいか?", "誤り(二重敬語)", ["正しい"], "「おっしゃる」自体がすでに尊敬語なのに「れる」を重ねている。正しくは「先生がおっしゃいました」。"),
   shikibetsu(3, "目上の人の動作を説明している", "「部長がお越[こ]しになりました」の「お越しになりました」の種類は?", "尊敬語", ["謙譲語", "丁寧語"], "「お〜になる」は、相手(部長)の動作を高める尊敬語の形。"),
   shikibetsu(4, "自分の動作をへりくだって説明している", "「私がご案内いたします」の「ご案内いたします」の種類は?", "謙譲語", ["尊敬語", "丁寧語"], "「ご〜いたす」は、自分の動作をへりくだって表す謙譲語の形。"),

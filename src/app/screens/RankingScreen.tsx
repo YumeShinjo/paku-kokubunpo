@@ -4,6 +4,7 @@ import { useProgressStore } from "@/app/store/progressStore";
 import { useRankingStore } from "@/app/store/rankingStore";
 import { hasPendingIcon, hasPendingScore, syncScore } from "@/features/ranking/scoreSync";
 import { useProfileStore } from "@/app/store/profileStore";
+import { IconPicker } from "@/components/IconPicker";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import {
   readClassCodeFromUrl,
@@ -107,6 +108,7 @@ function JoinForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const iconId = useProfileStore((s) => s.iconId);
+  const setIcon = useProfileStore((s) => s.setIcon);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -159,6 +161,12 @@ function JoinForm({
             onChange={(e) => setNameInput(e.target.value)}
           />
         </label>
+        <div className="ranking-icon-field">
+          <span>
+            アイコン(ランキングに でるよ)
+          </span>
+          <IconPicker value={iconId} onChange={setIcon} />
+        </div>
         {error && (
           <p className="ranking-error" role="alert">
             <Rb t={error} />
@@ -198,6 +206,7 @@ function JoinedView({
   const [error, setError] = useState<string | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const iconId = useProfileStore((s) => s.iconId);
+  const setIcon = useProfileStore((s) => s.setIcon);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(nickname);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -294,6 +303,18 @@ function JoinedView({
           ニックネームを かえる
         </button>
       )}
+      <div className="ranking-icon-field">
+        <span>
+          アイコンを かえる
+        </span>
+        <IconPicker
+          value={iconId}
+          onChange={(id) => {
+            setIcon(id);
+            void syncScore().then(() => void load()); // 通信できないときは、あとで自動で送られる
+          }}
+        />
+      </div>
       <p className="ranking-score">
         あなたの とくてん: <strong>{totalScore}</strong>
         {snapshot?.me && (

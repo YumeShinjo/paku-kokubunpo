@@ -3,10 +3,7 @@ import { useSettingsStore } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
 import { useState } from "react";
-import { useProfileStore } from "@/app/store/profileStore";
 import { reloadApp, resetAllData } from "@/features/settings/resetData";
-import { IconPicker } from "@/components/IconPicker";
-import { syncScore } from "@/features/ranking/scoreSync";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 
@@ -15,9 +12,6 @@ export function SettingsScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const { bgmVolume, seVolume, muted, setBgmVolume, setSeVolume, setMuted } =
     useSettingsStore();
-
-  const iconId = useProfileStore((s) => s.iconId);
-  const setIcon = useProfileStore((s) => s.setIcon);
 
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -44,19 +38,6 @@ export function SettingsScreen() {
       <h2>
         せってい
       </h2>
-
-      <div className="settings-icon">
-        <span>
-          アイコン(ランキングに でるよ)
-        </span>
-        <IconPicker
-          value={iconId}
-          onChange={(id) => {
-            setIcon(id);
-            void syncScore(); // ランキングに参加中なら、順位表のアイコンも変わる(通信できないときは、あとで自動で送られる)
-          }}
-        />
-      </div>
 
       <label>
         BGMおんりょう

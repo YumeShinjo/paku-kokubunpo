@@ -68,7 +68,7 @@ export const tangoQuestions: ChoiceQuestion[] = [
       "空／に／大き／な／虹／が／かかる。",
     ],
     correctIndex: 1,
-    explanation: "「大きな」は問4と同じく1語。「虹が」も名詞「虹」と助詞「が」に分ける。",
+    explanation: "「大きな」は連体詞[れんたいし]1語でこれ以上分けられない。「虹が」も名詞「虹」と助詞「が」に分ける。",
   }),
   choiceQ({
     id: "wakare-tango-06",

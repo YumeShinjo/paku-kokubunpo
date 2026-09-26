@@ -24,16 +24,16 @@ export const jidoushiTadoushiQuestions: SortingQuestion[] = [
     items: [
       {
         id: "taki-jitasu-01",
-        text: "開[あ]く",
+        text: "止[と]まる",
         correctCategoryId: "jidoushi",
-        explanation: "「戸が開く」のように、主語(戸)が自分で動く。目的語(〜を)を取らない。",
+        explanation: "「車が止まる」のように、主語(車)が自分で動く。目的語(〜を)を取らない。",
       },
       {
         id: "taki-jitasu-02",
-        text: "開[あ]ける",
+        text: "止[と]める",
         correctCategoryId: "tadoushi",
         explanation:
-          "「戸を開ける」のように、他のもの(戸)に働きかける動作。目的語(〜を)を取る。",
+          "「車を止める」のように、他のもの(車)に働きかける動作。目的語(〜を)を取る。",
       },
       {
         id: "taki-jitasu-03",

@@ -75,7 +75,7 @@ export const kankeiQuestions: ChoiceQuestion[] = [
 
   // ---- 元データ ステージ2 ----
   tap("kizuna-shujutsu-03", SHUJUTSU, "「絵は」に対応する述語をタップ", "妹が 描いた 絵は とても 上手だ。", "絵は", "上手だ", "「絵は」が主語、「上手だ」が述語。"),
-  tap("kizuna-shujutsu-04", SHUJUTSU, "「部屋は」に対応する述語をタップ", "この 部屋は 静かで 落ち着く。", "部屋は", "落ち着く", "2つの述語的な語があるが、文全体の主語に対応するのは最後の「落ち着く」。"),
+  tap("kizuna-shujutsu-04", SHUJUTSU, "「部屋は」に対応する述語をタップ", "この 部屋は 夜になると 静かだ。", "部屋は", "静かだ", "「部屋は」が主語、「静かだ」が述語。間に「夜になると」が入っても、対応は変わらない。"),
   tap("kizuna-shushoku-03", SHUSHOKU, "「かなり」が直接修飾する語をタップ", "かなり 遠くの 町まで 歩いた。", "かなり", "遠くの", "「かなり」は程度を表し、直後の「遠くの」を修飾する。"),
   pick("kizuna-shushoku-04", SHUSHOKU, "「母が作った料理」の「母が」と「作った」の関係は?", REL.shujutsu, [REL.shushoku], "「母が」は「作った」の主語になっている(文全体の主語とは別)。"),
   pick("kizuna-heiritsu-03", HEIRITSU, "「りんごやみかんを買う」の「りんごや」と「みかんを」の関係は?", REL.heiritsu, [REL.shushoku], "対等に並んでいる2つの語。"),
@@ -84,5 +84,5 @@ export const kankeiQuestions: ChoiceQuestion[] = [
   tap("kizuna-setsuzoku-03", SETSUZOKU, "「練習したのに」がつながる語をタップ", "練習したのに、 うまく いかなかった。", "練習したのに", "いかなかった", "逆接でつながっている。"),
   pick("kizuna-setsuzoku-04", SETSUZOKU, "「走ったが、間に合わなかった」の「走ったが」と「間に合わなかった」の関係は?", REL.setsuzoku, [REL.heiritsu, REL.hojo], "逆の内容をつなぐ接続の関係。"),
   pick("kizuna-dokuritsu-03", DOKURITSU, "「うわあ、すごい景色だ」の「うわあ」と「すごい景色だ」の関係は?", REL.dokuritsu, [REL.shushoku], "感動を表す語は他の文節と直接の関係を持たない。"),
-  pick("kizuna-dokuritsu-04", DOKURITSU, "「東京、それは日本の首都だ」の「東京」と「それは日本の首都だ」の関係は?", REL.dokuritsu, [REL.shujutsu], "提示された語(東京)が、独立した形で文の前に置かれている。"),
+  pick("kizuna-dokuritsu-04", DOKURITSU, "「友情、それは人生の宝だ」の「友情」と「それは人生の宝だ」の関係は?", REL.dokuritsu, [REL.shujutsu], "取り上げたい語(友情)が、独立した形で文の前に置かれている(提示)。"),
 ];

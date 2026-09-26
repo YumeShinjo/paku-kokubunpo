@@ -44,7 +44,7 @@ export const hinshiBunruiQuestions: SortingQuestion[] = [
         text: "「ある」日、旅人が村を訪れた。",
         correctCategoryId: "rentaishi",
         explanation:
-          "体言[たいげん]「日」を修飾するだけの、活用しない自立語[じりつご]。すぐ上の「ある」と形は同じだが働きが違う。",
+          "体言[たいげん]「日」を修飾するだけの、活用しない自立語[じりつご]。動詞の「ある」(存在する)と形は同じだが、働きが違う。",
       },
       {
         id: "ichiba-pos-04",
@@ -57,7 +57,7 @@ export const hinshiBunruiQuestions: SortingQuestion[] = [
         text: "彼女の部屋はいつも「きれいだ」。",
         correctCategoryId: "keiyoudoushi",
         explanation:
-          "言い切りの形が「だ」で終わる、活用する自立語[じりつご]。「きれい」だけでは名詞として使えない。",
+          "言い切りの形が「だ」で終わり、状態・性質を表す、活用する自立語[じりつご]。",
       },
     ],
   }),
@@ -86,7 +86,7 @@ export const hinshiBunruiQuestions: SortingQuestion[] = [
         text: "彼は「ゆっくり」歩く。",
         correctCategoryId: "fukushi",
         explanation:
-          "活用しない自立語[じりつご]で、おもに用言[ようげん](動詞)を修飾する。「ゆっくりだ」とは言えない。",
+          "活用しない自立語[じりつご]で、おもに用言[ようげん](動詞)を修飾する。",
       },
       {
         id: "ichiba-pos-09",
@@ -139,7 +139,7 @@ export const hinshiBunruiQuestions: SortingQuestion[] = [
       },
       {
         id: "ichiba-pos-15",
-        text: "先生が来「られる」。",
+        text: "先生が来「られる」ので、生徒たちは立って迎えた。",
         correctCategoryId: "jodoushi",
         explanation:
           "用言[ようげん](動詞)に付いて意味を付け加える活用する付属語[ふぞくご]。ここでは尊敬の意味。",

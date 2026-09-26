@@ -25,18 +25,3 @@ export function areaAccent(areaId: string): string {
 export function areaAccentStyle(areaId: string): CSSProperties {
   return { ["--area-accent" as string]: areaAccent(areaId) };
 }
-
-/**
- * エリアのテーマを示す小さなモチーフ(通常ステージの背景バーに重ねる)。いまは絵文字の仮表示。
- * 正式なアイコン素材ができたら、ここを差し替える。
- */
-export const areaMotifs: Record<string, string> = {
-  prologue: "🌿", // 草原
-  kotobaNoIchiba: "🏮", // 屋台
-  sugatakaeNoKajiba: "🔨", // 金づち
-  namerakaNoTaki: "💧", // 滝
-  tsunagiNoHashi: "🌉", // 橋
-  kizunaNoMa: "🧵", // 絆の糸
-  mikakeNoMa: "🔍", // 見破るレンズ
-  ohzaNoMa: "👑", // 王座
-};

@@ -1979,17 +1979,6 @@ button.incorrect {
   pointer-events: none;
 }
 
-/* エリアのテーマを示す小さなモチーフ */
-.stage-visual-motif {
-  position: absolute;
-  right: 0.8rem;
-  top: 0.35rem;
-  z-index: 1;
-  font-size: 2rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 3px rgba(75, 58, 46, 0.35));
-}
-
 .stage-visual-tall {
   border-radius: 14px;
   height: var(--stage-visual-tall-height);
