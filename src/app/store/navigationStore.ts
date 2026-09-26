@@ -12,6 +12,8 @@ export type Screen =
   | { name: "story"; eventId: string; next: Screen }
   | { name: "zukan" }
   | { name: "freePractice"; unitId: string }
+  /** 苦手問題(星のついた問題)だけを集めた練習 */
+  | { name: "reviewPractice" }
   | { name: "settings" }
   | { name: "ranking" }
   /** エンディング後の称号授与。見終わると next へ進む */

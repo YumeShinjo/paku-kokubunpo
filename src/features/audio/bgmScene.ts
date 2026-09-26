@@ -37,6 +37,7 @@ export function sceneForScreen(screen: Screen): BgmScene {
     case "stageSelect":
       return "explore";
     case "freePractice":
+    case "reviewPractice":
       return "stage";
     case "stage": {
       const type = getStage(screen.stageId)?.type;

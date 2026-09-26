@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import type { Question, RubyText } from "@/data/schema";
-import { getEngineFlavor } from "@/data/engineFlavor";
-import { getUnitMeta } from "@/data/units";
 import { EngineRouter } from "@/engines/EngineRouter";
 import { judgeAnswer, type Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
@@ -27,6 +25,7 @@ import {
   type CorrectEffect,
 } from "./feedback";
 import { Rb } from "@/components/Rb";
+import { buildStageIntro } from "./stageIntro";
 
 export interface SessionResult {
   correctCount: number;
@@ -49,6 +48,8 @@ interface Props {
   boss?: { label: string; title: string; hpMax: number; type: "subBoss" | "lastBoss" };
   /** 画面上部に出す見出し(自由練習の単元名など) */
   heading?: RubyText;
+  /** ステージ全体のテーマ名。出題形式が混ざるステージの、冒頭の説明に使う */
+  stageTitle?: RubyText;
   onComplete: (result: SessionResult) => void;
   /** 途中から再開するときの、それまでの進行状況(出題 questions は、保存時と同じ並びを渡す) */
   resume?: QuizProgress;
@@ -58,21 +59,6 @@ interface Props {
   onQuit?: () => void;
   /** やめても、あとで続きから遊べる(確認の文面が変わる) */
   canResumeLater?: boolean;
-}
-
-/** このステージの出題形式ごとの呼び名と場面の説明(重複なし)。冒頭のポップアップに出す */
-function stageFlavors(areaId: string, questions: Question[]) {
-  const seen = new Set<string>();
-  const list: NonNullable<ReturnType<typeof getEngineFlavor>>[] = [];
-  for (const q of questions) {
-    const flavor = getEngineFlavor(getUnitMeta(q.unit)?.areaId ?? areaId, q.engine);
-    if (!flavor) continue;
-    const key = JSON.stringify(flavor.label);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    list.push(flavor);
-  }
-  return list;
 }
 
 interface Feedback {
@@ -93,6 +79,7 @@ export function QuizPlayer({
   questions,
   boss,
   heading,
+  stageTitle,
   onComplete,
   resume,
   onProgress,
@@ -118,7 +105,8 @@ export function QuizPlayer({
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
   // ステージの冒頭の説明(出題形式の呼び名と場面)は、ステージを始めたときに1度だけ、ポップアップで出す(途中からの再開では出さない)
-  const [introOpen, setIntroOpen] = useState(() => resume === undefined && stageFlavors(areaId, questions).length > 0);
+  const [intro] = useState(() => buildStageIntro(areaId, questions, boss, stageTitle));
+  const [introOpen, setIntroOpen] = useState(() => resume === undefined && intro !== null);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
   const lastMessage = useRef<Record<string, string>>({});
@@ -267,6 +255,7 @@ export function QuizPlayer({
         </div>
       )}
 
+      {/* 1行目: 進み具合とコンボ。コンボの場所は、出ていないときも確保してあり、出ても下のボタンは動かない */}
       <div className="stage-header">
         <p className="stage-progress">
           {index + 1} / {questions.length}
@@ -278,6 +267,9 @@ export function QuizPlayer({
             </span>
           )}
         </p>
+      </div>
+      {/* 2行目: 3つのボタンを、同じ行にそろえる */}
+      <div className="stage-actions">
         <button
           type="button"
           className={`star-button ${starred ? "starred" : ""}`.trim()}
@@ -342,6 +334,7 @@ export function QuizPlayer({
               "feedback",
               feedback.correct ? "feedback-correct" : "feedback-incorrect",
               feedback.effect ? `effect-${feedback.effect}` : "",
+              !twoStage && question.explanation ? "" : "feedback-compact",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -398,21 +391,17 @@ export function QuizPlayer({
       )}
 
       {/* ステージの冒頭の説明(1度だけ)。閉じたら、ふつうの問題画面 */}
-      {introOpen && (
+      {introOpen && intro && (
         <div className="feedback-overlay stage-intro-overlay">
           <div role="dialog" aria-label="ステージのせつめい" className="feedback stage-intro">
-            {stageFlavors(areaId, questions).map((flavor, i) => (
-              <div key={i} className="stage-intro-item">
-                <p className="engine-flavor-label">
-                  <Ruby text={flavor.label} />
-                </p>
-                <p className="engine-flavor-situation">
-                  <Ruby text={flavor.situation} />
-                </p>
-              </div>
-            ))}
+            <p className="engine-flavor-label">
+              <Ruby text={intro.title} />
+            </p>
+            <p className="engine-flavor-situation">
+              <Ruby text={intro.message} />
+            </p>
             <button type="button" className="feedback-next" onClick={() => setIntroOpen(false)}>
-              はじめる
+              {boss ? "たたかう!" : "はじめる"}
             </button>
           </div>
         </div>

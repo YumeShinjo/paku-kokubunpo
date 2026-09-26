@@ -15,6 +15,7 @@ import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
+import { ReviewPracticeScreen } from "@/app/screens/ReviewPracticeScreen";
 import { MuteButton } from "@/components/MuteButton";
 import { TapToStart } from "@/components/TapToStart";
 import { Toaster } from "@/components/Toaster";
@@ -80,6 +81,8 @@ function renderScreen(screen: Screen) {
       return <ZukanScreen />;
     case "freePractice":
       return <FreePracticeScreen key={screen.unitId} unitId={screen.unitId} />;
+    case "reviewPractice":
+      return <ReviewPracticeScreen />;
     case "settings":
       return <SettingsScreen />;
     case "ranking":

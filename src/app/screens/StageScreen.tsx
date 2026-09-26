@@ -18,6 +18,7 @@ import { useStoryStore } from "@/app/store/storyStore";
 import { useSessionStore } from "@/app/store/sessionStore";
 import { restoreSession } from "@/features/quiz/session";
 import { Rb } from "@/components/Rb";
+import { rb } from "@/data/ruby";
 
 const SCORE_PER_QUESTION = 10;
 
@@ -189,6 +190,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       key={attempt}
       areaId={areaId}
       questions={questions}
+      stageTitle={rb(stageTitleText(stage))}
       boss={
         isBoss && label
           ? {

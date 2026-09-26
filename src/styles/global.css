@@ -1260,6 +1260,8 @@ button.incorrect {
 
 /* ---- ホーム画面のバッジ ---- */
 .hungry-badge {
+  width: 100%;
+  color: var(--color-text);
   margin: 0;
   padding: 0.5rem 0.9rem;
   border-radius: 12px;
@@ -1949,21 +1951,47 @@ button.incorrect {
 
 /* ---- ステージ背景: 通常ステージは小さな装飾バー。ボス戦は、上半分に背景+ボス ---- */
 .screen-stage {
-  --stage-visual-height: 2.25rem;
+  --stage-visual-height: 4.5rem;
   --stage-visual-tall-height: clamp(9rem, 32dvh, 16rem);
 }
 
 .stage-visual {
+  position: relative;
   flex: none;
   height: var(--stage-visual-height);
-  border-radius: 14px;
+  border-radius: 14px 14px 0 0;
   background-color: var(--color-bar-track);
   background-size: cover;
-  background-position: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  /* 上端基準で切り出す(空や、上のほうの特徴的な要素が残る) */
+  background-position: center top;
+  overflow: hidden;
+}
+
+/* 帯の下端は、画面の背景色へ溶け込むようにフェードさせる */
+.stage-visual::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 55%;
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  pointer-events: none;
+}
+
+/* エリアのテーマを示す小さなモチーフ */
+.stage-visual-motif {
+  position: absolute;
+  right: 0.8rem;
+  top: 0.35rem;
+  z-index: 1;
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(75, 58, 46, 0.35));
 }
 
 .stage-visual-tall {
+  border-radius: 14px;
   height: var(--stage-visual-tall-height);
   background-position: center top;
   display: flex;
@@ -2042,4 +2070,66 @@ button.incorrect {
   border: 2px solid var(--color-primary-strong);
   background: var(--color-surface);
   box-shadow: 0 2px 6px rgba(75, 58, 46, 0.2);
+}
+
+/* ---- 出題画面の上部: 進み具合+コンボ(場所を確保)/ 3つのボタンを同じ行に ---- */
+.stage-header {
+  flex-wrap: nowrap;
+  min-height: 1.9rem;
+}
+
+.stage-header .combo {
+  /* コンボが出ていないときも、同じ高さ・幅の場所を持つ(出てもボタンが動かない) */
+  min-width: 8rem;
+  min-height: 1.75rem;
+  text-align: right;
+}
+
+.stage-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.stage-actions button {
+  white-space: nowrap;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+}
+
+.stage-actions .star-button {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stage-actions .zukan-button,
+.stage-actions .quit-button {
+  flex: none;
+}
+
+.stage-actions .quit-button {
+  border: 1px solid var(--color-text-muted);
+}
+
+/* 解説のない判定ポップアップは、コンパクトに */
+.feedback-overlay .feedback.feedback-compact {
+  width: min(100%, 19rem);
+  padding: 0.9rem 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.feedback-compact .feedback-message {
+  margin: 0.1rem 0;
+  font-size: 1.3rem;
+}
+
+.feedback-compact .feedback-close-hint {
+  margin-top: 0.3rem;
+}
+
+.feedback-compact .feedback-next {
+  margin-top: 0.4rem;
 }

@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useProfileStore } from "@/app/store/profileStore";
 import { useRankingStore } from "@/app/store/rankingStore";
-import { DEFAULT_ICON_ID } from "@/data/playerIcons";
 
 const api = vi.hoisted(() => ({
   isConfigured: vi.fn(() => true),
@@ -130,24 +129,19 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
     expect(useRankingStore.getState().nickname).toBe("たろう");
   });
 
-  it("アイコンを選ぶと、端末に保存され、サーバーへ送られる", async () => {
-    await act(async () => {
-      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="黄色の星"]')!.click();
-    });
-    await flush();
-    expect(useProfileStore.getState().iconId).toBe("gold-star");
-    expect(api.submitScore).toHaveBeenCalledWith("3a", { nickname: "たろう", icon: "gold-star" }, 120);
-    expect(useRankingStore.getState().syncedIcon).toBe("gold-star");
+  it("アイコンの設定は「せってい」だけにある。ランキング画面(参加後)には、アイコンを選ぶ操作がない", () => {
+    expect(container.querySelector(".icon-choice")).toBeNull();
+    expect(container.querySelector(".ranking-icon-field")).toBeNull();
+    // 順位表の自分の行には、せっていで選んだアイコンが出る
+    expect(container.querySelector(".player-icon")).not.toBeNull();
   });
 
-  it("未参加のとき、参加フォームでアイコンを選んで参加すると、そのアイコンで参加する", async () => {
+  it("未参加のとき、参加フォームにもアイコンを選ぶ操作はなく、せっていで選んだアイコンで参加する", async () => {
     useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0, syncedIcon: null });
-    useProfileStore.setState({ iconId: DEFAULT_ICON_ID });
+    useProfileStore.setState({ iconId: "blue-square" });
     act(() => root.render(<RankingScreen key="form" />));
     await flush();
-    await act(async () => {
-      container.querySelector<HTMLButtonElement>('.icon-choice[aria-label="青の四角"]')!.click();
-    });
+    expect(container.querySelector(".icon-choice")).toBeNull();
     const inputs = container.querySelectorAll<HTMLInputElement>(".ranking-form input");
     type(inputs[0], "3a");
     type(inputs[1], "たろう");

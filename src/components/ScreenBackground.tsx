@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { areaMotifs } from "@/data/areaTheme";
 import { findImage, IMAGE } from "@/assets/registry";
 
 /**
@@ -33,11 +34,17 @@ export function StageVisual({
   children?: ReactNode;
 }) {
   const url = findImage(IMAGE.background(name));
+  const motif = tall ? undefined : areaMotifs[name];
   return (
     <div
       className={["stage-visual", tall ? "stage-visual-tall" : "", url ? "" : "stage-visual-placeholder"].filter(Boolean).join(" ")}
       style={url ? { backgroundImage: `url(${url})` } : undefined}
     >
+      {motif && (
+        <span className="stage-visual-motif" aria-hidden="true">
+          {motif}
+        </span>
+      )}
       {children}
     </div>
   );

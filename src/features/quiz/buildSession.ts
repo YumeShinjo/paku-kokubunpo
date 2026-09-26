@@ -1,5 +1,6 @@
 import type { Question } from "@/data/schema";
 import {
+  getAllQuestions,
   getQuestionsForArea,
   getQuestionsForStage,
   getQuestionsForUnit,
@@ -37,6 +38,25 @@ export function buildStageSession(stageId: string, areaId: string): Question[] {
     recentIds: useStatsStore.getState().recentQuestionIds,
     starred,
   });
+}
+
+/** 苦手問題の練習(6章)1回あたりの最大問題数。星の問題がこれより少なければ全問。 */
+export const REVIEW_PRACTICE_SIZE = 10;
+
+/**
+ * 苦手問題(星のついた問題)だけを集めた出題を組み立てる。ストーリー・HPゲージ・ライフなし。
+ * 星が多いときは、ランダムに REVIEW_PRACTICE_SIZE 問だけ選ぶ(やり直すたびに、別の組み合わせになる)。
+ * 問題データが変わって見つからなくなった星は、飛ばす。
+ */
+export function buildReviewSession(rng: () => number = Math.random): Question[] {
+  const starred = new Set(useReviewStore.getState().starredQuestionIds);
+  const pool = getAllQuestions().filter((q) => starred.has(q.id));
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, REVIEW_PRACTICE_SIZE);
 }
 
 /** 自由練習(ストーリー・HPゲージなし): 指定単元の問題プールだけから出題する。 */

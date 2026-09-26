@@ -54,7 +54,7 @@ function mount(questions: (ChoiceQuestion | SortingQuestion)[], withBoss = false
     act(() =>
       [...container.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent?.trim() === label)!.click(),
     );
-  if (skipIntro) click("はじめる"); // ステージ冒頭の説明ポップアップを閉じる
+  if (skipIntro) click(withBoss ? "たたかう!" : "はじめる"); // ステージ冒頭の説明ポップアップを閉じる
   return { container, onComplete, click, done: () => (act(() => root.unmount()), container.remove()) };
 }
 
@@ -203,7 +203,8 @@ describe("ステージ背景: ボス戦は大きく、通常ステージは小�
     const css = readFileSync("src/styles/global.css", "utf-8");
     const vars = css.match(/\n\.screen-stage \{([^}]*)\}/)![1];
     const rem = (name: string) => Number(vars.match(new RegExp(`--${name}: (?:clamp\\()?([0-9.]+)rem`))![1]);
-    expect(rem("stage-visual-height")).toBeLessThanOrEqual(3);
+    expect(rem("stage-visual-height")).toBeLessThanOrEqual(5);
+    expect(rem("stage-visual-height")).toBeGreaterThanOrEqual(4);
     expect(rem("stage-visual-tall-height")).toBeGreaterThanOrEqual(8);
   });
 

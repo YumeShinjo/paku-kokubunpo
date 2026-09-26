@@ -142,6 +142,40 @@ describe("audio", () => {
       expect(play).toHaveBeenCalled();
     });
 
+    it("BGMの音量だけ0にすると、BGMは止まり、音声セッションが ambient(他の音楽アプリと共存)になる。戻すと、BGMも再開し、auto に戻る", () => {
+      const session = { type: "auto" };
+      Object.defineProperty(navigator, "audioSession", { value: session, configurable: true });
+      try {
+        trackVolume();
+        const proto = window.HTMLMediaElement.prototype;
+        const pause = vi.mocked(proto.pause);
+        const play = vi.mocked(proto.play);
+        expect(session.type).toBe("auto");
+        pause.mockClear();
+        useSettingsStore.getState().setBgmVolume(0);
+        expect(pause).toHaveBeenCalled();
+        expect(session.type).toBe("ambient");
+        play.mockClear();
+        useSettingsStore.getState().setBgmVolume(0.5);
+        expect(play).toHaveBeenCalled();
+        expect(session.type).toBe("auto");
+        // ミュートでも ambient
+        useSettingsStore.getState().setMuted(true);
+        expect(session.type).toBe("ambient");
+      } finally {
+        delete (navigator as unknown as { audioSession?: unknown }).audioSession;
+      }
+    });
+
+    it("BGMの音量が0のあいだは、曲を切り替えても、BGMを始めない(効果音は鳴る設定のまま)", () => {
+      trackVolume();
+      useSettingsStore.getState().setBgmVolume(0);
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      playBgm("/assets/audio/bgm-zero.mp3");
+      expect(play).not.toHaveBeenCalled();
+    });
+
     it("ミュート中は、曲を切り替えても、再生を始めない(止めたまま)", () => {
       trackVolume();
       useSettingsStore.getState().setMuted(true);
