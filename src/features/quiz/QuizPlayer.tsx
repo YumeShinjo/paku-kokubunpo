@@ -99,6 +99,7 @@ export function QuizPlayer({
   const lastEffect = useRef<CorrectEffect | undefined>(undefined);
   // すでに解答した問題の位置(二重の判定を防ぐ)
   const answeredIndex = useRef(-1);
+  const feedbackShownAt = useRef(0);
 
   // 再開したとき、すでにボスのHPが0(とどめの一撃のあとで中断した)なら、そのままクリアにする
   const resumeCompleted = useRef(false);
@@ -155,6 +156,7 @@ export function QuizPlayer({
     } else {
       setCombo(0);
     }
+    feedbackShownAt.current = Date.now();
     setFeedback({ correct, message, effect, review: review.overcame ? review : null });
 
     // 再開用に、解答のたびに進行状況を通知する(次に解く位置。最後の問題のときは位置を進めない)
@@ -290,42 +292,52 @@ export function QuizPlayer({
 
       {feedback && (
         <div
-          className={[
-            "feedback",
-            feedback.correct ? "feedback-correct" : "feedback-incorrect",
-            feedback.effect ? `effect-${feedback.effect}` : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          className="feedback-overlay"
+          onClick={(e) => {
+            // 暗い部分をタップしても次へ進める(出た直後の誤タップで流れないよう、少しだけ待つ)
+            if (e.target === e.currentTarget && Date.now() - feedbackShownAt.current > 400) handleNext();
+          }}
         >
-          {feedback.effect === "sparkle" && (
-            <span className="sparkles" aria-hidden="true">
-              <span>✨</span>
-              <span>✨</span>
-              <span>✨</span>
-            </span>
-          )}
-          {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ)、不正解=しょんぼり */}
-          <MascotFace
-            expression={feedback.correct ? (feedback.review?.overcame ? "eating" : "happy") : "sad"}
-            size="small"
-          />
-          <p className="feedback-message">
-            <Rb t={feedback.message} />
-          </p>
-          {feedback.review && (
-            <p className="feedback-overcome">
-              ⭐ にがてを こくふくした!
+          <div
+            role="dialog"
+            aria-label={feedback.correct ? "せいかい" : "ざんねん"}
+            className={[
+              "feedback",
+              feedback.correct ? "feedback-correct" : "feedback-incorrect",
+              feedback.effect ? `effect-${feedback.effect}` : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {feedback.effect === "sparkle" && (
+              <span className="sparkles" aria-hidden="true">
+                <span>✨</span>
+                <span>✨</span>
+                <span>✨</span>
+              </span>
+            )}
+            {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ)、不正解=しょんぼり */}
+            <MascotFace
+              expression={feedback.correct ? (feedback.review?.overcame ? "eating" : "happy") : "sad"}
+              size="small"
+            />
+            <p className="feedback-message">
+              <Rb t={feedback.message} />
             </p>
-          )}
-          {question.explanation && (
-            <p className="feedback-explanation">
-              <Ruby text={question.explanation} />
-            </p>
-          )}
-          <button type="button" onClick={handleNext}>
-            つぎへ
-          </button>
+            {feedback.review && (
+              <p className="feedback-overcome">
+                ⭐ にがてを こくふくした!
+              </p>
+            )}
+            {question.explanation && (
+              <p className="feedback-explanation">
+                <Ruby text={question.explanation} />
+              </p>
+            )}
+            <button type="button" className="feedback-next" autoFocus onClick={handleNext}>
+              つぎへ
+            </button>
+          </div>
         </div>
       )}
     </div>

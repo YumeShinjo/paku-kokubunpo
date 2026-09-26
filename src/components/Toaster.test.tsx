@@ -1,4 +1,5 @@
 import { act } from "react";
+import { readFileSync } from "node:fs";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -94,5 +95,49 @@ describe("Toaster(エリアクリアの通知)", () => {
     advance(4100);
     expect(text()).toContain("せいちょう");
     expect(audio.playSe).toHaveBeenCalledTimes(1);
+  });
+
+  describe("上へのスワイプ(またはタップ)で消せる", () => {
+    const fire = (type: string, y: number) =>
+      act(() => {
+        container.querySelector(".toast")!.dispatchEvent(new MouseEvent(type, { bubbles: true, clientY: y }));
+      });
+
+    it("上へスワイプすると、時間を待たずに消え、消えたあとは何も残らない", () => {
+      act(() => useToastStore.getState().push("growth"));
+      fire("pointerdown", 100);
+      fire("pointermove", 60);
+      fire("pointerup", 60);
+      expect(container.querySelector(".toast.is-leaving")).not.toBeNull();
+      advance(300 + TOAST_GAP_MS + 10);
+      expect(text()).toBeNull();
+    });
+
+    it("短いタップでも消える。ただし、下へ引いたり、少ししか動かさない上向きの動きでは消えない", () => {
+      act(() => useToastStore.getState().push("growth", "pageUnlock"));
+      fire("pointerdown", 100);
+      fire("pointerup", 118); // 下へ
+      expect(container.querySelector(".toast.is-leaving")).toBeNull();
+      fire("pointerdown", 100);
+      fire("pointerup", 85); // 15pxだけ上へ
+      expect(container.querySelector(".toast.is-leaving")).toBeNull();
+      fire("pointerdown", 100);
+      fire("pointerup", 100); // タップ
+      expect(container.querySelector(".toast.is-leaving")).not.toBeNull();
+    });
+
+    it("消したあとは、次の通知が続けて出る", () => {
+      act(() => useToastStore.getState().push("growth", "pageUnlock"));
+      fire("pointerdown", 100);
+      fire("pointerup", 50);
+      advance(3000);
+      expect(text()).toContain("ずかん");
+    });
+
+    it("通知の外側は素通し(pointer-events: none)、通知そのものだけが触れる", () => {
+      const css = readFileSync("src/styles/global.css", "utf-8");
+      expect(css).toMatch(/\.toast-area \{[^}]*pointer-events: none;/);
+      expect(css).toMatch(/\.toast \{\s*pointer-events: auto;/);
+    });
   });
 });

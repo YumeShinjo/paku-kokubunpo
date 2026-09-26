@@ -841,6 +841,7 @@ button.incorrect {
 
 .title-logo {
   display: block;
+  width: min(100%, 26rem);
   max-width: 100%;
   height: auto;
   margin: 0 auto;
@@ -1349,10 +1350,13 @@ button.incorrect {
   transform: translateX(-50%);
   width: min(94vw, 30rem);
   z-index: 60;
-  pointer-events: none;
+  pointer-events: none; /* 通知の外側は素通し。下の「もどる」などを押せるようにする */
 }
 
 .toast {
+  pointer-events: auto; /* 通知そのものは、上へスワイプ(またはタップ)で消せる */
+  touch-action: none;
+  cursor: grab;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1816,4 +1820,44 @@ button.incorrect {
   /* サブ機能: ひと回り小さく、主役より薄いミント */
   background: #cfeee0;
   border: 1px solid #a8e0c8;
+}
+
+/* 正誤の判定: 画面の上に重ねるポップアップ。スクロールせず、「つぎへ」(または外側のタップ)で次の問題へ進む */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(75, 58, 46, 0.4);
+}
+
+.feedback-overlay .feedback {
+  width: min(100%, 26rem);
+  max-height: 85dvh;
+  overflow-y: auto;
+  text-align: center;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 10px 30px rgba(75, 58, 46, 0.4);
+}
+
+.feedback-overlay .feedback-correct {
+  box-shadow:
+    0 10px 30px rgba(75, 58, 46, 0.4),
+    inset 0 0 0 3px var(--color-correct);
+}
+
+.feedback-overlay .feedback-incorrect {
+  box-shadow:
+    0 10px 30px rgba(75, 58, 46, 0.4),
+    inset 0 0 0 3px var(--color-incorrect);
+}
+
+.feedback-overlay .feedback-next {
+  width: 100%;
+  min-height: 3rem;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
 }
