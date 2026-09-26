@@ -14,7 +14,9 @@ import { BossPortrait } from "./BossPortrait";
 import { MascotFace } from "@/features/mascot/Mascot";
 import { recordReviewResult, type ReviewOutcome } from "./review";
 import type { QuizProgress } from "./session";
-import { ScreenBackground } from "@/components/ScreenBackground";
+import { StageVisual } from "@/components/ScreenBackground";
+import { ZukanPages } from "@/features/zukan/ZukanPages";
+import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
 import {
@@ -35,6 +37,8 @@ export interface SessionResult {
   bossDefeated: boolean;
   /** 小ボスのHPの残り(ボス戦のみ)。「もう少し」の表示に使う */
   hpLeft: number;
+  /** ボス戦のライフが0になって終わった(ステージを最初からやり直す) */
+  lifeOut?: boolean;
 }
 
 interface Props {
@@ -92,7 +96,12 @@ export function QuizPlayer({
   const [combo, setCombo] = useState(resume?.combo ?? 0);
   const [maxCombo, setMaxCombo] = useState(resume?.maxCombo ?? 0);
   const [hp, setHp] = useState(resume?.hp ?? boss?.hpMax ?? 0);
+  // ボス戦のプレイヤーのライフ(誤答で1減り、0でそのステージを最初からやり直す)
+  const [lives, setLives] = useState(resume?.lives ?? BOSS_LIVES);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [zukanOpen, setZukanOpen] = useState(false);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
   const lastMessage = useRef<Record<string, string>>({});
@@ -155,7 +164,9 @@ export function QuizPlayer({
       if (boss) setHp((h) => Math.max(0, h - 1));
     } else {
       setCombo(0);
+      if (boss) setLives((l) => Math.max(0, l - 1));
     }
+    setPopupOpen(true);
     feedbackShownAt.current = Date.now();
     setFeedback({ correct, message, effect, review: review.overcame ? review : null });
 
@@ -166,32 +177,36 @@ export function QuizPlayer({
       combo: correct ? combo + 1 : 0,
       maxCombo: correct ? Math.max(maxCombo, combo + 1) : maxCombo,
       hp: boss && correct ? Math.max(0, hp - 1) : hp,
+      lives: boss && !correct ? Math.max(0, lives - 1) : lives,
     });
   }
 
   function handleNext() {
     const defeated = boss !== undefined && hp <= 0;
+    const lifeOut = boss !== undefined && !defeated && lives <= 0;
     const isLast = index + 1 >= questions.length;
-    if (defeated || isLast) {
+    if (defeated || lifeOut || isLast) {
       onComplete({
         correctCount,
         answered: index + 1,
         maxCombo,
         bossDefeated: defeated,
         hpLeft: hp,
+        lifeOut,
       });
       return;
     }
     setFeedback(null);
+    setPopupOpen(false);
     setIndex(index + 1);
   }
 
   return (
     <div
-      className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}`}
+      className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}${feedback ? " has-explain" : ""}`}
       style={areaAccentStyle(areaId)}
     >
-      <ScreenBackground name={areaId} />
+      <StageVisual name={areaId} />
       {heading && (
         <p className="quiz-heading">
           <Ruby text={heading} />
@@ -224,6 +239,12 @@ export function QuizPlayer({
           <p className="hp-text">
             HP {hp} / {boss.hpMax}
           </p>
+          <p className="player-lives" role="img" aria-label={`ライフ ${lives} / ${BOSS_LIVES}`}>
+            <span aria-hidden="true">
+              {"❤".repeat(lives)}
+              <span className="life-lost">{"♡".repeat(BOSS_LIVES - lives)}</span>
+            </span>
+          </p>
         </div>
       )}
 
@@ -245,6 +266,9 @@ export function QuizPlayer({
           onClick={() => toggleStar(question.id)}
         >
           {starred ? "⭐ にがてもんだい" : "☆ にがてもんだいに いれる"}
+        </button>
+        <button type="button" className="zukan-button" onClick={() => setZukanOpen(true)}>
+          📖 ずかん
         </button>
         {onQuit && (
           <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>
@@ -290,12 +314,13 @@ export function QuizPlayer({
 
       <EngineRouter key={question.id} question={question} onAnswer={handleAnswer} />
 
-      {feedback && (
+      {/* 判定のポップアップ。自動では消えず、タップすると、ポップアップだけが閉じる(次の問題へは進まない) */}
+      {feedback && popupOpen && (
         <div
           className="feedback-overlay"
-          onClick={(e) => {
-            // 暗い部分をタップしても次へ進める(出た直後の誤タップで流れないよう、少しだけ待つ)
-            if (e.target === e.currentTarget && Date.now() - feedbackShownAt.current > 400) handleNext();
+          onClick={() => {
+            // 出た直後の誤タップで閉じないよう、少しだけ待つ
+            if (Date.now() - feedbackShownAt.current > 400) setPopupOpen(false);
           }}
         >
           <div
@@ -324,19 +349,38 @@ export function QuizPlayer({
             <p className="feedback-message">
               <Rb t={feedback.message} />
             </p>
-            {feedback.review && (
-              <p className="feedback-overcome">
-                ⭐ にがてを こくふくした!
+            {feedback.review && <p className="feedback-overcome">⭐ にがてを こくふくした!</p>}
+            {boss && !feedback.correct && (
+              <p className="feedback-lives">
+                {lives > 0 ? `ライフが 1 へったよ(のこり ${lives})` : "ライフが なくなっちゃった…"}
               </p>
             )}
-            {question.explanation && (
-              <p className="feedback-explanation">
-                <Ruby text={question.explanation} />
-              </p>
-            )}
-            <button type="button" className="feedback-next" autoFocus onClick={handleNext}>
-              つぎへ
+            <p className="feedback-close-hint">▼ タップして とじる</p>
+          </div>
+        </div>
+      )}
+
+      {/* 解説と「つぎへ」。ポップアップとは別の操作にして、解説を読み飛ばして進んでしまわないようにする */}
+      {feedback && (
+        <div className="explain-bar" role="region" aria-label="かいせつ">
+          {question.explanation && (
+            <p className="feedback-explanation">
+              <Ruby text={question.explanation} />
+            </p>
+          )}
+          <button type="button" className="feedback-next" onClick={handleNext}>
+            つぎへ
+          </button>
+        </div>
+      )}
+
+      {zukanOpen && (
+        <div className="zukan-modal" role="dialog" aria-label="ことばのずかん">
+          <div className="zukan-modal-inner">
+            <button type="button" className="zukan-modal-close" onClick={() => setZukanOpen(false)}>
+              ✕ とじる
             </button>
+            <ZukanPages />
           </div>
         </div>
       )}

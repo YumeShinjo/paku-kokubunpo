@@ -270,16 +270,32 @@ button.incorrect {
   line-height: 1.8;
 }
 
+.story-tap-hint {
+  display: block;
+  margin-top: 0.4rem;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  animation: tap-hint 1.6s ease-in-out infinite;
+}
+
+.screen-story {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .story-controls {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.5rem;
   /* 右下の固定ミュートボタンと重ならないよう、右に余白をとる */
   padding: 0.75rem 4rem 1rem 1rem;
 }
 
 .story-controls button {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 8rem;
 }
 
 .story-skip {
@@ -1860,4 +1876,115 @@ button.incorrect {
   min-height: 3rem;
   margin-top: 0.5rem;
   font-size: 1.1rem;
+}
+
+/* ---- 判定ポップアップ(判定だけ)/ 解説と「つぎへ」(画面下に固定。別の操作) ---- */
+.feedback-close-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.feedback-lives {
+  margin: 0.2rem 0 0;
+  font-weight: bold;
+  color: var(--color-incorrect);
+}
+
+.explain-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  max-width: 480px;
+  margin: 0 auto;
+  max-height: 55dvh;
+  overflow-y: auto;
+  /* 右下の固定ミュートボタンと重ならないよう、右に余白をとる */
+  padding: 0.8rem 4rem 0.9rem 1rem;
+  background: var(--color-surface);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 14px rgba(75, 58, 46, 0.2);
+}
+
+.explain-bar .feedback-explanation {
+  margin: 0 0 0.6rem;
+}
+
+.explain-bar .feedback-next {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1.1rem;
+}
+
+/* 解説の枠のぶん、下に余白をとり、問題が隠れきらないようにする */
+.screen-stage.has-explain {
+  padding-bottom: 13rem;
+}
+
+/* ---- ボス戦のプレイヤーのライフ ---- */
+.player-lives {
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  color: var(--color-incorrect);
+}
+
+.player-lives .life-lost {
+  opacity: 0.5;
+}
+
+/* ---- ステージ背景: 上半分にビジュアル、下半分に問題・UI ---- */
+.screen-stage {
+  --stage-visual-height: clamp(6rem, 26dvh, 13rem);
+}
+
+.screen-stage.is-compact {
+  --stage-visual-height: clamp(3rem, 12dvh, 6rem);
+}
+
+.stage-visual {
+  flex: none;
+  height: var(--stage-visual-height);
+  border-radius: 14px;
+  background-color: var(--color-bar-track);
+  background-size: cover;
+  background-position: center top;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.stage-visual-placeholder {
+  background-image: linear-gradient(160deg, var(--area-accent, var(--color-primary)), var(--color-bg));
+}
+
+/* ---- バトル中の「ことばのずかん」 ---- */
+.zukan-button {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  background: var(--color-gold-soft);
+  border: 1px solid var(--color-gold-line);
+}
+
+.zukan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+
+.zukan-modal-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 5rem;
+}
+
+.zukan-modal-close {
+  position: sticky;
+  top: 0.4rem;
+  z-index: 1;
+  margin-bottom: 0.5rem;
+  border: 2px solid var(--color-primary-strong);
+  background: var(--color-surface);
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.2);
 }

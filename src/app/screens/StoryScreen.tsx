@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { getStoryEvent } from "@/data/story/events";
 import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
@@ -11,6 +11,7 @@ import type { Screen } from "@/app/store/navigationStore";
 
 /**
  * ストーリー演出画面(3章: ステージ間のストーリーテキストは短く、必ずスキップ可能)。
+ * 台詞は、画面のどこをタップしても次へ進む(ADV形式)。スキップだけがボタンとして残る。
  * 背景・キャラクターは素材(src/assets/images/)があればその絵を、なければ仮表示(単色パネル+マスコットの絵文字)。
  * 立ち絵は、コト(マスコット)・王様・小ボスの台詞のとき、話者に合わせて出す。
  *
@@ -82,8 +83,14 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
     }
   }
 
+  // 画面のどこをタップしても次の台詞へ(テキストボックスも含む)。ボタン(スキップ・選択肢)のタップは、そのボタンの動作だけにする
+  function handleScreenTap(e: MouseEvent<HTMLDivElement>) {
+    if (atChoice || (e.target as HTMLElement).closest("button")) return;
+    handleNext();
+  }
+
   return (
-    <div className="screen screen-story">
+    <div className="screen screen-story" onClick={handleScreenTap}>
       <div
         className="story-stage"
         style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
@@ -109,6 +116,11 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         <p className="story-text">
           <Ruby text={line.text} />
         </p>
+        {!atChoice && (
+          <span className="story-tap-hint" aria-hidden="true">
+            {isLast ? "▼ タップして とじる" : "▼ タップ"}
+          </span>
+        )}
       </div>
       {atChoice ? (
         <div className="story-choices">
@@ -120,9 +132,6 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         </div>
       ) : (
         <div className="story-controls">
-          <button type="button" onClick={handleNext}>
-            {isLast ? "とじる" : "つぎへ"}
-          </button>
           <button type="button" className="story-skip" onClick={handleSkip}>
             スキップ
           </button>

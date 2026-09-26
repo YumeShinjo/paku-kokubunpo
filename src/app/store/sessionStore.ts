@@ -18,6 +18,8 @@ export interface SavedSession {
   maxCombo: number;
   /** ボス戦のHP(通常ステージでは 0) */
   hp: number;
+  /** ボス戦のプレイヤーのライフ(通常ステージでは省略) */
+  lives?: number;
 }
 
 interface SessionState {

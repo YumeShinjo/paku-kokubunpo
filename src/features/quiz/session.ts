@@ -9,6 +9,8 @@ export interface QuizProgress {
   combo: number;
   maxCombo: number;
   hp: number;
+  /** ボス戦のプレイヤーのライフ(古い保存データにはない) */
+  lives?: number;
 }
 
 export interface RestoredSession {
@@ -47,6 +49,7 @@ export function restoreSession(
       combo: saved.combo,
       maxCombo: saved.maxCombo,
       hp: saved.hp,
+      lives: isCount(saved.lives) ? saved.lives : undefined,
     },
   };
 }

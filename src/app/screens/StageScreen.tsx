@@ -23,8 +23,9 @@ const SCORE_PER_QUESTION = 10;
 
 /**
  * ステージ画面。1ステージ分の出題(QuizPlayer)と、クリア/「もう少し」の結果表示を担う(3章)。
- * 通常ステージは必ずクリアになる(負けはない)。小ボス・ラスボスはHPを0にできればクリア、
- * 出題を解ききってもHPが残った場合は「もう少し」でその場で再挑戦できる(ペナルティなし)。
+ * 通常ステージは必ずクリアになる(負けはない)。小ボス・ラスボスはHPを0にできればクリア。
+ * ボス戦にはプレイヤーのライフ(5)があり、誤答で減って0になると、最初からやり直す(その場で再挑戦できる)。
+ * 出題を解ききってもHPが残った場合は「もう少し」で、同じくその場で再挑戦できる。
  */
 export function StageScreen({ areaId, stageId }: { areaId: string; stageId: string }) {
   const goTo = useNavigationStore((s) => s.goTo);
@@ -67,7 +68,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       const areaOrder = areas.find((a) => a.id === areaId)?.order ?? 0;
       growTo(areaOrder + 1);
       setJustClearedArea(true);
-      pushToast("growth", "pageUnlock"); // マップに戻ってから、成長 → 図鑑の順に通知する
+      pushToast("growth"); // マップに戻ってから、成長を通知する(図鑑は最初から全ページ読めるので、ページ解放の知らせは出さない)
     }
     setResult(r);
   }
@@ -106,11 +107,15 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     return (
       <div className="screen screen-stage-result">
         <MascotFace expression="sad" size="large" />
-        <h2>
-          もう少し!
-        </h2>
+        <h2>{result.lifeOut ? "ライフが なくなっちゃった…" : "もう少し!"}</h2>
         <p>
-          <Rb t="あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ!" />
+          <Rb
+            t={
+              result.lifeOut
+                ? "でも大丈夫[だいじょうぶ]!ずかんを見[み]ながら、最初[さいしょ]からもう一度[いちど]挑戦[ちょうせん]しよう!"
+                : "あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ!"
+            }
+          />
         </p>
         <p>
           {result.correctCount} / {result.answered} もん せいかい(ボスのHP のこり {result.hpLeft})
