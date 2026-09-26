@@ -111,11 +111,14 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
           </div>
         )}
       </div>
-      <div className="story-textbox">
-        {line.speaker && <p className="story-speaker">{line.speaker}</p>}
-        <p className="story-text">
-          <Ruby text={line.text} />
-        </p>
+      {/* 送りの合図(▼)は、テキストボックスの右下に固定する。台詞の長さで位置が変わらない */}
+      <div className="story-textbox-wrap">
+        <div className="story-textbox">
+          {line.speaker && <p className="story-speaker">{line.speaker}</p>}
+          <p className="story-text">
+            <Ruby text={line.text} />
+          </p>
+        </div>
         {!atChoice && (
           <span className="story-tap-hint" aria-hidden="true">
             {isLast ? "▼ タップして とじる" : "▼ タップ"}
@@ -131,11 +134,10 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
           ))}
         </div>
       ) : (
-        <div className="story-controls">
-          <button type="button" className="story-skip" onClick={handleSkip}>
-            スキップ
-          </button>
-        </div>
+        // スキップは画面の右上。ミュートは左上(MuteButton)。右下には何も置かない
+        <button type="button" className="story-skip" onClick={handleSkip}>
+          スキップ
+        </button>
       )}
     </div>
   );

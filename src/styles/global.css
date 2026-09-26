@@ -215,6 +215,7 @@ button.incorrect {
 
 /* ストーリー演出(3章): 背景・立ち絵は本番素材が揃うまでの仮表示 */
 .screen-story {
+  position: relative;
   padding: 0;
   justify-content: flex-start;
   gap: 0;
@@ -226,7 +227,7 @@ button.incorrect {
  */
 .story-stage {
   flex: none;
-  height: calc(100dvh - 15.5rem);
+  height: calc(100dvh - 19rem);
   min-height: 13rem;
   display: flex;
   align-items: center;
@@ -249,14 +250,19 @@ button.incorrect {
   }
 }
 
-.story-textbox {
+.story-textbox-wrap {
+  position: relative;
   margin: 0 1rem;
-  padding: 1rem;
-  border-radius: 16px 16px 0 0;
+}
+
+.story-textbox {
+  padding: 0.9rem 1rem 1.8rem;
+  border-radius: 16px;
   background: var(--color-surface);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
-  /* 短い台詞でも、ボタンの位置が大きく動かないよう、4行ぶんを確保する。それ以上は下へ伸びる */
-  min-height: 9rem;
+  /* 高さを固定する(台詞が短くても長くても、大きさも、送りの合図の位置も変わらない)。長い台詞は、この中でだけスクロールする */
+  height: 12rem;
+  overflow-y: auto;
 }
 
 .story-speaker {
@@ -271,11 +277,12 @@ button.incorrect {
 }
 
 .story-tap-hint {
-  display: block;
-  margin-top: 0.4rem;
-  text-align: right;
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.45rem;
   font-size: 0.8rem;
   color: var(--color-text-muted);
+  pointer-events: none;
   animation: tap-hint 1.6s ease-in-out infinite;
 }
 
@@ -285,23 +292,17 @@ button.incorrect {
   -webkit-tap-highlight-color: transparent;
 }
 
-.story-controls {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  /* 右下の固定ミュートボタンと重ならないよう、右に余白をとる */
-  padding: 0.75rem 4rem 1rem 1rem;
-}
-
-.story-controls button {
-  flex: 0 1 auto;
-  min-width: 8rem;
-}
-
+/* スキップ: 画面の右上に、控えめに置く */
 .story-skip {
-  background: transparent;
+  position: absolute;
+  top: max(0.6rem, env(safe-area-inset-top));
+  right: 0.75rem;
+  z-index: 5;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.85);
   color: var(--color-text);
-  opacity: 0.7;
+  border: 1px solid var(--color-text-muted);
 }
 
 /* ---- プレイ画面: コンボ・エンジンの呼び名・ボスHP(3章・5章) ---- */
@@ -1091,6 +1092,18 @@ button.incorrect {
   color: var(--color-text);
   border: 2px solid var(--color-primary);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* 会話シーンでは左上へ(右上はスキップ、右下はあけておく) */
+.mute-button.in-story {
+  top: max(0.6rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  right: auto;
+  bottom: auto;
+  z-index: 5;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.05rem;
 }
 
 .mute-button.is-muted {
@@ -1934,13 +1947,10 @@ button.incorrect {
   opacity: 0.5;
 }
 
-/* ---- ステージ背景: 上半分にビジュアル、下半分に問題・UI ---- */
+/* ---- ステージ背景: 通常ステージは小さな装飾バー。ボス戦は、上半分に背景+ボス ---- */
 .screen-stage {
-  --stage-visual-height: clamp(6rem, 26dvh, 13rem);
-}
-
-.screen-stage.is-compact {
-  --stage-visual-height: clamp(3rem, 12dvh, 6rem);
+  --stage-visual-height: 2.25rem;
+  --stage-visual-tall-height: clamp(9rem, 32dvh, 16rem);
 }
 
 .stage-visual {
@@ -1949,12 +1959,57 @@ button.incorrect {
   border-radius: 14px;
   background-color: var(--color-bar-track);
   background-size: cover;
-  background-position: center top;
+  background-position: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.stage-visual-tall {
+  height: var(--stage-visual-tall-height);
+  background-position: center top;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stage-visual-tall .boss-portrait {
+  width: 100%;
+  height: 92%;
+  margin: 0;
 }
 
 .stage-visual-placeholder {
   background-image: linear-gradient(160deg, var(--area-accent, var(--color-primary)), var(--color-bg));
+}
+
+/* ヘッダーのボタンは、文字を折り返さない(「やめる」などが2行にならない) */
+.stage-header button {
+  white-space: nowrap;
+}
+
+/* ステージ冒頭の説明ポップアップ */
+.stage-intro {
+  text-align: left;
+}
+
+.stage-intro-item {
+  margin-bottom: 0.7rem;
+}
+
+.stage-intro .engine-flavor-label {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-primary-text);
+}
+
+.stage-intro .engine-flavor-situation {
+  margin: 0.15rem 0 0;
+  line-height: 1.6;
+}
+
+.screen-stage.has-next {
+  padding-bottom: 6.5rem;
 }
 
 /* ---- バトル中の「ことばのずかん」 ---- */

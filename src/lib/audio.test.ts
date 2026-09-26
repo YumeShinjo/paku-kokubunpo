@@ -129,6 +129,28 @@ describe("audio", () => {
       expect(play).toHaveBeenCalledTimes(1); // jsdomでは要素が止まった状態のまま。解除で再生を促す
     });
 
+    it("ミュートにすると、音量0ではなく、BGMを実際に一時停止(pause)する。解除すると、再生を再開する", () => {
+      trackVolume();
+      const proto = window.HTMLMediaElement.prototype;
+      const pause = vi.mocked(proto.pause);
+      const play = vi.mocked(proto.play);
+      pause.mockClear();
+      useSettingsStore.getState().setMuted(true);
+      expect(pause).toHaveBeenCalled();
+      play.mockClear();
+      useSettingsStore.getState().setMuted(false);
+      expect(play).toHaveBeenCalled();
+    });
+
+    it("ミュート中は、曲を切り替えても、再生を始めない(止めたまま)", () => {
+      trackVolume();
+      useSettingsStore.getState().setMuted(true);
+      const play = vi.mocked(window.HTMLMediaElement.prototype.play);
+      play.mockClear();
+      playBgm("/assets/audio/bgm-muted.mp3");
+      expect(play).not.toHaveBeenCalled();
+    });
+
     it("ミュート中に曲が切り替わっても、解除後に新しい曲が鳴る", () => {
       trackVolume();
       useSettingsStore.getState().setMuted(true);

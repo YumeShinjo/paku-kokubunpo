@@ -60,6 +60,21 @@ interface Props {
   canResumeLater?: boolean;
 }
 
+/** このステージの出題形式ごとの呼び名と場面の説明(重複なし)。冒頭のポップアップに出す */
+function stageFlavors(areaId: string, questions: Question[]) {
+  const seen = new Set<string>();
+  const list: NonNullable<ReturnType<typeof getEngineFlavor>>[] = [];
+  for (const q of questions) {
+    const flavor = getEngineFlavor(getUnitMeta(q.unit)?.areaId ?? areaId, q.engine);
+    if (!flavor) continue;
+    const key = JSON.stringify(flavor.label);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(flavor);
+  }
+  return list;
+}
+
 interface Feedback {
   correct: boolean;
   message: string;
@@ -102,6 +117,8 @@ export function QuizPlayer({
   // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
+  // ステージの冒頭の説明(出題形式の呼び名と場面)は、ステージを始めたときに1度だけ、ポップアップで出す(途中からの再開では出さない)
+  const [introOpen, setIntroOpen] = useState(() => resume === undefined && stageFlavors(areaId, questions).length > 0);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
   const lastMessage = useRef<Record<string, string>>({});
@@ -128,8 +145,8 @@ export function QuizPlayer({
   }, []);
 
   const question = questions[index];
-  // 呼び名は問題の所属エリアで引く(全エリアの問題が出るラスボスでも、その問題らしい呼び名になる)
-  const flavor = getEngineFlavor(getUnitMeta(question.unit)?.areaId ?? areaId, question.engine);
+  // 解説が長い仕分け問題だけ、2段階(判定のポップアップ → 閉じると解説と「つぎへ」)。それ以外は、判定と解説を1つのポップアップにまとめ、1タップで次へ
+  const twoStage = question.engine === "sorting";
   const comboText = comboLabel(combo);
   const starred = starredIds.includes(question.id);
   // 初回プレイ時だけ、その出題形式の操作ガイドを出す(解答後は出さない)
@@ -203,10 +220,13 @@ export function QuizPlayer({
 
   return (
     <div
-      className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}${feedback ? " has-explain" : ""}`}
+      className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}${feedback && twoStage ? (question.explanation ? " has-explain" : " has-next") : ""}`}
       style={areaAccentStyle(areaId)}
     >
-      <StageVisual name={areaId} />
+      {/* 背景。ボス戦は、上半分に背景+ボスを大きく。通常ステージは、小さな装飾バーだけにして、問題のスペースを優先する */}
+      <StageVisual name={areaId} tall={boss !== undefined}>
+        {boss && <BossPortrait type={boss.type} areaId={areaId} />}
+      </StageVisual>
       {heading && (
         <p className="quiz-heading">
           <Ruby text={heading} />
@@ -222,7 +242,6 @@ export function QuizPlayer({
             .filter(Boolean)
             .join(" ")}
         >
-          <BossPortrait type={boss.type} areaId={areaId} />
           <p className="boss-name">
             <Rb t={`${boss.label}: ${boss.title}`} />
           </p>
@@ -299,28 +318,21 @@ export function QuizPlayer({
         </div>
       )}
 
-      {flavor && (
-        <div className="engine-flavor">
-          <p className="engine-flavor-label">
-            <Ruby text={flavor.label} />
-          </p>
-          <p className="engine-flavor-situation">
-            <Ruby text={flavor.situation} />
-          </p>
-        </div>
-      )}
-
       {showGuide && <EngineGuide guideKey={guideKey} onDismiss={() => markGuideSeen(guideKey)} />}
 
       <EngineRouter key={question.id} question={question} onAnswer={handleAnswer} />
 
-      {/* 判定のポップアップ。自動では消えず、タップすると、ポップアップだけが閉じる(次の問題へは進まない) */}
+      {/* 判定のポップアップ。自動では消えない。
+          仕分け以外: 判定と解説を1つにまとめ、タップ1回(または「つぎへ」)で次の問題へ。
+          仕分け: 判定だけを出し、タップするとポップアップだけが閉じる(次の問題へは進まない)。 */}
       {feedback && popupOpen && (
         <div
           className="feedback-overlay"
           onClick={() => {
-            // 出た直後の誤タップで閉じないよう、少しだけ待つ
-            if (Date.now() - feedbackShownAt.current > 400) setPopupOpen(false);
+            // 出た直後の誤タップで閉じない(進まない)よう、少しだけ待つ
+            if (Date.now() - feedbackShownAt.current <= 400) return;
+            if (twoStage) setPopupOpen(false);
+            else handleNext();
           }}
         >
           <div
@@ -355,13 +367,24 @@ export function QuizPlayer({
                 {lives > 0 ? `ライフが 1 へったよ(のこり ${lives})` : "ライフが なくなっちゃった…"}
               </p>
             )}
-            <p className="feedback-close-hint">▼ タップして とじる</p>
+            {!twoStage && question.explanation && (
+              <p className="feedback-explanation">
+                <Ruby text={question.explanation} />
+              </p>
+            )}
+            {twoStage ? (
+              <p className="feedback-close-hint">▼ タップして とじる</p>
+            ) : (
+              <button type="button" className="feedback-next" onClick={handleNext}>
+                つぎへ
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* 解説と「つぎへ」。ポップアップとは別の操作にして、解説を読み飛ばして進んでしまわないようにする */}
-      {feedback && (
+      {/* 仕分けだけ: 解説と「つぎへ」は、ポップアップとは別の操作にして、解説を読み飛ばして進んでしまわないようにする */}
+      {feedback && twoStage && (
         <div className="explain-bar" role="region" aria-label="かいせつ">
           {question.explanation && (
             <p className="feedback-explanation">
@@ -371,6 +394,27 @@ export function QuizPlayer({
           <button type="button" className="feedback-next" onClick={handleNext}>
             つぎへ
           </button>
+        </div>
+      )}
+
+      {/* ステージの冒頭の説明(1度だけ)。閉じたら、ふつうの問題画面 */}
+      {introOpen && (
+        <div className="feedback-overlay stage-intro-overlay">
+          <div role="dialog" aria-label="ステージのせつめい" className="feedback stage-intro">
+            {stageFlavors(areaId, questions).map((flavor, i) => (
+              <div key={i} className="stage-intro-item">
+                <p className="engine-flavor-label">
+                  <Ruby text={flavor.label} />
+                </p>
+                <p className="engine-flavor-situation">
+                  <Ruby text={flavor.situation} />
+                </p>
+              </div>
+            ))}
+            <button type="button" className="feedback-next" onClick={() => setIntroOpen(false)}>
+              はじめる
+            </button>
+          </div>
         </div>
       )}
 

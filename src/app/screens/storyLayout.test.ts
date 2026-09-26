@@ -29,7 +29,24 @@ describe("ストーリー画面のレイアウト", () => {
     expect(screen).not.toContain("flex-end");
   });
 
-  it("テキストボックスは、短い台詞でも一定の高さを確保する(ボタンの位置が大きく動かない)", () => {
-    expect(rule(".story-textbox")).toContain("min-height: 9rem;");
+  it("テキストボックスは、台詞の長さに関わらず高さが固定(長い台詞はその中でスクロール)。送りの合図はその右下に固定", () => {
+    const box = rule(".story-textbox");
+    expect(box).toContain("height: 12rem;");
+    expect(box).toContain("overflow-y: auto;");
+    expect(box).not.toContain("min-height");
+    const hint = rule(".story-tap-hint");
+    expect(hint).toContain("position: absolute;");
+    expect(hint).toContain("bottom:");
+  });
+
+  it("スキップは画面の右上、ミュートは会話シーンでは左上。右下には何も置かない", () => {
+    const skip = rule(".story-skip");
+    expect(skip).toContain("position: absolute;");
+    expect(skip).toContain("right:");
+    expect(skip).toContain("top:");
+    const mute = rule(".mute-button.in-story");
+    expect(mute).toContain("left:");
+    expect(mute).toContain("top:");
+    expect(mute).toContain("bottom: auto;");
   });
 });

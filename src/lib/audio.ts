@@ -232,7 +232,18 @@ function applyBgmLevel(seconds = 0): void {
 /** 止まっている AudioContext を動かす。ミュート解除などユーザー操作の中で呼ぶと、iOSでも再開できる */
 function resumeAudioContext(): void {
   const ctx = audioContext;
+  if (useSettingsStore.getState().muted) return; // ミュート中は、動かさない(端末に「音声を使っているアプリ」と見せない)
   if (ctx && ctx.state !== "running") void ctx.resume().catch(() => {});
+}
+
+/**
+ * ミュート中・バックグラウンド中に、音声の再生を実際に止める。BGMを一時停止(pause)し、AudioContext も
+ * 休ませる(suspend)。音量0のまま鳴らし続けると、端末は「音声を再生中のアプリ」と扱い、他の音楽アプリの再生を止めてしまうため。
+ */
+function haltPlayback(): void {
+  bgmElement?.pause();
+  const ctx = audioContext;
+  if (ctx && ctx.state === "running") void ctx.suspend().catch(() => {});
 }
 
 /** play() はブラウザによって Promise を返さない/同期的に例外を投げることがあるため、両対応で呼ぶ */
@@ -254,14 +265,14 @@ function isPageHidden(): boolean {
   return typeof document !== "undefined" && document.visibilityState === "hidden";
 }
 
-/** BGM要素を再生する。見えていないあいだは何もしない(戻ってきたとき ensureBgmPlaying が始める) */
+/** BGM要素を再生する。見えていないあいだ・ミュート中は何もしない(戻ってきた/解除したとき ensureBgmPlaying が始める) */
 function playBgmElement(audio: HTMLAudioElement): void {
-  if (!isPageHidden()) safePlay(audio);
+  if (!isPageHidden() && !useSettingsStore.getState().muted) safePlay(audio);
 }
 
 /**
  * 曲が指定されているのに、止まったままのBGMを鳴らし直す(解禁の直後・ミュート解除・
- * AudioContext が動き出したとき・アプリに戻ったとき)。ミュート中も再生は続け、音量0で鳴らしておく。
+ * AudioContext が動き出したとき・アプリに戻ったとき)。ミュート中は再生しない(止めたまま)。
  */
 function ensureBgmPlaying(): void {
   if (bgmElement && bgmSrc && bgmElement.paused) playBgmElement(bgmElement);
@@ -273,7 +284,7 @@ function primeBgmElement(): void {
   attachBgmGain();
   if (bgmSrc !== null) return; // すでにBGMが鳴っている(または指定済み)なら触らない
   audio.src = SILENT_WAV;
-  safePlay(audio);
+  if (!useSettingsStore.getState().muted) safePlay(audio);
 }
 
 /** 導入曲が終わったらループ曲へ移るための待ち受け(曲が切り替わるとき・止めるときに外す) */
@@ -356,22 +367,24 @@ export function seDurationMs(kind: SeKind): number {
 }
 
 // 音量スライダー・ミュート(7章)の変更を、再生中のBGMへ即時反映する。
-// ミュートを解除したときは、止まっていた AudioContext と BGM も動かし直す(解除のタップの中なので、iOSでも再開できる)。
+// ミュートにしたときは、再生を実際に止める。ミュートを解除したときは、止まっていた AudioContext と BGM も動かし直す(解除のタップの中なので、iOSでも再開できる)。
 useSettingsStore.subscribe((state, prev) => {
   applyBgmLevel(0.02);
-  if (prev.muted && !state.muted) {
+  if (!prev.muted && state.muted) {
+    haltPlayback(); // ミュート=音量0ではなく、実際に一時停止する
+  } else if (prev.muted && !state.muted) {
     resumeAudioContext();
     ensureBgmPlaying();
   }
 });
 
 // アプリがバックグラウンドに回ったら(ホーム画面に戻った・画面ロック)BGMを止め、戻ってきたら続きから鳴らす。
-// ミュート中は、音量0のまま再生を続けるので、戻っても無音のまま(解除すれば鳴る)。
+// ミュート中は、止めたままにする(解除すれば、続きから鳴る)。
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (!useSettingsStore.getState().audioUnlocked) return;
     if (isPageHidden()) {
-      bgmElement?.pause();
+      haltPlayback();
       return;
     }
     resumeAudioContext();
