@@ -1,4 +1,5 @@
 import { getFirebaseApp, isFirebaseConfigured } from "@/lib/firebase";
+import { JOIN_MAX_SCORE } from "@/features/ranking/scoreLimits";
 
 /**
  * ランキング(8章)のFirestoreアクセス。
@@ -142,9 +143,14 @@ let sdkPromise: Promise<{
 function loadSdk() {
   if (!sdkPromise) {
     sdkPromise = (async () => {
-      const app = await getFirebaseApp();
+      const app = await getFirebaseApp().catch((error) => {
+        throw new RankingError("offline", error);
+      });
       if (!app) throw new RankingError("not-configured");
-      const [authModule, fs] = await Promise.all([import("firebase/auth"), import("firebase/firestore")]);
+      // Firebase は、ランキングを使うときに通信して読み込む(最初の保存には含めていない)。読み込めない=通信できない、として扱う
+      const [authModule, fs] = await Promise.all([import("firebase/auth"), import("firebase/firestore")]).catch((error) => {
+        throw new RankingError("offline", error);
+      });
       return {
         auth: authModule.getAuth(app),
         signInAnonymously: authModule.signInAnonymously,
@@ -179,7 +185,10 @@ export const rankingApi: RankingApi = {
       const { db, fs } = await loadSdk();
       const ref = fs.doc(db, ...MEMBERS(classCode), uid);
       const existing = await fs.getDoc(ref);
-      const score = Math.max(localScore, existing.exists() ? Number(existing.data().score) || 0 : 0);
+      // 新しく作るときの得点には上限がある(不正対策。firestore.rules と同じ)。たまっている分は、参加後に少しずつ送られる
+      const score = existing.exists()
+        ? Number(existing.data().score) || 0 // すでにあるときは、サーバーの得点のまま(増やす分は、参加後の送信で、上限の範囲で進める)
+        : Math.min(localScore, JOIN_MAX_SCORE);
       await fs.setDoc(ref, { nickname: profile.nickname, icon: profile.icon, score, updatedAt: fs.serverTimestamp() });
       return score;
     });

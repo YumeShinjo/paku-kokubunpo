@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * ランキング参加の状態(8章)。端末ローカルに保存する(アカウント不要)。
@@ -12,6 +13,8 @@ interface RankingState {
   classCode: string | null;
   nickname: string | null;
   lastSyncedScore: number;
+  /** 前回サーバーへ得点を送れた時刻(ミリ秒)。得点の増え方の上限(features/ranking/scoreLimits.ts)の計算に使う。古い版のデータには無い */
+  lastSyncedAt: number | null;
   /** サーバーへ送信済みのアイコンの id。まだ送っていない(古い版から更新した直後など)ときは null */
   syncedIcon: string | null;
   /** 参加する。すでに参加中のクラスで呼べば、ニックネームの変更になる */
@@ -26,6 +29,7 @@ export const useRankingStore = create<RankingState>()(
       classCode: null,
       nickname: null,
       lastSyncedScore: 0,
+      lastSyncedAt: null,
       syncedIcon: null,
       join: (classCode, nickname, syncedScore, icon) =>
         set((s) => ({
@@ -33,13 +37,18 @@ export const useRankingStore = create<RankingState>()(
           nickname,
           // 同じクラスのままの変更(ニックネームの変更)では、送信済みの得点を減らさない
           lastSyncedScore: s.classCode === classCode ? Math.max(s.lastSyncedScore, syncedScore) : syncedScore,
+          lastSyncedAt: Date.now(),
           syncedIcon: icon,
         })),
-      leave: () => set({ classCode: null, nickname: null, lastSyncedScore: 0, syncedIcon: null }),
+      leave: () => set({ classCode: null, nickname: null, lastSyncedScore: 0, lastSyncedAt: null, syncedIcon: null }),
       // 送信済みの得点は減らさない(順番が前後して古い結果が返ってきても戻らないように)
       markSynced: (score, icon) =>
-        set((s) => ({ lastSyncedScore: Math.max(s.lastSyncedScore, score), syncedIcon: icon ?? s.syncedIcon })),
+        set((s) => ({
+          lastSyncedScore: Math.max(s.lastSyncedScore, score),
+          lastSyncedAt: Date.now(),
+          syncedIcon: icon ?? s.syncedIcon,
+        })),
     }),
-    { name: "paku-kokubunpo:ranking" },
+    { name: "paku-kokubunpo:ranking", storage: safeJSONStorage },
   ),
 );

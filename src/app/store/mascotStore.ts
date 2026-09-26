@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * マスコット成長(6章)。growthStage はクリア済みエリア数と連動させ、
@@ -21,6 +22,7 @@ export const useMascotStore = create<MascotState>()(
     }),
     {
       name: "paku-kokubunpo:mascot",
+      storage: safeJSONStorage,
       // 旧版が保存していた克服ボーナス(bonusAccessoryIds)は使わなくなったので、次の保存から消す
       partialize: (s) => ({ growthStage: s.growthStage }),
     },

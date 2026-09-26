@@ -84,6 +84,17 @@ export function SettingsScreen() {
         </p>
       )}
 
+      {/* 機種変更・アプリの入れ直しのときの、データの引き継ぎ */}
+      <button type="button" onClick={() => goTo({ name: "transferIssue" })}>
+        ひきつぎコードを つくる
+      </button>
+      <button type="button" onClick={() => goTo({ name: "transferRestore" })}>
+        ひきつぎコードを いれる
+      </button>
+      <p className="settings-note">
+        <Rb t="機種変更[きしゅへんこう]のときは、古[ふる]い端末[たんまつ]で「つくる」→ 新[あたら]しい端末[たんまつ]で「いれる」。" />
+      </p>
+
       <button type="button" onClick={() => goTo({ name: "credits", next: { name: "settings" } })}>
         クレジット
       </button>

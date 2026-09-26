@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * 音量・ミュート設定(7章: アカウント不要のローカル設定、端末に保存)。
@@ -31,6 +32,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "paku-kokubunpo:settings",
+      storage: safeJSONStorage,
       // audioUnlocked はセッションごとに再度解禁が必要なブラウザもあるため永続化しない
       partialize: (s) => ({
         bgmVolume: s.bgmVolume,

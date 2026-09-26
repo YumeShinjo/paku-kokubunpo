@@ -15,7 +15,10 @@ import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
+import { TransferIssueScreen } from "@/app/screens/TransferIssueScreen";
+import { TransferRestoreScreen } from "@/app/screens/TransferRestoreScreen";
 import { ReviewPracticeScreen } from "@/app/screens/ReviewPracticeScreen";
+import { StorageWarning } from "@/components/StorageWarning";
 import { MuteButton } from "@/components/MuteButton";
 import { TapToStart } from "@/components/TapToStart";
 import { Toaster } from "@/components/Toaster";
@@ -61,6 +64,7 @@ export default function App() {
       {renderScreen(screen)}
       <MuteButton />
       <Toaster />
+      <StorageWarning />
     </>
   );
 }
@@ -85,6 +89,10 @@ function renderScreen(screen: Screen) {
       return <ReviewPracticeScreen />;
     case "settings":
       return <SettingsScreen />;
+    case "transferIssue":
+      return <TransferIssueScreen />;
+    case "transferRestore":
+      return <TransferRestoreScreen />;
     case "ranking":
       return <RankingScreen />;
     case "endingResult":

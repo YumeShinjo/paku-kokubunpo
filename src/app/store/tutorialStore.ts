@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 import type { GuideKey } from "@/data/engineGuide";
 
 /**
@@ -20,6 +21,6 @@ export const useTutorialStore = create<TutorialState>()(
         set((s) => (s.seenGuides.includes(key) ? s : { seenGuides: [...s.seenGuides, key] })),
       resetGuides: () => set({ seenGuides: [] }),
     }),
-    { name: "paku-kokubunpo:tutorial" },
+    { name: "paku-kokubunpo:tutorial", storage: safeJSONStorage },
   ),
 );

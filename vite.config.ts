@@ -38,6 +38,9 @@ export default defineConfig({
         // 1ファイルの上限を大きめに取る(既定2MB。背景画像・日本語フォント(約0.9MB)などが保存から漏れないように)。
         globPatterns: ["**/*.{js,css,html,svg,png,jpg,jpeg,webp,gif,json,woff2}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Firebase(ランキング用・約0.7MB)は、ランキングを開いたときに、通信して読み込む。オフラインでは使えないので、最初の保存(プリキャッシュ)には含めない
+        // QRコードの読み取り(jsQR・約0.13MB)も、引き継ぎで読み取るときだけ通信して読み込む。(初回の読み込みを軽くする)。
+        globIgnores: ["**/firebase-*.js", "**/jsQR-*.js"],
         runtimeCaching: [
           {
             // 音声(src/assets/audio)は dist/assets/audio/ へ出る。BGMは容量が大きく、iOSのSafariは
@@ -62,6 +65,10 @@ export default defineConfig({
     assetsInlineLimit: 0,
     rollupOptions: {
       output: {
+        // Firebase は、動的import(ランキングを使うとき)で読み込まれる、専用のまとまりにする
+        manualChunks(id) {
+          if (id.includes("node_modules/@firebase/") || id.includes("node_modules/firebase/")) return "firebase";
+        },
         assetFileNames: (asset) => {
           const name = asset.names?.[0] ?? asset.name ?? "";
           // 元のファイルの置き場所(src/assets/audio/se/ かどうか)で効果音を見分ける

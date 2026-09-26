@@ -26,6 +26,8 @@ export function sceneForScreen(screen: Screen): BgmScene {
   switch (screen.name) {
     case "title":
     case "settings":
+    case "transferIssue":
+    case "transferRestore":
     case "zukan":
     case "ranking":
       return "title";

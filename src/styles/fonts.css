@@ -1,0 +1,19 @@
+/*
+ * 日本語フォント(M PLUS Rounded 1c。SIL Open Font License 1.1)。読み込みを軽くするため、アプリで使っている文字だけに絞ったもの
+ * (元の約0.9MB×2 → 約0.2MB×2)。作り方は scripts/subset-fonts.py。含まれない文字は、端末の標準の日本語フォントで表示される。
+ */
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../assets/fonts/m-plus-rounded-1c-subset-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("../assets/fonts/m-plus-rounded-1c-subset-700.woff2") format("woff2");
+}

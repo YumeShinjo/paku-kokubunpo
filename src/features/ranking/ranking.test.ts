@@ -112,7 +112,7 @@ function fakeApi(overrides: Partial<RankingApi> = {}): RankingApi & { submitScor
 describe("得点の同期(オフラインで貯めて、つながったら送る)", () => {
   beforeEach(() => {
     useProgressStore.setState({ clearedStageIds: [], totalScore: 0 });
-    useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0, syncedIcon: DEFAULT_ICON_ID });
+    useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0, lastSyncedAt: null, syncedIcon: DEFAULT_ICON_ID });
     useProfileStore.setState({ iconId: DEFAULT_ICON_ID });
     Object.defineProperty(navigator, "onLine", { value: true, configurable: true });
   });
@@ -163,7 +163,7 @@ describe("得点の同期(オフラインで貯めて、つながったら送る
     expect(hasPendingScore()).toBe(true);
   });
 
-  it("送っている間に得点が増えたら、続けてもう一度送る", async () => {
+  it("送っている間に得点が増えても、送った直後は上限(増え方)に近いので、すぐには送り直さない。次の機会に送る", async () => {
     const submit = vi.fn().mockImplementationOnce(async () => {
       useProgressStore.setState({ totalScore: 90 }); // 送信中に別のステージをクリアした想定
     });
@@ -173,8 +173,9 @@ describe("得点の同期(オフラインで貯めて、つながったら送る
     useProgressStore.setState({ totalScore: 50 });
     expect(await syncScore(api)).toBe("synced");
     expect(submit).toHaveBeenNthCalledWith(1, "3a", { nickname: "たろう", icon: DEFAULT_ICON_ID }, 50);
-    expect(submit).toHaveBeenNthCalledWith(2, "3a", { nickname: "たろう", icon: DEFAULT_ICON_ID }, 90);
-    expect(useRankingStore.getState().lastSyncedScore).toBe(90);
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(useRankingStore.getState().lastSyncedScore).toBe(50);
+    expect(hasPendingScore()).toBe(true); // 残りの40点は、次の機会に送られる
   });
 
   it("送信済みの得点は、古い結果で減らない", () => {

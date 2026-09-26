@@ -15,6 +15,9 @@ export type Screen =
   /** 苦手問題(星のついた問題)だけを集めた練習 */
   | { name: "reviewPractice" }
   | { name: "settings" }
+  /** データの引き継ぎ: コードを発行する / コードを入れて復元する */
+  | { name: "transferIssue" }
+  | { name: "transferRestore" }
   | { name: "ranking" }
   /** エンディング後の称号授与。見終わると next へ進む */
   | { name: "endingResult"; areaId: string; next: Screen }

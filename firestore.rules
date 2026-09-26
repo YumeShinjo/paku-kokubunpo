@@ -6,9 +6,12 @@ rules_version = '2';
 //  - クラスの一覧は取れない(/classes/{classCode} 自体にはルールがなく、拒否される)。
 //    クラスコード(合言葉)を知っている人だけが、そのクラスの members を読める。
 //  - 書き込み・削除は、自分のドキュメント(ドキュメントIDが自分のuid)だけ。他人のデータは変更できない。
-//  - 得点は「減らせない」「1回の更新で増やせるのは20000まで」「上限200000」。
-//    (得点はアプリが計算して送るので、悪意のある端末が自分の得点を盛ることまでは防げない。
-//     防いでいるのは、他人のデータの書き換え・削除と、桁外れの値・形式の崩れ。)
+//  - 得点は「減らせない」「上限200000」。増え方にも上限がある(不正対策。値は src/features/ranking/scoreLimits.ts と同じにする):
+//      * 新しく作るときの得点は 5000 まで
+//      * 更新1回で増やせるのは、10 + 8点/秒 × (前回の更新からの経過秒数)、かつ 20000 まで
+//    (得点はアプリが計算して送るので、悪意のある端末が自分の得点を、この上限の範囲で盛ることまでは防げない。
+//     答えあわせをサーバーで行う仕組み(Cloud Functions=有料プラン)がないため。
+//     防いでいるのは、他人のデータの書き換え・削除と、桁外れの値・急激な増え方・形式の崩れ。)
 //  - 読み取りはログイン(匿名認証)済みのときだけ。
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -37,12 +40,16 @@ service cloud.firestore {
       allow create: if isOwner()
         && classCode.size() >= 1
         && classCode.size() <= 80
-        && validShape(request.resource.data);
+        && validShape(request.resource.data)
+        && request.resource.data.score <= 5000;
 
       allow update: if isOwner()
         && validShape(request.resource.data)
         && request.resource.data.score >= resource.data.score
-        && request.resource.data.score <= resource.data.score + 20000;
+        && request.resource.data.score <= resource.data.score + 20000
+        // 増え方の上限: 増えた点数 × 1000 <= 10 × 1000 + 経過ミリ秒 × 8(点/秒)
+        && (request.resource.data.score - resource.data.score) * 1000
+           <= 10 * 1000 + (request.time.toMillis() - resource.data.updatedAt.toMillis()) * 8;
 
       allow delete: if isOwner();
     }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * 途中まで遊んだステージの状態(3章: 途中離脱しても、すぐ再開できるようにする)。
@@ -35,6 +36,6 @@ export const useSessionStore = create<SessionState>()(
       save: (session) => set({ active: session }),
       clear: () => set({ active: null }),
     }),
-    { name: "paku-kokubunpo:session" },
+    { name: "paku-kokubunpo:session", storage: safeJSONStorage },
   ),
 );

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * 視聴済みストーリーイベントの記録と、ストーリー中に選んだ選択肢。
@@ -30,6 +31,6 @@ export const useStoryStore = create<StoryState>()(
       recordChoice: (storyId, optionKey) =>
         set((s) => ({ choices: { ...s.choices, [storyId]: optionKey } })),
     }),
-    { name: "paku-kokubunpo:story" },
+    { name: "paku-kokubunpo:story", storage: safeJSONStorage },
   ),
 );

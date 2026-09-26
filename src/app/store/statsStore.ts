@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 import { RECENT_LIMIT } from "@/features/selection/selectQuestions";
 import { UNIT_ACCURACY_WINDOW } from "@/features/zukan/unitAccuracy";
 
@@ -36,6 +37,7 @@ export const useStatsStore = create<StatsState>()(
     }),
     {
       name: "paku-kokubunpo:stats",
+      storage: safeJSONStorage,
       // v0 は累計の unitStats(正答数/解答数)だった。累計からは直近の並びを復元できないので破棄する。
       version: 1,
       migrate: (persisted) => {

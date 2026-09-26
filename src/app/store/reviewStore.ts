@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 
 /**
  * 復習システム(6章)。星のついた問題は「マスコットの好物」で、通常ステージへ別枠(約20%)で混ざる
@@ -36,6 +37,6 @@ export const useReviewStore = create<ReviewState>()(
             : [...s.starredQuestionIds, questionId],
         })),
     }),
-    { name: "paku-kokubunpo:review" },
+    { name: "paku-kokubunpo:review", storage: safeJSONStorage },
   ),
 );

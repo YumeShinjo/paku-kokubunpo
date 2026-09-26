@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 import { DEFAULT_ICON_ID, isPlayerIconId } from "@/data/playerIcons";
 
 /**
@@ -21,6 +22,7 @@ export const useProfileStore = create<ProfileState>()(
     }),
     {
       name: "paku-kokubunpo:profile",
+      storage: safeJSONStorage,
       // 保存内容に一覧にない id が入っていたら、標準のアイコンに戻す
       merge: (persisted, current) => {
         const saved = (persisted as { iconId?: unknown } | undefined)?.iconId;

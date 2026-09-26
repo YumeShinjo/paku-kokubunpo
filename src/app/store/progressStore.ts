@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeJSONStorage } from "@/lib/safeStorage";
 import { playableAreas } from "@/data/areas";
 import { getStage, getStagesForArea } from "@/data/stages";
 
@@ -66,6 +67,6 @@ export const useProgressStore = create<ProgressState>()(
         return stages.length > 0 && stages.every((s) => get().isStageCleared(s.id));
       },
     }),
-    { name: "paku-kokubunpo:progress" },
+    { name: "paku-kokubunpo:progress", storage: safeJSONStorage },
   ),
 );
