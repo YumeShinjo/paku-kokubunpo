@@ -37,9 +37,16 @@ const DUCK_UP_SEC = 0.4;
  * サンプルレートを明示しておくと、その食い違いの一因を減らせる可能性がある(全機種で直る保証はない)。
  */
 const BGM_SAMPLE_RATE = 44100;
-/** バックグラウンドから戻ったときだけ使う、再開の一瞬を無音にしておく長さと、そのあとの音量の戻し方(秒) */
-const RESUME_SETTLE_MS = 900;
-const RESUME_FADE_SEC = 0.35;
+/**
+ * バックグラウンドから戻ったときだけ使う、再開の音量の戻し方。
+ * 実機(iPhone)で確認したところ、ピッチが変わって聞こえる時間は、体感で3秒ほど続く。そこで:
+ *  - RESUME_SETTLE_MS: 完全に無音にしておく短い時間。いちばん耳につく、鳴り始めの瞬間だけを隠す(長すぎると「音が出ない」と感じるため短めに)
+ *  - RESUME_FADE_SEC: そのあと、無音から元の音量まで、ゆっくり滑らかに戻す時間。「無音→急に鳴る」ではなく、
+ *    自然なフェードインに聞こえる程度の長さで、ピッチのずれが収まるころには、ほぼ元の音量に戻っているようにする
+ * 合計(0.5 + 3.0 ≒ 3.5秒)が、体感のピッチずれの時間を、余裕を持って覆う長さになるようにしている。
+ */
+export const RESUME_SETTLE_MS = 500;
+export const RESUME_FADE_SEC = 3.0;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;

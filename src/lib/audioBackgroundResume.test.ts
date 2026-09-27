@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSettingsStore } from "@/app/store/settingsStore";
-import { playBgm, shutdownAudio, unlockPlayback } from "./audio";
+import { RESUME_FADE_SEC, RESUME_SETTLE_MS, playBgm, shutdownAudio, unlockPlayback } from "./audio";
 
 /**
  * バックグラウンドから戻ったときの、BGMのピッチ異常(iOS実機の不具合)対策の再発防止テスト。
@@ -128,13 +128,18 @@ describe("バックグラウンドから戻ったときのBGM(iOSのピッチ異
     expect(gain.gain.value).toBe(0); // 再開の一瞬は、無音にしてある
     expect(ctx.state).toBe("running");
 
-    vi.advanceTimersByTime(899);
+    vi.advanceTimersByTime(499);
     expect(gain.gain.value).toBe(0); // まだ戻さない
     vi.advanceTimersByTime(200);
-    expect(gain.gain.setTargetAtTime).toHaveBeenCalled(); // 滑らかに、元の音量へ戻す
+    expect(gain.gain.setTargetAtTime).toHaveBeenCalled(); // 滑らかに、元の音量へ戻す(実機でのピッチのずれが体感3秒ほど続くのに合わせ、3秒かけて戻す)
     expect(gain.gain.value).toBeGreaterThan(0);
 
     vi.useRealTimers();
+  });
+
+  it("無音にする時間とフェードインの長さの合計が、実機で確認したピッチのずれの時間(体感3秒)を、余裕を持って覆う長さになっている", () => {
+    expect(RESUME_SETTLE_MS + RESUME_FADE_SEC * 1000).toBeGreaterThanOrEqual(3500);
+    expect(RESUME_SETTLE_MS).toBeLessThanOrEqual(700); // 無音の区間自体は短く保ち、「音が出ない」という違和感が出すぎないようにする
   });
 
   it("バックグラウンドに回っているあいだに、もう一度隠れても(戻る前に)、音量を戻す予約は残らない", () => {
@@ -147,7 +152,7 @@ describe("バックグラウンドから戻ったときのBGM(iOSのピッチ異
     setVisibility("visible"); // 音量を戻す予約が入る
     setVisibility("hidden"); // すぐにまた隠れる(予約は取り消されるはず)
 
-    vi.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(5000);
     expect(gain.gain.value).toBe(0); // 隠れたままなので、無音のまま(勝手に戻らない)
 
     vi.useRealTimers();
