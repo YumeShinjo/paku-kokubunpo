@@ -17,6 +17,9 @@ import { ZukanPages } from "@/features/zukan/ZukanPages";
 import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
+import { useExpStore } from "@/app/store/expStore";
+import { EXP_PER_CORRECT, WEAK_UNIT_BONUS_EXP, gainExp } from "@/features/exp/expAward";
+import { isUnitWeak } from "@/features/zukan/unitAccuracy";
 import {
   comboLabel,
   CORRECT_EFFECTS,
@@ -38,6 +41,10 @@ export interface SessionResult {
   hpLeft: number;
   /** ボス戦のライフが0になって終わった(ステージを最初からやり直す) */
   lifeOut?: boolean;
+  /** このセッション中に正解して得た経験値の合計(クリア画面の演出強化。ボーナスの完了時exp分は含まない) */
+  expGained: number;
+  /** セッションを始めた時点の累計経験値(呼び出し側が、クリアボーナス込みでレベルアップを判定するために使う) */
+  expBefore: number;
 }
 
 interface Props {
@@ -67,6 +74,8 @@ interface Feedback {
   effect: CorrectEffect | null;
   /** 星のついていた問題を克服したときだけ入る */
   review: ReviewOutcome | null;
+  /** 「にがて」マークが付いていた単元の問題に正解し、経験値ボーナスが付いたときだけ入る */
+  weakBonusExp: number | null;
 }
 
 /**
@@ -101,6 +110,9 @@ export function QuizPlayer({
   // ボス戦のプレイヤーのライフ(誤答で1減り、0でそのステージを最初からやり直す)
   const [lives, setLives] = useState(resume?.lives ?? BOSS_LIVES);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  // クリア画面の経験値ゲージ用: このセッションで得た経験値の合計と、開始時点の累計(レベルアップ判定に使う)
+  const [expGained, setExpGained] = useState(0);
+  const [expBefore] = useState(() => useExpStore.getState().totalExp);
   // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
@@ -126,6 +138,8 @@ export function QuizPlayer({
         maxCombo: resume.maxCombo,
         bossDefeated: true,
         hpLeft: 0,
+        expGained: 0,
+        expBefore,
       });
     }
     // 再開の判定は、最初に開いたときの1回だけ
@@ -148,7 +162,15 @@ export function QuizPlayer({
     answeredIndex.current = index;
     const correct = judgeAnswer(question, answer);
     playSe(correct ? "correct" : "incorrect");
+    // 経験値ボーナスの判定は、この解答で unitRecent を更新する前に行う(いま現在「にがて」かどうかを見る)
+    const wasWeakUnit = correct && isUnitWeak(useStatsStore.getState().unitRecent[question.unit] ?? []);
     recordAnswer(question, correct);
+
+    if (correct) {
+      const amount = EXP_PER_CORRECT + (wasWeakUnit ? WEAK_UNIT_BONUS_EXP : 0);
+      gainExp(amount);
+      setExpGained((e) => e + amount);
+    }
 
     const kind = boss ? (correct ? "bossHit" : "bossMiss") : correct ? "correct" : "incorrect";
     const message = pickMessage(kind, lastMessage.current[kind]);
@@ -173,7 +195,13 @@ export function QuizPlayer({
     }
     setPopupOpen(true);
     feedbackShownAt.current = Date.now();
-    setFeedback({ correct, message, effect, review: review.overcame ? review : null });
+    setFeedback({
+      correct,
+      message,
+      effect,
+      review: review.overcame ? review : null,
+      weakBonusExp: wasWeakUnit ? WEAK_UNIT_BONUS_EXP : null,
+    });
 
     // 再開用に、解答のたびに進行状況を通知する(次に解く位置。最後の問題のときは位置を進めない)
     onProgress?.({
@@ -198,6 +226,8 @@ export function QuizPlayer({
         bossDefeated: defeated,
         hpLeft: hp,
         lifeOut,
+        expGained,
+        expBefore,
       });
       return;
     }
@@ -359,6 +389,11 @@ export function QuizPlayer({
               <Rb t={feedback.message} />
             </p>
             {feedback.review && <p className="feedback-overcome">⭐ にがてを こくふくした!</p>}
+            {feedback.weakBonusExp !== null && (
+              <p className="feedback-weak-bonus">
+                🌟 ニガテ<Rb t="克服[こくふく]" />!+{feedback.weakBonusExp}exp
+              </p>
+            )}
             {boss && !feedback.correct && (
               <p className="feedback-lives">
                 {lives > 0 ? `ライフが 1 へったよ(のこり ${lives})` : "ライフが なくなっちゃった…"}

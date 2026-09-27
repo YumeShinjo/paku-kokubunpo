@@ -24,6 +24,17 @@ export const WEAK_RATE = 0.6;
 export const WEAK_MIN_ATTEMPTS = 3;
 
 /**
+ * 直近の正誤履歴(古い順、最大 UNIT_ACCURACY_WINDOW 問)から、その単元がいま「にがて」かを判定する。
+ * 出題中(features/quiz/QuizPlayer.tsx)で、経験値ボーナスの判定にも使う。
+ */
+export function isUnitWeak(recentResults: readonly boolean[]): boolean {
+  const results = recentResults.slice(-UNIT_ACCURACY_WINDOW);
+  const total = results.length;
+  if (total < WEAK_MIN_ATTEMPTS) return false;
+  return results.filter(Boolean).length / total < WEAK_RATE;
+}
+
+/**
  * 単元ごとの「直近10問」の正誤履歴(古い順)から正答率の行を作る。
  * 累計ではなく直近ベースなので、克服すればすぐ棒が伸び、逆に最近つまずいた単元はすぐ目立つ。
  */
@@ -46,7 +57,7 @@ export function buildUnitAccuracyRows(
         correct,
         total,
         rate,
-        weak: rate !== null && total >= WEAK_MIN_ATTEMPTS && rate < WEAK_RATE,
+        weak: isUnitWeak(results),
       };
     });
 }

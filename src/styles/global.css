@@ -929,6 +929,68 @@ button.incorrect {
   margin: 0 auto;
 }
 
+/* ---- クリア画面: 経験値・レベルの演出強化(見た目のみ。進行度・難易度には影響しない) ---- */
+.exp-gain {
+  width: 100%;
+  text-align: center;
+}
+
+.exp-gain-amount {
+  margin: 0 0 0.3rem;
+  font-weight: bold;
+}
+
+.exp-gauge {
+  height: 14px;
+  margin: 0 0 0.3rem;
+  border-radius: 7px;
+  background: var(--color-bar-track);
+  overflow: hidden;
+}
+
+.exp-gauge-fill {
+  height: 100%;
+  background: var(--color-gold);
+  transition: width 0.6s ease-out;
+}
+
+.exp-level-label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.exp-level-up {
+  margin: 0.3rem 0 0;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-gold-text);
+  animation: exp-level-up-pop 0.5s ease-out;
+}
+
+@keyframes exp-level-up-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exp-gauge-fill {
+    transition: none;
+  }
+  .exp-level-up {
+    animation: none;
+  }
+}
+
 /* 通知の中の顔 */
 .toast .mascot-face {
   --mascot-size: 3.4rem;
@@ -1151,6 +1213,13 @@ button.incorrect {
 
 .feedback-overcome {
   margin: 0;
+  font-weight: bold;
+  color: var(--color-gold-text);
+}
+
+/* にがてな単元の問題に正解したときの、その場での経験値ボーナス表示(6章の経験値・レベル演出) */
+.feedback-weak-bonus {
+  margin: 0.2rem 0 0;
   font-weight: bold;
   color: var(--color-gold-text);
 }

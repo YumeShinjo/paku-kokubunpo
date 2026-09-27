@@ -1,4 +1,4 @@
-import { getFirebaseApp, isFirebaseConfigured } from "@/lib/firebase";
+import { getFirebaseApp, getFirestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import { JOIN_MAX_SCORE } from "@/features/ranking/scoreLimits";
 
 /**
@@ -148,15 +148,18 @@ function loadSdk() {
       });
       if (!app) throw new RankingError("not-configured");
       // Firebase は、ランキングを使うときに通信して読み込む(最初の保存には含めていない)。読み込めない=通信できない、として扱う
-      const [authModule, fs] = await Promise.all([import("firebase/auth"), import("firebase/firestore")]).catch((error) => {
+      const [authModule, fs, db] = await Promise.all([
+        import("firebase/auth"),
+        import("firebase/firestore"),
+        getFirestoreDb(),
+      ]).catch((error) => {
         throw new RankingError("offline", error);
       });
+      if (!db) throw new RankingError("not-configured");
       return {
         auth: authModule.getAuth(app),
         signInAnonymously: authModule.signInAnonymously,
-        // 学校・会場のネットワークによっては、Firestoreの通常の接続方式(ストリーム)が通らないことがある。
-        // その場合に、自動でロングポーリング方式へ切り替える(接続の安定性を上げる)。
-        db: fs.initializeFirestore(app, { experimentalAutoDetectLongPolling: true }),
+        db,
         fs,
       };
     })();

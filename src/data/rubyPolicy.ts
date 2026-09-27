@@ -28,6 +28,7 @@ export const HARD_WORDS: ReadonlySet<string> = new Set([
   "成果",
   "順位表",
   "初期化",
+  "経験値",
 ]);
 
 /** この語(漢字の連続)には、ふりがなを付けるか */

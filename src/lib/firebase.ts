@@ -1,4 +1,5 @@
 import type { FirebaseApp } from "firebase/app";
+import type { Firestore } from "firebase/firestore";
 
 /**
  * Firebase接続の雛形(8章: ランキング機能用)。
@@ -33,4 +34,23 @@ export async function getFirebaseApp(): Promise<FirebaseApp | null> {
     app = initializeApp(firebaseConfig);
   }
   return app;
+}
+
+let db: Firestore | null = null;
+
+/**
+ * Firestoreの接続を返す(未設定なら null)。ランキング(rankingApi.ts)と経験値(expApi.ts)の
+ * 両方から使われるため、ここで1度だけ初期化して共有する(initializeFirestoreは同じアプリに対して
+ * 2回呼ぶとエラーになるため)。
+ */
+export async function getFirestoreDb(): Promise<Firestore | null> {
+  const firebaseApp = await getFirebaseApp();
+  if (!firebaseApp) return null;
+  if (!db) {
+    const { initializeFirestore } = await import("firebase/firestore");
+    // 学校・会場のネットワークによっては、Firestoreの通常の接続方式(ストリーム)が通らないことがある。
+    // その場合に、自動でロングポーリング方式へ切り替える(接続の安定性を上げる)。
+    db = initializeFirestore(firebaseApp, { experimentalAutoDetectLongPolling: true });
+  }
+  return db;
 }
