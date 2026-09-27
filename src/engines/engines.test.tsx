@@ -136,6 +136,21 @@ describe("選択式(通常): 1問につき判定は1回だけ", () => {
     expect(byText("正しい").className).toContain("correct");
     expect(byText("誤り1").className).not.toMatch(/correct|incorrect/);
   });
+
+  it("色だけに頼らない: 正解には◎、選んでしまった不正解には×の記号もつく(色の見分けにくさへの配慮)", () => {
+    render(<ChoiceEngine question={choiceQuestion} onAnswer={() => {}} />);
+    clickButton(byText("誤り1"));
+    expect(byText("正しい").textContent).toContain("◎");
+    expect(byText("誤り1").textContent).toContain("×");
+    expect(byText("誤り2").textContent).not.toMatch(/◎|×/);
+  });
+
+  it("文中タップ(tapInSentence)の選択肢にも、同じく◎/×の記号がつく", () => {
+    render(<ChoiceEngine question={tapQuestion} onAnswer={() => {}} />);
+    clickButton(byText("公園で")); // s1(不正解)。correctChoiceId は s2「遊ぶ。」
+    expect(byText("遊ぶ。").textContent).toContain("◎");
+    expect(byText("公園で").textContent).toContain("×");
+  });
 });
 
 describe("選択式(文中タップ): 1問につき判定は1回だけ", () => {

@@ -29,3 +29,8 @@ src/assets/audio/*/*
 src/assets/images/*/*
 !src/assets/audio/*/.gitkeep
 !src/assets/images/*/.gitkeep
+
+# Playwright(E2E・ビジュアル回帰テスト)の実行結果。スクリーンショットの基準(e2e/**/*-snapshots/)はコミットする
+/test-results/
+/playwright-report/
+/blob-report/

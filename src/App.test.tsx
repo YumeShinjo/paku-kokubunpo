@@ -56,3 +56,28 @@ describe("App: タップしてはじめる", () => {
     expect(useNavigationStore.getState().screen.name).toBe("title");
   });
 });
+
+describe("App: 文字の大きさ(アクセシビリティ)", () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.textSize;
+  });
+
+  it("せっていの「もじの おおきさ」を、<html> の data-text-size に反映する", () => {
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    useSettingsStore.setState({ audioUnlocked: true, muted: false, textSize: "large" });
+    useNavigationStore.setState({ screen: { name: "title" } });
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => root.render(<App />));
+    expect(document.documentElement.dataset.textSize).toBe("large");
+
+    act(() => useSettingsStore.getState().setTextSize("small"));
+    expect(document.documentElement.dataset.textSize).toBe("small");
+
+    act(() => root.unmount());
+    container.remove();
+    vi.restoreAllMocks();
+  });
+});

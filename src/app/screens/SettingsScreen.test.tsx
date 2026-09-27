@@ -58,3 +58,27 @@ describe("設定画面: データの初期化", () => {
     expect(reset.reloadApp).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("設定画面: もじの おおきさ(アクセシビリティ)", () => {
+  it("小・標準・大の3択があり、選ぶと設定に保存される。既定は標準", async () => {
+    const { useSettingsStore } = await import("@/app/store/settingsStore");
+    useSettingsStore.setState({ textSize: "standard" });
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => root.render(<SettingsScreen />));
+
+    const group = container.querySelector('[role="radiogroup"]')!;
+    const buttons = [...group.querySelectorAll<HTMLButtonElement>("button")];
+    expect(buttons.map((b) => b.textContent)).toEqual(["小", "標準", "大"]);
+    expect(buttons.find((b) => b.textContent === "標準")!.getAttribute("aria-checked")).toBe("true");
+
+    act(() => buttons.find((b) => b.textContent === "大")!.click());
+    expect(useSettingsStore.getState().textSize).toBe("large");
+    expect(buttons.find((b) => b.textContent === "大")!.getAttribute("aria-checked")).toBe("true");
+    expect(buttons.find((b) => b.textContent === "標準")!.getAttribute("aria-checked")).toBe("false");
+
+    act(() => root.unmount());
+    container.remove();
+  });
+});

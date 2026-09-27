@@ -26,9 +26,15 @@ import { Toaster } from "@/components/Toaster";
 export default function App() {
   const screen = useNavigationStore((s) => s.screen);
   const audioUnlocked = useSettingsStore((s) => s.audioUnlocked);
+  const textSize = useSettingsStore((s) => s.textSize);
 
   // 場面(画面)に合わせてBGMを切り替える。素材が置かれていなければ無音のまま。
   useBgm();
+
+  // アクセシビリティ: 文字の大きさ(せってい)。<html> の data 属性に反映し、rem 基準のフォントサイズ全体を拡大・縮小する。
+  useEffect(() => {
+    document.documentElement.dataset.textSize = textSize;
+  }, [textSize]);
 
   // 9章: オフラインで貯めた得点は、起動時と、通信が戻ったときに自動でランキングへ送る(参加中のときだけ)
   useEffect(() => {

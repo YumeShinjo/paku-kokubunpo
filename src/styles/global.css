@@ -1,3 +1,15 @@
+/*
+ * アクセシビリティ: 文字の大きさ(せってい)。<html data-text-size> を切り替えて、rem基準のフォントサイズ全体を拡大・縮小する
+ * (px指定ではなく相対単位を基本にしているので、ここを1か所変えるだけで全画面に効く)。既定(標準)は 100%(16px)のまま。
+ */
+html[data-text-size="small"] {
+  font-size: 87.5%; /* 14px */
+}
+
+html[data-text-size="large"] {
+  font-size: 118.75%; /* 19px */
+}
+
 /* 配色は未決事項(12章)のため仮のパステルカラー。デザイン確定後に差し替える。 */
 :root {
   /* 配色(SPEC 10章で確定): 背景=クリーム(生成り) / メイン=パステルミント / 特別=淡いゴールド / 文字=焦げ茶(純黒は使わない) */
@@ -6,23 +18,24 @@
   --color-primary: #a8e0c8;
   --color-primary-strong: #5fb896;
   --color-on-primary: #4b3a2e;
-  --color-primary-text: #2f8a68;
+  --color-primary-text: #2a7b5d;
   --color-accent: #7cc9a9;
   --color-gold: #f2d98a;
   --color-gold-soft: #fbf0c8;
   --color-gold-line: #d9b95a;
-  --color-gold-text: #8a6a12;
+  --color-gold-text: #856711;
   --color-text: #4b3a2e;
-  --color-text-muted: #8a7566;
+  /* 文字と背景のコントラスト比が4.5:1以上になるよう、当初より少し濃くしてある(アクセシビリティ対応) */
+  --color-text-muted: #7e6b5d;
   --color-boss: #e0b3cf;
   --color-correct: #7fcf98;
   --color-correct-text: #2f7a4b;
   --color-incorrect: #e8917f;
   --color-tint: #eef9f3;
-  /* 正答率グラフ(図鑑): 単一系列。バーは背景に対して視認できる濃さにする */
-  --color-bar: #4aa886;
+  /* 正答率グラフ(図鑑)・HPバー: 単一系列。土台(track)との境目が見えるよう、当初より少し濃くしてある(非文字要素のコントラスト比3:1以上) */
+  --color-bar: #3f8f72;
   --color-bar-track: #ebe2cb;
-  --color-hp: #e2606b;
+  --color-hp: #df4f5b;
   --font-base: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
   color-scheme: light;
 }
@@ -131,6 +144,11 @@ ruby rt {
   width: 100%;
   min-height: 3rem;
   text-align: left;
+}
+
+/* 正誤の記号(◎/×)。色の見分けにくさへの配慮(色だけに頼らない) */
+.choice-mark {
+  font-weight: bold;
 }
 
 .stage-list button {
@@ -1517,6 +1535,28 @@ button.incorrect {
   align-items: flex-start;
 }
 
+/* もじの おおきさ(せってい)。fieldset/legend の既定の見た目を消して、ほかの設定項目と揃える */
+.text-size-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.text-size-field legend {
+  padding: 0;
+  margin-bottom: 0.3rem;
+}
+
+.text-size-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.text-size-buttons button {
+  flex: 1;
+  min-height: 2.75rem;
+}
+
 .ranking-profile {
   display: flex;
   align-items: center;
@@ -2244,4 +2284,96 @@ button.incorrect {
   margin: 0;
   text-align: center;
   font-weight: bold;
+}
+
+/* ---- Android/デスクトップ系ブラウザへの配慮: 独自スクロールの中だけ、細く目立たないスクロールバーにする ---- */
+.story-textbox,
+.feedback-overlay .feedback,
+.explain-bar,
+.zukan-modal {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+.story-textbox::-webkit-scrollbar,
+.feedback-overlay .feedback::-webkit-scrollbar,
+.explain-bar::-webkit-scrollbar,
+.zukan-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.story-textbox::-webkit-scrollbar-thumb,
+.feedback-overlay .feedback::-webkit-scrollbar-thumb,
+.explain-bar::-webkit-scrollbar-thumb,
+.zukan-modal::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 999px;
+}
+
+/*
+ * 音量スライダー(input[type=range])。既定の見た目は、Android(Chrome)とiOS(Safari)で大きく異なり、
+ * OSのアクセントカラー(端末ごとに違う)がそのまま出てしまう。見た目をそろえ、パステルの配色になじむよう、
+ * トラック・つまみを自前で描く(クロスブラウザのため、ベンダー接頭辞ごとに同じ見た目を重ねて書く)。
+ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--color-bar-track);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--color-bar-track);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: -0.45rem; /* トラックの高さに合わせて、つまみの中心をそろえる */
+  border-radius: 50%;
+  background: var(--color-primary-strong);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 1px 3px rgba(75, 58, 46, 0.35);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--color-primary-strong);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 1px 3px rgba(75, 58, 46, 0.35);
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-gold-line);
+  outline-offset: 2px;
+}
+
+/* ---- 小さい画面(iPhone SEクラス・幅の狭いAndroid端末)への配慮: 左右の余白を少し詰めて、内容の場所を優先する ---- */
+@media (max-width: 360px) {
+  .screen {
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+
+  .stage-actions button {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  .title-primary {
+    font-size: 1.25rem;
+  }
 }

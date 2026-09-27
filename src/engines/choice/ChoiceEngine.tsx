@@ -16,6 +16,7 @@ interface Props {
  *
  * 1問につき判定は1回だけ: 選んだ時点で解答が確定し、以後は選択肢を押せない(disabled)。
  * 選んだ選択肢は正誤の色で示し、不正解のときは正解の選択肢も示す。
+ * 色だけに頼らないよう(色の見分けにくさへの配慮)、◎/×の記号もあわせて出す。
  */
 export function ChoiceEngine({ question, onAnswer }: Props) {
   const [chosenId, setChosenId] = useState<string | null>(null);
@@ -36,6 +37,24 @@ export function ChoiceEngine({ question, onAnswer }: Props) {
     if (choiceId === question.correctChoiceId) return "correct";
     if (choiceId === chosenId) return "incorrect";
     return "";
+  };
+
+  /** 色以外の手がかり(記号)。正解=◎、選んでしまった不正解=×。それ以外の選択肢には付けない */
+  const resultMark = (choiceId: string): string | null => {
+    if (!answered) return null;
+    if (choiceId === question.correctChoiceId) return "◎";
+    if (choiceId === chosenId) return "×";
+    return null;
+  };
+
+  const Mark = ({ choiceId }: { choiceId: string }) => {
+    const mark = resultMark(choiceId);
+    return mark ? (
+      <span className="choice-mark" aria-hidden="true">
+        {" "}
+        {mark}
+      </span>
+    ) : null;
   };
 
   if (question.display === "tapInSentence") {
@@ -60,6 +79,7 @@ export function ChoiceEngine({ question, onAnswer }: Props) {
                 onClick={() => answer(segment.id)}
               >
                 <Ruby text={segment.text} />
+                <Mark choiceId={segment.id} />
               </button>
             ),
           )}
@@ -89,6 +109,7 @@ export function ChoiceEngine({ question, onAnswer }: Props) {
               onClick={() => answer(choice.id)}
             >
               <Ruby text={choice.text} />
+              <Mark choiceId={choice.id} />
             </button>
           </li>
         ))}

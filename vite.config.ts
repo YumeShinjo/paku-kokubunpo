@@ -13,17 +13,22 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons/apple-touch-icon.png"],
       manifest: {
+        // id を固定しておくと、アイコン等を将来差し替えても、ホーム画面に追加済みのショートカットが「別のアプリ」扱いにならない
+        id: "/",
         name: "パクっと国文法",
         short_name: "パクっと国文法",
         description: "中学生向け日本語文法学習アプリ",
         lang: "ja",
         start_url: "/",
         display: "standalone",
+        // 縦持ちの学習アプリとして作っているため、ホーム画面から開いたときは縦向きに固定する
+        orientation: "portrait-primary",
         background_color: "#FBF4E4",
         theme_color: "#A8E0C8",
+        categories: ["education"],
         icons: [
-          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
           {
             src: "icons/icon-512-maskable.png",
             sizes: "512x512",
@@ -90,5 +95,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // e2e/ は Playwright(E2E・ビジュアル回帰テスト。npm run test:e2e)のためのもので、Vitestでは対象外にする
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
   },
 });

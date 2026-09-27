@@ -1,0 +1,113 @@
+import { expect, test } from "@playwright/test";
+import { clearedStagesThrough, dismissEngineGuide, dismissStageIntro, seedProgress, skipStories, startApp } from "./helpers";
+
+/**
+ * 主要画面のE2E・ビジュアル回帰テスト(タイトル・出題画面・正誤ポップアップ・ボス戦・ランキング・せってい)。
+ * 手動のiPhone確認だけに頼らず、レイアウト崩れ・要素の重なりを自動で検知するためのもの。
+ * スクリーンショットは iPhone SEクラスの幅(375px)で撮る(小さい画面での窮屈さも、あわせて見つけられるように)。
+ */
+
+/** そのページで、横スクロールが発生していない(要素が画面幅からはみ出していない)ことを確かめる */
+async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow, "横スクロールが発生している(要素が画面幅からはみ出している)").toBeLessThanOrEqual(1);
+}
+
+test.describe("タイトル画面", () => {
+  test("ロゴ・主役ボタン・サブ機能が表示され、横はみ出しがない", async ({ page }) => {
+    await startApp(page);
+    await expect(page.locator(".title-primary")).toHaveText("はじめる");
+    await expect(page.locator(".title-sub-buttons button")).toHaveCount(4);
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("title.png");
+  });
+});
+
+test.describe("出題画面と正誤ポップアップ(通常ステージ)", () => {
+  test("問題に答えると、判定と解説のポップアップが出て、「つぎへ」で次の問題へ進む", async ({ page }) => {
+    await startApp(page);
+    await page.locator(".title-primary").click();
+    await page.locator(".area-list button:not(:disabled)").first().click();
+    await skipStories(page);
+    await page.locator(".stage-list button:not(:disabled)").first().click();
+    await dismissStageIntro(page);
+    await dismissEngineGuide(page);
+
+    await expect(page.locator(".engine")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("quiz-question.png");
+
+    // 選択式・仕分けのどちらでも、最初に見つかったボタンで答える(正誤どちらでもポップアップの見た目は確認できる)
+    const choice = page.locator(".engine-choice-list button, .sentence-segment, .sorting-item").first();
+    await choice.click();
+    // 仕分けは「こたえる」を押すまで判定が出ない
+    const submit = page.locator(".answer-submit");
+    if (await submit.isVisible().catch(() => false)) {
+      for (const item of await page.locator(".sorting-item:not([disabled])").all()) await item.click();
+      await submit.click();
+    }
+
+    await expect(page.locator(".feedback-overlay")).toBeVisible();
+    await expect(page.locator('.feedback-overlay [role="dialog"]')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("quiz-feedback-popup.png");
+  });
+});
+
+test.describe("ボス戦", () => {
+  test.beforeEach(async ({ page }) => {
+    // 「ことばの市場」の小ボスに、通常ステージをすべて終えた状態からすぐ挑めるようにしておく(E2Eの近道)
+    await seedProgress(page, clearedStagesThrough(["prologue", "kotobaNoIchiba"]).filter((id) => id !== "kotobaNoIchiba-subboss"));
+  });
+
+  test("ボスが現れる演出のあと、HPゲージ・ライフが表示された状態で出題が始まる", async ({ page }) => {
+    await startApp(page);
+    await page.locator(".title-primary").click();
+    await page.locator(".area-list button:not(:disabled)").nth(1).click(); // ことばの市場
+    await skipStories(page);
+    await page.locator(".stage-list .stage-subboss").click();
+    await skipStories(page);
+
+    const encounterStart = page.getByRole("button", { name: "たたかう" });
+    await expect(encounterStart).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("boss-encounter.png");
+    await encounterStart.click();
+    await dismissStageIntro(page); // 「たたかう!」(出題形式ではなく対決の説明)
+
+    await expect(page.locator(".boss-panel")).toBeVisible();
+    await expect(page.locator(".hp-gauge")).toBeVisible();
+    await expect(page.locator(".player-lives")).toHaveAttribute("aria-label", "ライフ 5 / 5");
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("boss-battle.png");
+  });
+});
+
+test.describe("せってい", () => {
+  test("音量・もじの おおきさ・データの引き継ぎなどの項目が並び、文字の大きさを変えられる", async ({ page }) => {
+    await startApp(page);
+    await page.getByRole("button", { name: "せってい" }).click();
+
+    await expect(page.getByRole("heading", { name: "せってい" })).toBeVisible();
+    await expect(page.locator('[role="radiogroup"] button')).toHaveCount(3);
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("settings.png");
+
+    const before = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+    await page.getByRole("radio", { name: "大" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "large");
+    const after = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+    expect(parseFloat(after)).toBeGreaterThan(parseFloat(before));
+    await expectNoHorizontalOverflow(page); // 文字を大きくしても、横スクロールは発生しない
+  });
+});
+
+test.describe("ランキング", () => {
+  test("Firebase未接続のときは、「まだ使えないよ」の案内が出る(本番のデータへは接続しない)", async ({ page }) => {
+    await startApp(page);
+    await page.getByRole("button", { name: "ランキング" }).click();
+    await expect(page.getByText("ランキングはまだ使えないよ")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expect(page).toHaveScreenshot("ranking-not-configured.png");
+  });
+});

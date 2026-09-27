@@ -412,3 +412,36 @@ iOS(Safari)の AudioContext は、画面の読み込み直しや電話・ロッ�
 - OSの「動きを減らす」設定(prefers-reduced-motion)では transition をやめて、すぐに切り替える。
 - iOS(Safari)で押している間の見た目(`:active`)を働かせるため、`main.tsx` に何もしない touchstart リスナーを1つ置いている。
 
+
+## アクセシビリティ
+
+- **文字の大きさ**: 「せってい」の「もじの おおきさ」(小/標準/大)で、全画面の文字サイズを一律で拡大・縮小できる([settingsStore.ts](src/app/store/settingsStore.ts) の `textSize`)。`<html data-text-size>` に反映し、CSSは `html[data-text-size="large"] { font-size: 118.75%; }` のように、ルートのフォントサイズを変えるだけ(画面の文字がすべて rem 基準のため、これだけで全体に効く)。
+- **色のコントラスト**: パステル配色の中で、控えめな文字色(`--color-text-muted`)・エリアの文字色(`--color-primary-text`)・特別な文字色(`--color-gold-text`)を、背景に対して4.5:1以上(WCAG AA、小さな文字の基準)になるよう見直した。正答率グラフ・HPバーの塗り色も、土台の色に対して3:1以上になるよう見直した([styles/accessibility.test.ts](src/styles/accessibility.test.ts) で確認)。
+- **色だけに頼らない(色の見分けにくさへの配慮)**: 選択式の解答後、正解・不正解を色(緑/コーラル)だけで示していた箇所に、◎/×の記号を追加した([ChoiceEngine.tsx](src/engines/choice/ChoiceEngine.tsx))。仕分けゲームは、もともと◎/×の記号がついている。正誤フィードバックのポップアップは、色に加えて、文言・コトの表情(喜び/しょんぼり)でも伝えている。
+- **フォームコントロール**: 音量スライダー(`input[type=range]`)は、Android/iOSでOS既定の見た目(端末ごとに色が違う)に頼らず、配色になじむ見た目を自前で描いている。スクロールする箱(会話のテキストボックス・判定ポップアップ・図鑑モーダルなど)は、細い専用のスクロールバーにしてある。
+
+## PWA manifest(ホーム画面への追加)
+
+`vite.config.ts` の `VitePWA({ manifest: {...} })` で管理。アイコン(192/512/512-maskable/apple-touch-icon180)・`theme_color`・`background_color`・`display: "standalone"` は用意済み。今回、次を補った。
+
+- `id`: アイコンなどを差し替えても、ホーム画面に追加済みのショートカットが「別のアプリ」扱いにならないよう固定。
+- `orientation: "portrait-primary"`: 縦持ちの学習アプリとして、ホーム画面から開いたときは縦向きに固定。
+- `categories: ["education"]`。
+- `index.html` に `apple-touch-icon` の `sizes="180x180"`、`apple-mobile-web-app-status-bar-style`、`mobile-web-app-capable`(Android/Chromium系)を追加。
+- スプラッシュ画面は、専用の画像(apple-touch-startup-image)は用意していない。`background_color`・`theme_color`・アイコン・`name` が揃っていれば、iOS/Androidとも、ホーム画面追加時にOS側で簡易なスプラッシュが自動生成される。
+
+## E2E・ビジュアル回帰テスト(Playwright)
+
+`playwright.config.ts` / `e2e/`。手動のiPhone確認だけに頼らず、主要画面(タイトル・出題画面・正誤ポップアップ・ボス戦・せってい・ランキング)のレイアウト崩れ・操作フローを自動で検知する。
+
+- 実行: 初回だけ `npx playwright install chromium`、以降は `npm run test:e2e`。レイアウトを意図して変えたときは `npm run test:e2e:update` でスクリーンショットの基準を作り直す(`e2e/*-snapshots/` にコミットする)。
+- 専用の開発サーバー(ポート5183)を、テストの実行時だけ自動で起動する。ランキング(Firebase)は未設定のまま確認し、本番のFirestoreへは接続しない([playwright.config.ts](playwright.config.ts) の `webServer.env`)。
+- 出題される問題・正誤メッセージの選び方は `Math.random` を使っているため、スクリーンショットが毎回変わってしまわないよう、`e2e/helpers.ts` の `startApp` で、決まった並びを返す疑似乱数に差し替えてから読み込む。
+- iPhone SEクラスの幅(375px)を基準にしており、各テストで横スクロールが発生していないこと(要素が画面幅からはみ出していないこと)も確かめる。
+- スクリーンショットの基準はWindows実行時のもの(ファイル名に `-win32` が付く)。他OSで実行すると、フォントの描画の違いで、初回は差分が出る(`--update-snapshots` でそのOS用の基準を作る)。
+- Vitest(`npm test`)とは別枠([vite.config.ts](vite.config.ts) の `test.exclude` で `e2e/` を除外)。型チェック(`npm run typecheck` / `npm run build`)には `tsconfig.e2e.json` 経由で含めている。
+
+## 小さい画面・Android系ブラウザへの配慮
+
+- レイアウトは基本的に `rem` / `%` / `min()` / `clamp()` / flex・grid の `1fr` で組んでおり、画面幅に自動で追従する。加えて、幅360px以下(iPhone SEクラス・幅の狭いAndroid端末)では、画面の左右余白と、出題画面上部のボタン・タイトルの主役ボタンの文字サイズを少し詰める調整を入れている([global.css](src/styles/global.css) の `@media (max-width: 360px)`)。
+- 上記のPlaywrightのE2Eテストを、iPhone SEクラスの幅(375px)で実行し、横はみ出しがないことを確認している。

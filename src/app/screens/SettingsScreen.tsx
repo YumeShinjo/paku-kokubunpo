@@ -1,5 +1,5 @@
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useSettingsStore } from "@/app/store/settingsStore";
+import { TEXT_SIZES, useSettingsStore, type TextSize } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
 import { useState } from "react";
@@ -7,10 +7,13 @@ import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 
+/** 文字の大きさの、ボタンに出す呼び名 */
+const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "小", standard: "標準", large: "大" };
+
 /** 設定画面。BGM/SE音量とミュートを端末ローカルに保存する(7章)。 */
 export function SettingsScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
-  const { bgmVolume, seVolume, muted, setBgmVolume, setSeVolume, setMuted } =
+  const { bgmVolume, seVolume, muted, textSize, setBgmVolume, setSeVolume, setMuted, setTextSize } =
     useSettingsStore();
 
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -38,6 +41,25 @@ export function SettingsScreen() {
       <h2>
         せってい
       </h2>
+
+      {/* アクセシビリティ: 文字の大きさ。画面全体の文字サイズが、選んだ大きさに変わる */}
+      <fieldset className="text-size-field">
+        <legend>もじの おおきさ</legend>
+        <div className="text-size-buttons" role="radiogroup" aria-label="もじの おおきさ">
+          {TEXT_SIZES.map((size) => (
+            <button
+              key={size}
+              type="button"
+              role="radio"
+              aria-checked={textSize === size}
+              className={textSize === size ? "selected" : ""}
+              onClick={() => setTextSize(size)}
+            >
+              {TEXT_SIZE_LABEL[size]}
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       <label>
         BGMおんりょう
