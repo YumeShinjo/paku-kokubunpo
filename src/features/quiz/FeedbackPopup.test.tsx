@@ -90,6 +90,17 @@ describe("仕分け以外: 判定と解説を1つのポップアップに。1タ
     done();
   });
 
+  it("「つぎへ」ボタンのクリックが、外側の暗い部分(.feedback-overlay)まで伝わって、二重に次へ進んでしまわない(onCompleteの二重呼び出しの防止。「コトが せいちょうしたよ!」が2回出た不具合の原因)", () => {
+    vi.useFakeTimers();
+    const { onComplete, click, done } = mount([question("q1")]); // 1問だけ→答えると、そのままステージ終わり
+    click("正しい");
+    vi.advanceTimersByTime(1000); // 出た直後の誤タップ防止(400ms)を過ぎてから、実際に読んでタップする想定
+    click("つぎへ");
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    done();
+    vi.useRealTimers();
+  });
+
   it("「つぎへ」のボタンでも、次へ進める", () => {
     const { container, click, done } = setup();
     click("正しい");

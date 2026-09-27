@@ -30,6 +30,17 @@ const DUCK_FACTOR = 0.08;
 const DUCK_DOWN_SEC = 0.05;
 const DUCK_UP_SEC = 0.4;
 
+/**
+ * BGM素材のサンプルレート(assets/README.md の取り決め。音声素材の統一)。AudioContext を、これに合わせて作る。
+ * iOSは、バックグラウンドから戻ったときに、いったん止まった AudioContext を resume() すると、内部のクロックが
+ * ハードウェアの出力レートに合うまでの一瞬(数秒ほど)、BGMのピッチが変わって聞こえることがある(WebKitの既知の挙動)。
+ * サンプルレートを明示しておくと、その食い違いの一因を減らせる可能性がある(全機種で直る保証はない)。
+ */
+const BGM_SAMPLE_RATE = 44100;
+/** バックグラウンドから戻ったときだけ使う、再開の一瞬を無音にしておく長さと、そのあとの音量の戻し方(秒) */
+const RESUME_SETTLE_MS = 900;
+const RESUME_FADE_SEC = 0.35;
+
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const Ctor =
@@ -38,7 +49,12 @@ function getAudioContext(): AudioContext | null {
       .webkitAudioContext;
   if (!Ctor) return null;
   if (!audioContext) {
-    audioContext = new Ctor();
+    // サンプルレートの明示は、対応していない環境(古いブラウザなど)では例外になることがあるので、そのときは既定値で作る
+    try {
+      audioContext = new Ctor({ sampleRate: BGM_SAMPLE_RATE });
+    } catch {
+      audioContext = new Ctor();
+    }
     // 動き出した(running になった)ときに、鳴らそうとして待たされていたBGMを始める
     audioContext.addEventListener?.("statechange", () => {
       if (audioContext?.state === "running") ensureBgmPlaying();
@@ -237,11 +253,49 @@ function resumeAudioContext(): void {
   if (ctx && ctx.state !== "running") void ctx.resume().catch(() => {});
 }
 
+/** バックグラウンドから戻ったときの、音量を戻す予約(clearTimeoutで消せるように覚えておく) */
+let resumeSettleTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * バックグラウンドから戻ったときだけ使う、再開のしかた(9章)。
+ * 単純に resumeAudioContext() するだけだと、iOSでは、直前まで止まっていた AudioContext が
+ * ハードウェアのクロックに合うまでの一瞬、BGMのピッチが変わって聞こえることがある(上のBGM_SAMPLE_RATEのコメント)。
+ * これを完全に避ける手段(AudioContextの作り直し)は、いま使っている <audio> 要素が、一度でも
+ * createMediaElementSource に渡すと、その要素はほかの AudioContext では二度と使えなくなる(仕様上の制約)ため取れない
+ * (別の要素を新たに作ると、iOSでは、ユーザーの操作の中でない再生として、鳴らなくなる恐れがある)。
+ * 代わりに、再開の一瞬だけ音量を0にしておき、クロックが落ち着くころに、滑らかに元の音量へ戻すことで、
+ * ピッチが変わって聞こえる不具合を、耳に入らないようにする。
+ */
+function resumeFromBackground(): void {
+  if (useSettingsStore.getState().muted) return;
+  if (resumeSettleTimer) {
+    clearTimeout(resumeSettleTimer);
+    resumeSettleTimer = null;
+  }
+  const ctx = audioContext;
+  if (!ctx || ctx.state === "running") {
+    ensureBgmPlaying();
+    return;
+  }
+  if (bgmGain) bgmGain.gain.value = 0;
+  else if (bgmElement) bgmElement.volume = 0;
+  void ctx.resume().catch(() => {});
+  ensureBgmPlaying();
+  resumeSettleTimer = setTimeout(() => {
+    resumeSettleTimer = null;
+    applyBgmLevel(RESUME_FADE_SEC);
+  }, RESUME_SETTLE_MS);
+}
+
 /**
  * ミュート中・バックグラウンド中に、音声の再生を実際に止める。BGMを一時停止(pause)し、AudioContext も
  * 休ませる(suspend)。音量0のまま鳴らし続けると、端末は「音声を再生中のアプリ」と扱い、他の音楽アプリの再生を止めてしまうため。
  */
 function haltPlayback(): void {
+  if (resumeSettleTimer) {
+    clearTimeout(resumeSettleTimer);
+    resumeSettleTimer = null;
+  }
   bgmElement?.pause();
   const ctx = audioContext;
   if (ctx && ctx.state === "running") void ctx.suspend().catch(() => {});
@@ -417,8 +471,7 @@ if (typeof document !== "undefined") {
       haltPlayback();
       return;
     }
-    resumeAudioContext();
-    ensureBgmPlaying();
+    resumeFromBackground();
   });
 }
 

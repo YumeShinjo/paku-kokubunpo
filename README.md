@@ -111,6 +111,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 - **勝敗の扱い(3章)**: 通常ステージは「負け」がなく、間違えても次へ進むだけ。小ボス/ラスボス([QuizPlayer](src/features/quiz/QuizPlayer.tsx)のboss指定)には、
   プレイヤーのライフ5([BOSS_LIVES](src/features/quiz/bossRules.ts))があり、誤答1回で1減る。0になったら「ライフが なくなっちゃった…」で、[StageScreen](src/app/screens/StageScreen.tsx)から
   そのステージを最初からやり直せる(ステージ選択へも戻れる)。正解でボスのHPが1減り、HPは出題数の約6割。出題を解ききってもHPが残れば「もう少し!」で、同じくその場で再挑戦できる
+- **判定ポップアップの二重発火の防止**: 判定ポップアップの「つぎへ」ボタンのクリックは、外側の暗い部分(`.feedback-overlay`)まで伝わらないようにしてある(`e.target === e.currentTarget` で、外側自身へのクリックだけを扱う)。これをしないと、ボタンのクリックが親要素まで伝わり、`onComplete` が2回呼ばれ、「コトが せいちょうしたよ!」などの通知が2回出たり、得点が二重に加算されたりする
 - **正誤の判定と解説**: 仕分け以外は、判定と解説を1つのポップアップにまとめ、タップ1回(または「つぎへ」)で次の問題へ。仕分けだけは2段階で、判定だけのポップアップ(自動では消えず、タップで閉じる)→ 画面下の固定の枠に解説と、別のボタンの「つぎへ」
 - **ステージ冒頭の説明**([stageIntro.ts](src/features/quiz/stageIntro.ts)): ステージを始めたときに1度だけポップアップで出す(再開では出さない)。ボス戦は、対決の場面専用の文言(出題形式の「お手伝い」の文言は使わない)。通常ステージは、出題形式が1つならその呼び名と場面、混ざるときはステージ全体のテーマ名
 - **苦手問題の練習**: ホームの「🍙 コトがお腹をすかせているよ!」はボタン。押すと、星のついた問題だけを最大10問集めた練習に入る([ReviewPracticeScreen](src/app/screens/ReviewPracticeScreen.tsx)。ライフ・ストーリーなし。正解し直すと星が外れる)
@@ -220,7 +221,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 - 表示場所: エンディング後の結果画面([EndingResultScreen](src/app/screens/EndingResultScreen.tsx))、ことだまの書、タイトル画面。
 - エンディング後の順序: 共通の締め(`ohzaNoMa-area-clear`)→ 称号の授与(`ohzaNoMa-ending-result`)→ クレジット(`ohzaNoMa-credits`)→ ステージ選択。
   後ろ2つは専用画面で、視聴済みの記録に `seenStoryIds` を流用している(中断しても続きから再開でき、再挑戦では繰り返さない)。
-- クレジット画面([CreditsScreen](src/app/screens/CreditsScreen.tsx))は、タイトル・設定・エンディング後から開ける。
+- クレジット画面([CreditsScreen](src/app/screens/CreditsScreen.tsx))は、タイトル・エンディング後から開ける(せっていには置いていない)。
   **使用素材の欄は [docs/ASSET_CREDITS.md](docs/ASSET_CREDITS.md)(素材管理表)をビルド時に読み込んで表示する**ため、表に1行足せばゲーム内にも出る。表が空のときは「準備中」の枠が出る。
 
 ## 素材の差し替え(10章)

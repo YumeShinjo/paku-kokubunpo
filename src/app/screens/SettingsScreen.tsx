@@ -95,10 +95,6 @@ export function SettingsScreen() {
         <Rb t="機種変更[きしゅへんこう]のときは、古[ふる]い端末[たんまつ]で「つくる」→ 新[あたら]しい端末[たんまつ]で「いれる」。" />
       </p>
 
-      <button type="button" onClick={() => goTo({ name: "credits", next: { name: "settings" } })}>
-        クレジット
-      </button>
-
       {confirmingReset ? (
         <div className="quit-confirm" role="alertdialog" aria-label="データの初期化の確認">
           <p>

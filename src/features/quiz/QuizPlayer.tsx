@@ -320,7 +320,11 @@ export function QuizPlayer({
       {feedback && popupOpen && (
         <div
           className="feedback-overlay"
-          onClick={() => {
+          onClick={(e) => {
+            // ポップアップの中身(判定のカード・「つぎへ」ボタンなど)のタップでは、ここでは何もしない。
+            // ここで何もしないと、内側のボタンのクリックが外側のこのdivまで伝わって、handleNext が二重に呼ばれてしまう
+            // (「コトが せいちょうしたよ!」などの通知が2回出る不具合の原因だった)。
+            if (e.target !== e.currentTarget) return;
             // 出た直後の誤タップで閉じない(進まない)よう、少しだけ待つ
             if (Date.now() - feedbackShownAt.current <= 400) return;
             if (twoStage) setPopupOpen(false);

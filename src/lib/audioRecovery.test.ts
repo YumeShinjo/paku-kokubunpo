@@ -26,8 +26,9 @@ class FakeAudioContext {
   createMediaElementSource = () => ({ connect: () => ({ connect: () => undefined }) });
   createBufferSource = () => ({ buffer: null, connect: () => ({ connect: () => undefined }), start: vi.fn() });
   decodeAudioData = vi.fn(async () => ({ duration: 1 }));
-  constructor(initial = FakeAudioContext.initialState) {
-    this.state = initial;
+  constructor(options?: { sampleRate?: number }) {
+    void options; // 実物のコンストラクタと同じ形(サンプルレートの指定)を受け取れるようにしてあるだけで、使わない
+    this.state = FakeAudioContext.initialState;
     FakeAudioContext.instances.push(this);
   }
   static initialState = "suspended";
