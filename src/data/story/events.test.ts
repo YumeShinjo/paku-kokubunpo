@@ -16,7 +16,8 @@ import { areas } from "@/data/areas";
 const plain = (event: { lines: { text: { text: string }[] }[] }) =>
   event.lines.map((l) => l.text.map((s) => s.text).join(""));
 
-/** STORY.md に登場する発話者(ナレーションは speaker なし) */
+/** STORY.md に登場する発話者(ナレーションは speaker なし)。
+ * 「店主」「騎士」は立ち絵を持たない点景NPC(コトが伝聞で処理していた台詞を、本人の声に差し替えたもの)。 */
 const KNOWN_SPEAKERS = [
   "コト",
   "コレット",
@@ -29,6 +30,8 @@ const KNOWN_SPEAKERS = [
   "ニジュヴェール",
   "王(乱れに飲まれた姿)",
   "ヴェルバルト",
+  "店主",
+  "騎士",
 ];
 
 describe("ストーリーイベント(全エリア)", () => {
@@ -82,22 +85,27 @@ describe("ストーリーイベント(全エリア)", () => {
     expect(speakers.has("相棒")).toBe(false);
   });
 
-  it("小ボスの戦闘前・撃破後のストーリーの発話者に、そのエリアの小ボス名(の表記)が使われている", () => {
+  it("小ボスの撃破ストーリーの発話者は、そのエリアの小ボス名になっている(本人の浄化後の台詞がある。コトの台詞だけになっていない)", () => {
     for (const area of areas.filter((a) => a.subBossName)) {
-      const speakers = new Set(
-        [subBossIntroStoryId(area.id), subBossClearStoryId(area.id)].flatMap((id) =>
-          getStoryEvent(id)!.lines.map((l) => l.speaker),
-        ),
-      );
+      const event = getStoryEvent(subBossClearStoryId(area.id))!;
+      const speakers = new Set(event.lines.map((l) => l.speaker));
       expect(speakers.has(area.subBossName), `${area.id} に ${area.subBossName} の台詞がない`).toBe(true);
     }
   });
 
-  it("オンヴィンの撃破後には、「(乱れが晴れて)……失礼いたしました」の台詞がない(コトの台詞だけ)", () => {
+  it("なめらかの滝(オンヴィン)の撃破後にも、本人の台詞がある(以前、地の文「(乱れが晴れて)」を取り除く際に、台詞ごと誤って消してしまったことがあった)", () => {
     const event = getStoryEvent(subBossClearStoryId("namerakaNoTaki"))!;
-    expect(plain(event).some((t) => t.includes("失礼いたしました"))).toBe(false);
-    expect(plain(event).some((t) => t.includes("頭が混乱していた"))).toBe(false);
-    expect(event.lines.every((l) => l.speaker === "コト")).toBe(true);
+    const onvinLine = event.lines.find((l) => l.speaker === "オンヴィン");
+    expect(onvinLine, "オンヴィンの台詞がない").toBeDefined();
+    expect(plain({ lines: [onvinLine!] })[0]).toContain("失礼いたしました");
+  });
+
+  it("小ボスの浄化後の台詞に、姿の変化を言葉でも説明する地の文(「(乱れが晴れて)」など)は付けない(立ち絵の変化ですでに伝わるため、二重に説明しない)", () => {
+    for (const area of areas.filter((a) => a.subBossName)) {
+      const event = getStoryEvent(subBossClearStoryId(area.id))!;
+      const line = event.lines.find((l) => l.speaker === area.subBossName);
+      expect(plain({ lines: [line!] })[0], area.id).not.toContain("乱れが晴れて");
+    }
   });
 
   it("コトが話す行は立ち絵(マスコット)を出す", () => {
