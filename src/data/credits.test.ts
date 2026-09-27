@@ -61,25 +61,26 @@ describe("ゲーム内クレジットの表示(ネタバレ防止のため簡略
     }
   });
 
-  it("生成AIのキャラクター画像は、ファイルごとではなく、「キャラクターイラスト: (制作方法)」の1文にまとめる", () => {
+  it("生成AIのイラスト(キャラクター・背景など)は、ファイルごとではなく、「イラスト: (制作方法)」の1文にまとめる", () => {
     const ai = "生成AI(Stable Diffusion / Illustrious-XL v2.0)によるオリジナル制作";
     const groups = buildCreditGroups([
       credit("マスコット コト", "画像", "生成AIによるオリジナル制作(制作者が加工)", ai),
       credit("王様ヴェルバルト", "画像", "生成AIによるオリジナル制作(制作者が加工)", ai),
       credit("小ボス7人", "画像", "生成AIによるオリジナル制作(制作者が加工)", ai),
+      credit("エリア背景8種", "画像", "生成AIによるオリジナル制作(制作者が加工)", ai),
     ]);
-    expect(groups.find((g) => g.kind === "画像")!.lines).toEqual([`キャラクターイラスト: ${ai}`]);
+    expect(groups.find((g) => g.kind === "画像")!.lines).toEqual([`イラスト: ${ai}`]);
   });
 
   it("実際の素材管理表からも、曲名・効果音名・キャラクター名を含まない簡略な表示になる", () => {
     const groups = buildCreditGroups(assetCredits);
     const all = groups.flatMap((g) => g.lines).join("\n");
     expect(all).toContain("鷹尾まさき(タカオマサキ) - OpenTracks");
-    expect(all).toContain("キャラクターイラスト: 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA");
+    expect(all).toContain("イラスト: 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA");
     for (const secret of ["始まりの村", "禁忌の詠唱", "凍てつく世界", "The Forgotten Girl", "ヴェルバルト", "ニジュヴェール", "正解4", "hit02"]) {
       expect(all, secret).not.toContain(secret);
     }
-    expect(groups.find((g) => g.kind === "画像")!.lines.filter((l) => l.startsWith("キャラクターイラスト"))).toHaveLength(1);
+    expect(groups.find((g) => g.kind === "画像")!.lines.filter((l) => l.startsWith("イラスト"))).toHaveLength(1);
   });
 
   it("素材管理表そのものは、詳細(素材名・使用箇所)を保持している", () => {

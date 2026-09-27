@@ -18,7 +18,9 @@ import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
 import { useExpStore } from "@/app/store/expStore";
+import { useProgressStore } from "@/app/store/progressStore";
 import { EXP_PER_CORRECT, WEAK_UNIT_BONUS_EXP, gainExp } from "@/features/exp/expAward";
+import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
 import { isUnitWeak } from "@/features/zukan/unitAccuracy";
 import {
   comboLabel,
@@ -98,6 +100,7 @@ export function QuizPlayer({
   const recordAnswer = useStatsStore((s) => s.recordAnswer);
   const toggleStar = useReviewStore((s) => s.toggleStar);
   const starredIds = useReviewStore((s) => s.starredQuestionIds);
+  const isStageCleared = useProgressStore((s) => s.isStageCleared);
 
   const seenGuides = useTutorialStore((s) => s.seenGuides);
   const markGuideSeen = useTutorialStore((s) => s.markSeen);
@@ -241,8 +244,9 @@ export function QuizPlayer({
       className={`screen screen-stage${question.engine === "sorting" ? " is-compact" : ""}${feedback && twoStage ? (question.explanation ? " has-explain" : " has-next") : ""}`}
       style={areaAccentStyle(areaId)}
     >
-      {/* 背景。ボス戦は、上半分に背景+ボスを大きく。通常ステージは、小さな装飾バーだけにして、問題のスペースを優先する */}
-      <StageVisual name={areaId} tall={boss !== undefined}>
+      {/* 背景。ボス戦は、上半分に背景+ボスを大きく。通常ステージは、小さな装飾バーだけにして、問題のスペースを優先する。
+          エリアの関門(小ボス。王座の間だけラスボス)を撃破していれば通常、していなければ荒れた姿(data/bosses.ts参照)。 */}
+      <StageVisual name={areaBackgroundName(areaId, isStageCleared(areaPurifyGateStageId(areaId)))} tall={boss !== undefined}>
         {boss && <BossPortrait type={boss.type} areaId={areaId} />}
       </StageVisual>
       {heading && (

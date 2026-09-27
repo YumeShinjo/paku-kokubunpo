@@ -2071,8 +2071,10 @@ button.incorrect {
   border-radius: 14px 14px 0 0;
   background-color: var(--color-bar-track);
   background-size: cover;
-  /* 上端基準で切り出す(空や、上のほうの特徴的な要素が残る) */
-  background-position: center top;
+  /* 上端寄りで切り出すが、真上(空だけ)ではなく少し下げる。エリア背景は通常/荒れた姿の違いが
+     地面に近い高さ(倒れた露店・破れた旗など)に出るため、空だけが見える上端ぴったりだと、
+     通常ステージでは違いがほとんど分からなくなってしまう。 */
+  background-position: center 38%;
   overflow: hidden;
 }
 

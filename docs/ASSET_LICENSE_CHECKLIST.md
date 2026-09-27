@@ -55,6 +55,7 @@
 | マスコット 本来の姿(コレット) | `mascot/true.webp` | 同上 | 同上 |
 | 王様ヴェルバルト(2形態) | `boss/lastboss-possessed.webp`, `boss/lastboss-purified.webp` | 同上 | 同上 |
 | 小ボス7人(浄化前・浄化後) | `boss/subboss-<エリアid>.webp`(7枚)、`boss/subboss-<エリアid>-purified.webp`(7枚) | 同上 | 同上 |
+| エリア背景8種(通常・荒れた姿) | `bg/<エリアid>.webp`(8枚。序章含む)、`bg/<エリアid>-corrupted.webp`(7枚。序章を除く) | 同上 | 同上 |
 | タイトルロゴ | `ui/title-logo.svg` | 「制作者による制作(SVG)」「オリジナル制作(制作者提供)」(2026-09-26 に、こちらで仮に記入した) | **実際の制作者・制作方法(手描き・ツール・AI か)に合っているか。合っていなければ書き換える** |
 | アプリアイコン(仮) | `public/icons/*`, `public/favicon.svg` | 自作(`scripts/generate-icons.py` で生成) | 仮素材。本番のアイコンに差し替えるときに、行も書き換える |
 

@@ -93,8 +93,8 @@ describe("出題画面上部のレイアウト(CSS)", () => {
     expect(rule(".feedback-overlay .feedback.feedback-compact")).toMatch(/width: min\(100%, [\d.]+rem\);/);
   });
 
-  it("通常ステージの背景バーは、上端基準で切り出し、下端に背景色へのフェードがある(モチーフの重ね表示はない)", () => {
-    expect(rule(".stage-visual")).toContain("background-position: center top;");
+  it("通常ステージの背景バーは、上端寄り(空だけの真上ではない)で切り出し、下端に背景色へのフェードがある(モチーフの重ね表示はない)", () => {
+    expect(rule(".stage-visual")).toContain("background-position: center 38%;");
     expect(rule(".stage-visual::after")).toContain("var(--color-bg)");
     expect(css).not.toContain("stage-visual-motif");
   });

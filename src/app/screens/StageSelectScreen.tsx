@@ -1,5 +1,6 @@
 import { areas } from "@/data/areas";
 import { ScreenBackground } from "@/components/ScreenBackground";
+import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { getStage, getStagesForArea, stageQuestionCount } from "@/data/stages";
 import { bossLabel } from "@/features/quiz/bossRules";
@@ -47,7 +48,7 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
   return (
     <div className="screen screen-stage-select" style={areaAccentStyle(areaId)}>
       <BackButton onClick={() => goTo({ name: "areaSelect" })} />
-      <ScreenBackground name={areaId} />
+      <ScreenBackground name={areaBackgroundName(areaId, isStageCleared(areaPurifyGateStageId(areaId)))} />
       <h2>{area && <Rb t={areaNameText(area)} />}</h2>
       <ul className="stage-list">
         {stages.map((stage) => {

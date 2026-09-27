@@ -42,7 +42,7 @@ export const assetCredits: AssetCredit[] = parseAssetCredits(assetCreditsMarkdow
  * ゲーム内クレジットの表示用(ネタバレ防止のため、曲名・効果音名・ファイル名・使用箇所は出さない)。
  *  - BGM・効果音: 「作曲者名 - サイト名」の並びだけ。素材管理表の出典が「サイト名 / 作曲者名」の形ならその順に直し、
  *    サイト名(または作者名)だけのときは、それだけを出す。同じ出典は1回にまとめる。
- *  - 画像(生成AIによるキャラクター): 「キャラクターイラスト: (制作方法の1文)」に1つにまとめる。
+ *  - 画像(生成AIによるイラスト。キャラクター・背景など): 「イラスト: (制作方法の1文)」に1つにまとめる。
  *  - 画像(それ以外)・フォント: 素材名と出典・ライセンスだけ。
  * 提出用の素材管理表(docs/ASSET_CREDITS.md)は、詳細をそのまま持つ。ここで簡略化するのは、ゲーム内の表示だけ。
  */
@@ -78,7 +78,7 @@ export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
     } else if (kind === "画像") {
       const ai = unique(rows.filter(isGeneratedByAi).map((c) => c.license));
       const others = rows.filter((c) => !isGeneratedByAi(c)).map((c) => `${withoutNote(c.name)}: ${withoutNote(c.source)}`);
-      lines = [...ai.map((license) => `キャラクターイラスト: ${license}`), ...unique(others)];
+      lines = [...ai.map((license) => `イラスト: ${license}`), ...unique(others)];
     } else {
       lines = unique(rows.map((c) => `${c.name}(${withoutNote(c.license)})`));
     }

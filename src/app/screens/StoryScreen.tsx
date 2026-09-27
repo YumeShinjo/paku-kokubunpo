@@ -4,7 +4,7 @@ import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
 import { Mascot } from "@/features/mascot/Mascot";
 import { findImage, IMAGE } from "@/assets/registry";
-import { isSubBossPurifiedIn, subBossAreaOf } from "@/data/bosses";
+import { areaBackgroundName, areaPurifyGateStageId, isSubBossPurifiedIn, subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
@@ -51,7 +51,12 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
 
   const line = event.lines[lineIndex];
   // 背景は、イベントidの先頭(エリアid)の背景素材。なければ従来の単色グラデーション。
-  const backgroundUrl = findImage(IMAGE.background(eventId.split("-")[0]));
+  // エリアの関門(小ボス。王座の間だけラスボス)を撃破していれば通常、していなければ荒れた姿(data/bosses.ts参照)。
+  const backgroundAreaId = eventId.split("-")[0];
+  const backgroundCleared = isStageCleared(areaPurifyGateStageId(backgroundAreaId));
+  const backgroundUrl = findImage(
+    IMAGE.background(areaBackgroundName(backgroundAreaId, backgroundCleared, eventId)),
+  );
   // 王様の台詞のときは王様の立ち絵(素材があれば)。取り憑かれた姿/浄化後で出し分ける。
   const kingUrl = findImage(
     line.speaker === "ヴェルバルト"

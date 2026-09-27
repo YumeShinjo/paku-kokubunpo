@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { subBossIntroStoryId, subBossClearStoryId } from "@/features/story/storyIds";
-import { isSubBossPurifiedIn, subBossAreaOf } from "./bosses";
+import {
+  areaClearStoryId,
+  introStoryId,
+  lastBossClearStoryId,
+  lastBossIntroStoryId,
+  subBossIntroStoryId,
+  subBossClearStoryId,
+  truthStoryId,
+} from "@/features/story/storyIds";
+import { areaBackgroundName, areaPurifyGateStageId, isSubBossPurifiedIn, subBossAreaOf } from "./bosses";
 
 describe("小ボスの立ち絵の出し分け(浄化前/浄化後)", () => {
   it("戦う前(subBossIntroStoryId)は、あとで撃破していても常に浄化前の姿のまま", () => {
@@ -17,6 +25,53 @@ describe("小ボスの立ち絵の出し分け(浄化前/浄化後)", () => {
 
   it("未撃破なら、どの台詞でも浄化前の姿", () => {
     expect(isSubBossPurifiedIn("kotobaNoIchiba-truth", "kotobaNoIchiba", false)).toBe(false);
+  });
+});
+
+describe("エリアの浄化の関門(areaPurifyGateStageId)", () => {
+  it("王座の間だけラスボス(王様)、それ以外は小ボスが関門", () => {
+    expect(areaPurifyGateStageId("kotobaNoIchiba")).toBe("kotobaNoIchiba-subboss");
+    expect(areaPurifyGateStageId("ohzaNoMa")).toBe("ohzaNoMa-lastboss");
+  });
+});
+
+describe("エリアの背景の出し分け(浄化前/浄化後。areaBackgroundName)", () => {
+  it("関門を撃破していなければ荒れた背景、撃破していれば通常の背景(eventIdなし=いまの状況)", () => {
+    expect(areaBackgroundName("kotobaNoIchiba", false)).toBe("kotobaNoIchiba-corrupted");
+    expect(areaBackgroundName("kotobaNoIchiba", true)).toBe("kotobaNoIchiba");
+  });
+
+  it("序章は小ボスがおらず、浄化の概念がないので常に通常の背景", () => {
+    expect(areaBackgroundName("prologue", false)).toBe("prologue");
+    expect(areaBackgroundName("prologue", true)).toBe("prologue");
+  });
+
+  it("戦う前(intro・subboss-intro)は、あとで撃破していても、思い出の再生では常に荒れた背景のまま", () => {
+    expect(areaBackgroundName("kotobaNoIchiba", true, introStoryId("kotobaNoIchiba"))).toBe(
+      "kotobaNoIchiba-corrupted",
+    );
+    expect(areaBackgroundName("kotobaNoIchiba", true, subBossIntroStoryId("kotobaNoIchiba"))).toBe(
+      "kotobaNoIchiba-corrupted",
+    );
+  });
+
+  it("小ボス撃破後・エリアクリアの場面は、撃破済みなら通常の背景", () => {
+    expect(areaBackgroundName("kotobaNoIchiba", true, subBossClearStoryId("kotobaNoIchiba"))).toBe(
+      "kotobaNoIchiba",
+    );
+    expect(areaBackgroundName("kotobaNoIchiba", true, areaClearStoryId("kotobaNoIchiba"))).toBe(
+      "kotobaNoIchiba",
+    );
+  });
+
+  it("王座の間だけ、宰相撃破後〜ラスボス前(真相究明・ラスボス前を含む)も、王様を倒すまでは荒れた背景のまま", () => {
+    expect(areaBackgroundName("ohzaNoMa", true, subBossClearStoryId("ohzaNoMa"))).toBe("ohzaNoMa-corrupted");
+    expect(areaBackgroundName("ohzaNoMa", true, truthStoryId("ohzaNoMa"))).toBe("ohzaNoMa-corrupted");
+    expect(areaBackgroundName("ohzaNoMa", true, lastBossIntroStoryId("ohzaNoMa"))).toBe("ohzaNoMa-corrupted");
+  });
+
+  it("王座の間は、ラスボス撃破後の場面から通常の背景になる", () => {
+    expect(areaBackgroundName("ohzaNoMa", true, lastBossClearStoryId("ohzaNoMa"))).toBe("ohzaNoMa");
   });
 });
 

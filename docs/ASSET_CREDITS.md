@@ -17,6 +17,8 @@
 | 小ボス7人(メイ・レル・オンヴィン・ジョゼット・ネジラルド・サイラス・ニジュヴェール) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | 小ボス戦のパネル、ストーリーの小ボスの台詞 |
 | 小ボス7人 浄化後の姿 | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | 小ボス撃破後のストーリーの台詞、思い出の再生 |
 | マスコット コト 成長アクセサリー7段階(ポーチ・腕輪・スカーフ・ブローチ・リボン・片眼鏡・王冠のかけら) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | マスコットの成長演出(エリアクリアごとに1つずつ重ねて表示) |
+| エリア背景8種(序章+エリア①〜⑦。通常の姿) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
+| エリア背景7種 荒れた姿(エリア①〜⑦。関門(小ボス。王座の間だけラスボス)を撃破するまで) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
 | タイトルロゴ「パクっと国文法 / NIBBLE GRAMMAR」 | 画像 | 制作者による制作(SVG) | オリジナル制作(制作者提供) | タイトル画面 |
 | アプリアイコン(仮) | 画像 | 自作(scripts/generate-icons.py で生成) | 自作のため制限なし | ホーム画面のアイコン |
 | M PLUS Rounded 1c | フォント | Google Fonts(npmパッケージ @fontsource/m-plus-rounded-1c から同梱) | SIL Open Font License 1.1(自由に使用・再配布可) | アプリ全体の文字 |
