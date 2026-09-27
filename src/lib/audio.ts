@@ -38,15 +38,20 @@ const DUCK_UP_SEC = 0.4;
  */
 const BGM_SAMPLE_RATE = 44100;
 /**
- * バックグラウンドから戻ったときだけ使う、再開の音量の戻し方。
- * 実機(iPhone)で確認したところ、ピッチが変わって聞こえる時間は、体感で3秒ほど続く。そこで:
- *  - RESUME_SETTLE_MS: 完全に無音にしておく短い時間。いちばん耳につく、鳴り始めの瞬間だけを隠す(長すぎると「音が出ない」と感じるため短めに)
- *  - RESUME_FADE_SEC: そのあと、無音から元の音量まで、ゆっくり滑らかに戻す時間。「無音→急に鳴る」ではなく、
- *    自然なフェードインに聞こえる程度の長さで、ピッチのずれが収まるころには、ほぼ元の音量に戻っているようにする
- * 合計(0.5 + 3.0 ≒ 3.5秒)が、体感のピッチずれの時間を、余裕を持って覆う長さになるようにしている。
+ * バックグラウンドから戻ったときの、ピッチのずれの「安定待ち」の決め方(固定の秒数では、機種やiOSのバージョンで
+ * 実際のずれの長さが変わり、都度合わなかったため、実際に測って判断する方式にした)。
+ *  - STABILIZE_POLL_MS おきに、AudioContext.currentTime の進み方と、実際に経過した時間(Date.now())を比べる。
+ *    比率が1.0に近ければ「クロックが落ち着いた」、遠ければ「まだずれている」とみなす。
+ *  - ノイズ(はかるタイミングのぶれ)で誤判定しないよう、STABILIZE_CONSECUTIVE 回続けて範囲内だったら確定する。
+ *  - 万一いつまでも安定と判定できない機種があっても、無音のままにしないよう、STABILIZE_MAX_WAIT_MS で必ず打ち切る
+ *    (安全弁。ここに達したときは、確認しきれなかったものとして、そのままフェードインする)。
+ *  - 安定を確認できたら、STABILIZE_FADE_SEC の短いフェードインで音量を戻す(もう鳴らしてよいと判断したあとなので、短くてよい)。
  */
-export const RESUME_SETTLE_MS = 500;
-export const RESUME_FADE_SEC = 3.0;
+const STABILIZE_POLL_MS = 100;
+const STABILIZE_TOLERANCE = 0.05;
+const STABILIZE_CONSECUTIVE = 3;
+export const STABILIZE_MAX_WAIT_MS = 4500;
+export const STABILIZE_FADE_SEC = 0.3;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -260,25 +265,32 @@ function resumeAudioContext(): void {
   if (ctx && ctx.state !== "running") void ctx.resume().catch(() => {});
 }
 
-/** バックグラウンドから戻ったときの、音量を戻す予約(clearTimeoutで消せるように覚えておく) */
-let resumeSettleTimer: ReturnType<typeof setTimeout> | null = null;
+/** 安定待ちのポーリング(clearTimeoutで消せるように覚えておく) */
+let stabilizeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function cancelStabilizeWatch(): void {
+  if (stabilizeTimer) {
+    clearTimeout(stabilizeTimer);
+    stabilizeTimer = null;
+  }
+}
 
 /**
  * バックグラウンドから戻ったときだけ使う、再開のしかた(9章)。
- * 単純に resumeAudioContext() するだけだと、iOSでは、直前まで止まっていた AudioContext が
- * ハードウェアのクロックに合うまでの一瞬、BGMのピッチが変わって聞こえることがある(上のBGM_SAMPLE_RATEのコメント)。
+ * 単純に resumeAudioContext() するだけだと、iOSでは、直前まで止まっていた AudioContext の内部クロックが
+ * ハードウェアに合うまでのあいだ、BGMのピッチが変わって聞こえることがある(上のコメント)。しかも、その
+ * ずれている時間は、機種やiOSのバージョンによって違う(固定の秒数を仮定しても、都度合わない)。
  * これを完全に避ける手段(AudioContextの作り直し)は、いま使っている <audio> 要素が、一度でも
  * createMediaElementSource に渡すと、その要素はほかの AudioContext では二度と使えなくなる(仕様上の制約)ため取れない
  * (別の要素を新たに作ると、iOSでは、ユーザーの操作の中でない再生として、鳴らなくなる恐れがある)。
- * 代わりに、再開の一瞬だけ音量を0にしておき、クロックが落ち着くころに、滑らかに元の音量へ戻すことで、
- * ピッチが変わって聞こえる不具合を、耳に入らないようにする。
+ * 代わりに、再開の瞬間は無音にしておき、AudioContext.currentTime の進み方を実際に測って、
+ * ハードウェアの時間の進み方(Date.now())と揃うのを確かめてから、短いフェードインで音量を戻す。
+ * 揃ったかどうかは、直前のポーリング間隔(STABILIZE_POLL_MS)だけの進み方(区間ごとの速さ)で見る。
+ * 再開してからの合計で平均すると、最初のずれた分がいつまでも薄く残り、なかなか「揃った」と判定できないため。
  */
 function resumeFromBackground(): void {
   if (useSettingsStore.getState().muted) return;
-  if (resumeSettleTimer) {
-    clearTimeout(resumeSettleTimer);
-    resumeSettleTimer = null;
-  }
+  cancelStabilizeWatch();
   const ctx = audioContext;
   if (!ctx || ctx.state === "running") {
     ensureBgmPlaying();
@@ -288,10 +300,29 @@ function resumeFromBackground(): void {
   else if (bgmElement) bgmElement.volume = 0;
   void ctx.resume().catch(() => {});
   ensureBgmPlaying();
-  resumeSettleTimer = setTimeout(() => {
-    resumeSettleTimer = null;
-    applyBgmLevel(RESUME_FADE_SEC);
-  }, RESUME_SETTLE_MS);
+
+  const startWallMs = Date.now();
+  let lastWallMs = startWallMs;
+  let lastCtxSec = ctx.currentTime;
+  let stableStreak = 0;
+
+  const poll = () => {
+    const nowWallMs = Date.now();
+    const stepWallSec = (nowWallMs - lastWallMs) / 1000;
+    const stepCtxSec = ctx.currentTime - lastCtxSec;
+    lastWallMs = nowWallMs;
+    lastCtxSec = ctx.currentTime;
+    const ratio = stepWallSec > 0 ? stepCtxSec / stepWallSec : 1;
+    stableStreak = Math.abs(ratio - 1) <= STABILIZE_TOLERANCE ? stableStreak + 1 : 0;
+
+    if (stableStreak >= STABILIZE_CONSECUTIVE || nowWallMs - startWallMs >= STABILIZE_MAX_WAIT_MS) {
+      stabilizeTimer = null;
+      applyBgmLevel(STABILIZE_FADE_SEC); // 安定を確認できた/待ちきれなかった、いずれの場合も、無音のままにしない
+      return;
+    }
+    stabilizeTimer = setTimeout(poll, STABILIZE_POLL_MS);
+  };
+  stabilizeTimer = setTimeout(poll, STABILIZE_POLL_MS);
 }
 
 /**
@@ -299,10 +330,7 @@ function resumeFromBackground(): void {
  * 休ませる(suspend)。音量0のまま鳴らし続けると、端末は「音声を再生中のアプリ」と扱い、他の音楽アプリの再生を止めてしまうため。
  */
 function haltPlayback(): void {
-  if (resumeSettleTimer) {
-    clearTimeout(resumeSettleTimer);
-    resumeSettleTimer = null;
-  }
+  cancelStabilizeWatch();
   bgmElement?.pause();
   const ctx = audioContext;
   if (ctx && ctx.state === "running") void ctx.suspend().catch(() => {});
