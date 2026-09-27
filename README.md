@@ -233,7 +233,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 | 種類 | いまの仮表示 | 場所 | 本番素材の置き場所 |
 | --- | --- | --- | --- |
 | マスコット | **本番画像に差し替え済み**(ベース・表情5種・本来の姿)。成長アクセサリー7段階は未調達で、それまでは絵で成長が見えない(絵文字は素材がないときの仮表示として残してある) | [Mascot.tsx](src/features/mascot/Mascot.tsx) の `growthEmoji` / `TRUE_FORM_EMOJI` | `src/assets/images/mascot/` |
-| 小ボス・ラスボス | **本番画像に差し替え済み**(小ボス7人・王様2形態) | [BossPortrait.tsx](src/features/quiz/BossPortrait.tsx) | `src/assets/images/boss/` |
+| 小ボス・ラスボス | **本番画像に差し替え済み**(小ボス7人×浄化前/浄化後・王様2形態) | [BossPortrait.tsx](src/features/quiz/BossPortrait.tsx) | `src/assets/images/boss/` |
 | 背景 | 単色・グラデーション | [global.css](src/styles/global.css) の `--color-bg` と `.story-stage` | `src/assets/images/bg/` |
 | タイトルロゴ・称号バッジ | 文字の見出し・🏅 | [TitleScreen.tsx](src/app/screens/TitleScreen.tsx) / [TitleBadge.tsx](src/components/TitleBadge.tsx) | `src/assets/images/ui/` |
 | BGM | なし(無音) | (素材が置かれるまで鳴らさない) | `src/assets/audio/bgm/` |
@@ -352,7 +352,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 ## キャラクター画像の使いどころ(10章)
 - **マスコット**: タイトル・ストーリー・結果画面の本体はベース画像。表情は [MascotFace](src/features/mascot/Mascot.tsx) / `Mascot` の `expression` で出し分ける
   (正解=喜び、不正解=しょんぼり、苦手を克服=もぐもぐ、エリアクリア・成長の通知=びっくり、星の問題が5問以上たまったタイトル=眠そう(それ未満は通常の表情)、「もう少し!」=しょんぼり)。表情の画像がなければ、ベースのまま(または何も出さない)。
-- **小ボス**: エリアごとの1枚絵を、小ボス戦のパネルと、ストーリーでそのボスが話すとき(台詞の話者名から [bosses.ts](src/data/bosses.ts) で引く)に出す。**ラスボス**は取り憑かれた姿をパネルに、王様の台詞では浄化後/取り憑かれた姿を出し分ける。
+- **小ボス**: エリアごとの1枚絵を、小ボス戦のパネルと、ストーリーでそのボスが話すとき(台詞の話者名から [bosses.ts](src/data/bosses.ts) で引く)に出す。ストーリー側は、`isSubBossPurifiedIn`(同ファイル)がそのステージの撃破状況で浄化前/浄化後を出し分ける(戦う前の台詞だけは、あとで撃破していても常に浄化前のまま。撃破後の台詞・思い出の再生では浄化後)。**ラスボス**は取り憑かれた姿をパネルに、王様の台詞では浄化後/取り憑かれた姿を出し分ける(こちらは話者名で判定)。
 - 画像は 512×512 の WebP に変換して置いている(詳しくは [src/assets/README.md](src/assets/README.md))。ゲーム内の画像は Git に含まれない(配信は Firebase Hosting)。
 
 ## 小ボス戦の流れ(3章・演出)

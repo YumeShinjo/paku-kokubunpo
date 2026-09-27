@@ -77,6 +77,8 @@ export const IMAGE = {
   mascotExpression: (expression: MascotExpression) => `mascot/${expression}`,
   /** 小ボスの立ち絵(エリアidごとに、役職ごとの1枚絵) */
   subBoss: (areaId: string) => `boss/subboss-${areaId}`,
+  /** 小ボスの立ち絵。浄化後の姿(撃破後の台詞・思い出の再生で使う) */
+  subBossPurified: (areaId: string) => `boss/subboss-${areaId}-purified`,
   /** ラスボス(王様)。取り憑かれた姿 */
   lastBossPossessed: "boss/lastboss-possessed",
   /** ラスボス(王様)。浄化後の元の姿 */

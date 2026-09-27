@@ -4,8 +4,9 @@ import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
 import { Mascot } from "@/features/mascot/Mascot";
 import { findImage, IMAGE } from "@/assets/registry";
-import { subBossAreaOf } from "@/data/bosses";
+import { isSubBossPurifiedIn, subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
+import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import type { Screen } from "@/app/store/navigationStore";
 
@@ -21,6 +22,7 @@ import type { Screen } from "@/app/store/navigationStore";
  */
 export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }) {
   const goTo = useNavigationStore((s) => s.goTo);
+  const isStageCleared = useProgressStore((s) => s.isStageCleared);
   const markSeen = useStoryStore((s) => s.markSeen);
   const recordChoice = useStoryStore((s) => s.recordChoice);
   const event = useMemo(() => getStoryEvent(eventId), [eventId]);
@@ -58,9 +60,13 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         ? IMAGE.lastBossPossessed
         : "",
   );
-  // 小ボスの台詞のときは、そのボスの立ち絵(素材があれば)。
+  // 小ボスの台詞のときは、そのボスの立ち絵(素材があれば)。撃破後は浄化後の姿に切り替える(data/bosses.ts参照)。
   const bossAreaId = subBossAreaOf(line.speaker);
-  const bossUrl = bossAreaId ? findImage(IMAGE.subBoss(bossAreaId)) : undefined;
+  const bossPurified =
+    bossAreaId !== undefined && isSubBossPurifiedIn(eventId, bossAreaId, isStageCleared(`${bossAreaId}-subboss`));
+  const bossUrl = bossAreaId
+    ? findImage(bossPurified ? IMAGE.subBossPurified(bossAreaId) : IMAGE.subBoss(bossAreaId))
+    : undefined;
   const lastIndex = event.lines.length - 1;
   const isLast = lineIndex >= lastIndex;
   const options = event.choice?.options;
