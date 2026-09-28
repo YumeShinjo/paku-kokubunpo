@@ -27,26 +27,46 @@ import {
  */
 const KOTO = "コト";
 
+/**
+ * 立ち絵の左右配置(2026-09-29 見直し): 顔の向きに応じて、視線が会話テキスト側(画面内側)を
+ * 向くように配置する。顔が右向きのキャラクター(メイ・ジョゼット)は画面左寄り、それ以外
+ * (コト/コレット・王様・他の小ボス)は画面右寄りに配置する。個別の call site では指定せず、
+ * 話者名から自動で決める(手動指定だと、キャラクター追加のたびに全箇所を直す必要があり、
+ * 抜け漏れや上書き事故の原因になりやすいため)。
+ */
+const FACES_RIGHT_SPEAKERS = new Set(["メイ", "ジョゼット"]);
+/** 立ち絵(王様・小ボス)を持つ話者。コト/コレットは showMascot の有無で判定するのでここには含めない */
+const PORTRAIT_SPEAKERS = new Set(["ヴェルバルト", "ネジラルド", "サイラス", "ニジュヴェール", "レル", "オンヴィン", "メイ", "ジョゼット"]);
+
+function defaultPosition(speaker: string | undefined, showMascot: boolean): CharacterPosition | undefined {
+  const hasPortrait =
+    showMascot || (speaker !== undefined && (PORTRAIT_SPEAKERS.has(speaker) || speaker.startsWith("王(")));
+  if (!hasPortrait) return undefined;
+  return speaker && FACES_RIGHT_SPEAKERS.has(speaker) ? "left" : "right";
+}
+
 interface LineOptions {
   /** 発話者がコト以外でも、立ち絵(マスコット)を出したい場面で指定する */
   showMascot?: boolean;
   mascotForm?: MascotForm;
-  /** 立ち絵の左右の寄せ方。省略時は中央。橋の上など、中央だと落ちそうに見える場面で指定する */
+  /** 既定の左右配置(顔の向きから自動計算)を、個別の場面で上書きしたいときだけ指定する */
   position?: CharacterPosition;
 }
 
 /** コトの台詞は、立ち絵(マスコット)を出す。それ以外は指定したときだけ出す。 */
 function line(speaker: string | undefined, text: string, opts: LineOptions = {}): StoryLine {
+  const showMascot = opts.showMascot ?? speaker === KOTO;
   return {
     speaker,
     text: rb(text),
-    showMascot: opts.showMascot ?? speaker === KOTO,
+    showMascot,
     mascotForm: opts.mascotForm,
-    position: opts.position,
+    position: opts.position ?? defaultPosition(speaker, showMascot),
   };
 }
 
 const narration = (text: string, opts?: LineOptions) => line(undefined, text, opts);
+/** position は、既定の右寄せだと背景の特定の物(金床など)の真上に重なってしまう場面だけ、個別に上書きする */
 const koto = (text: string, mascotForm?: MascotForm, position?: CharacterPosition) =>
   line(KOTO, text, { mascotForm, position });
 
@@ -118,7 +138,8 @@ export const storyEvents: StoryEvent[] = [
   {
     id: introStoryId("sugatakaeNoKajiba"),
     lines: [
-      koto("あれ!?剣[つるぎ]が槍[やり]にも鍬[くわ]にもなりきれなくて、中途半端[ちゅうとはんぱ]な形のまま固まってるよ!"),
+      // この背景は金床が右寄りに描かれているため、既定の右寄せだと金床の真上に重なってしまう。左に寄せる
+      koto("あれ!?剣[つるぎ]が槍[やり]にも鍬[くわ]にもなりきれなくて、中途半端[ちゅうとはんぱ]な形のまま固まってるよ!", undefined, "left"),
       narration("金属も、木も、あるべき姿になろうとして、なれずにいる。"),
     ],
   },
@@ -185,8 +206,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: introStoryId("tsunagiNoHashi"),
     lines: [
-      // 壊れかけた橋の背景で、真ん中に立たせると落ちそうに見えるため、左寄せにする
-      koto("橋が…バラバラになりかけてる!このままじゃお城に渡れないよ。", undefined, "left"),
+      koto("橋が…バラバラになりかけてる!このままじゃお城に渡れないよ。"),
       narration("橋の板同士をつなぐ言葉が、あちこちで抜け落ちている。"),
       narration("メイド長は、橋を渡ってくる客人を出迎える役目で、お盆を手にじっと立っていたらしい。"),
     ],
@@ -195,8 +215,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: subBossIntroStoryId("tsunagiNoHashi"),
     lines: [
-      // 壊れかけた橋の背景で、真ん中に立たせると落ちそうに見えるため、右寄せにする
-      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…", { position: "right" }),
+      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…"),
     ],
   },
   {
@@ -220,7 +239,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: introStoryId("kizunaNoMa"),
     lines: [
-      narration("円卓[えんたく]の間。並んでいたはずの椅子や旗が、なぜかちぐはぐな配置になっている。"),
+      narration("訓練場[くんれんじょう]。並んでいたはずの的[まと]や武具[ぶぐ]が、なぜかちぐはぐな配置になっている。"),
       koto("あれ、なんか…関係性が、めちゃくちゃになってる?"),
       line("騎士", "……近ごろ陛下[へいか]の御前[ごぜん]に、誰[だれ]も通されないらしい……"),
       koto("今の話……なんだか、きな臭[くさ]いね。"),
@@ -249,7 +268,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: areaClearStoryId("kizunaNoMa"),
     lines: [
-      narration("円卓[えんたく]が正しい位置に並び直される。"),
+      narration("的[まと]や武具[ぶぐ]が正しい位置に並び直される。"),
       koto("うんうん、なんかスッキリした!"),
     ],
   },
@@ -321,7 +340,7 @@ export const storyEvents: StoryEvent[] = [
     lines: [
       narration("王座[おうざ]に座っていたのは、もはや人の形をなさない「乱れ」そのものだった。"),
       line("王(乱れに飲まれた姿)", "正しい言葉など、いらな……いる……どちらでも……どうでもよい……"),
-      koto("よくないよ!言葉は、ちゃんと伝えたい人がいるから、大事なんだから!", "glow"),
+      koto("よくないよ!言葉は、ちゃんと伝えたい人がいるから大事なの!", "glow"),
     ],
   },
   // ラスボス前。STORY.md「真相究明〜ラスボス前」の最後の1行。ラスボスに初めて挑む直前に流れる。
@@ -334,12 +353,12 @@ export const storyEvents: StoryEvent[] = [
     id: lastBossClearStoryId("ohzaNoMa"),
     lines: [
       narration("「乱れ」が晴れていくと同時に、王座[おうざ]の間に眩[まぶ]い光があふれる。"),
-      narration("光の中心で、丸い体がすっとほどけ、人の姿へと変わっていく——コトが、コレットに戻る瞬間[しゅんかん]だった。", {
+      narration("光の中心で、丸い体がすっとほどけていき、代[か]わりに人影[ひとかげ]が浮[う]かび上[あ]がる。", {
         showMascot: true,
         mascotForm: "true",
       }),
-      narration("驚[おどろ]いた様子も、たじろぐ様子もなく、主人公はいつも通り、すぐそばに立っていた。"),
       narration("同時に、王座[おうざ]に座っていた人物の輪郭[りんかく]もはっきりとしていく。"),
+      narration("驚[おどろ]いた様子も、たじろぐ様子もなく、主人公はいつも通り、すぐそばに立っていた。"),
       line("ヴェルバルト", "……ここは……わたしは、一体……"),
       narration("正気[しょうき]を取り戻した王様が、ゆっくりと顔を上げる。"),
       line("ヴェルバルト", "(コトを見て)まさか……お前は……", { showMascot: true, mascotForm: "true" }),
@@ -348,7 +367,7 @@ export const storyEvents: StoryEvent[] = [
       line("ヴェルバルト", "……思い出した。乱れが王座[おうざ]に忍[しの]び込[こ]んだあの日、まだ幼[おさな]かったお前は、王家に伝わる守り獣[じゅう]の御守[おまも]りを抱[いだ]いて、わたしを庇[かば]おうとしたのだったな。", { showMascot: true, mascotForm: "true" }),
       line("ヴェルバルト", "あの御守りは、王家の言葉を代々守ってきたと伝わる、化[ば]け狸[たぬき]の姿を宿[やど]すもの。乱れはお前ごと、その姿に閉[と]じ込[こ]めてしまった。", { showMascot: true, mascotForm: "true" }),
       line("ヴェルバルト", "小さな体のまま、ずっと城を彷徨[さまよ]っていたというのか……すまない、気づいてやれなかった。", { showMascot: true, mascotForm: "true" }),
-      line("コレット", "ううん。わたしも、途中までしか覚えてない。でも、あなたたちのおかげで、思い出せた。", { showMascot: true, mascotForm: "true" }),
+      line("コレット", "ううん。わたしも、途中までしか覚えてない。でも、あなたのおかげで、思い出せた。", { showMascot: true, mascotForm: "true" }),
       narration("長い沈黙[ちんもく]のあと、王様が静かに問いかける。", {
         showMascot: true,
         mascotForm: "true",

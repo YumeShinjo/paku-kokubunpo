@@ -23,6 +23,21 @@ function sequentialIds(count: number): string[] {
 }
 
 /**
+ * 文字列から決定的な疑似乱数値を作る(FNV-1aハッシュ)。同じ正解・誤答の組み合わせなら
+ * 常に同じ値になるので、ビルドのたびに正解位置が変わったり、スクリーンショットテストが
+ * 不安定になったりしない。内容そのものから求めるので、単元ファイル内の出現順や、
+ * ファイルごとの問題数には左右されない(→ arrangeChoices の position に使う)。
+ */
+function hashSeed(text: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
  * 正解を position 番目(選択肢数で折り返す)に置いた選択肢配列を作る。
  * 元データが「正解・誤答」の順で書かれている場合に、正解がいつも先頭にならないようにする。
  */
@@ -37,11 +52,24 @@ export function arrangeChoices(
   return { choices, correctIndex };
 }
 
-/** arrangeChoices の位置を、呼ぶたびに 0,1,2,… と回していく版(単元ファイルごとに1つ作る) */
+/**
+ * arrangeChoices の position を、0,1,2,… と順に回しつつ、開始位置(オフセット)だけは
+ * その単元ファイル最初の問題の内容から決定的に求める版(単元ファイルごとに1つ作る)。
+ *
+ * かつては開始位置が常に0固定のカウンター方式だったため、単元ファイルの1問目は必ず先頭
+ * (index 0)になり、ファイル数が多いこのアプリ全体で見ると正解が先頭に偏っていた
+ * (生徒のテストプレイ報告と、実データでの検証で確認)。開始位置をファイルごとにずらす
+ * ことで、全体としての先頭偏りを解消しつつ、1つの単元ファイル内では折り返しで
+ * きっちり均等に配置される(問題数が少ない単元でも偏らない)という、順送り方式の
+ * 良さも保っている。
+ */
 export function createChoiceArranger() {
+  let offset: number | undefined;
   let count = 0;
-  return (correct: string, wrongs: readonly string[]) =>
-    arrangeChoices(correct, wrongs, count++);
+  return (correct: string, wrongs: readonly string[]) => {
+    if (offset === undefined) offset = hashSeed([correct, ...wrongs].join("\u0000"));
+    return arrangeChoices(correct, wrongs, offset + count++);
+  };
 }
 
 /**
@@ -143,7 +171,17 @@ export function fillBlankQ(opts: {
   tags?: string[];
   autoRuby?: boolean;
 }): AssemblyQuestion {
-  const cardIds = sequentialIds(opts.cards.length);
+  // データ側は「正解を分かりやすい位置に書く」ことが多く、そのまま出題すると正解カードが
+  // 先頭に偏る(実データ検証で67問中51問が先頭になっていた)。choiceQ と同じ内容ベースの
+  // ハッシュで並べ替え、見た目の順序だけ変える(意味・正誤判定には影響しない)。
+  const correctText = opts.cards[opts.correctIndex];
+  const wrongTexts = opts.cards.filter((_, i) => i !== opts.correctIndex);
+  const { choices: arrangedCards, correctIndex } = arrangeChoices(
+    correctText,
+    wrongTexts,
+    hashSeed([correctText, ...wrongTexts].join("\u0000")),
+  );
+  const cardIds = sequentialIds(arrangedCards.length);
   const ruby = (text: string) => toRuby(text, opts.autoRuby);
   return {
     id: opts.id,
@@ -152,8 +190,8 @@ export function fillBlankQ(opts: {
     mode: "fillBlank",
     instruction: ruby(opts.instruction),
     sentenceTemplate: ruby(opts.sentenceTemplate),
-    cards: opts.cards.map((text, i) => ({ id: cardIds[i], text: ruby(text) })),
-    correctOrder: [cardIds[opts.correctIndex]],
+    cards: arrangedCards.map((text, i) => ({ id: cardIds[i], text: ruby(text) })),
+    correctOrder: [cardIds[correctIndex]],
     explanation: opts.explanation ? ruby(opts.explanation) : undefined,
     tags: opts.tags,
   };

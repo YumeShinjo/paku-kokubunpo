@@ -302,15 +302,26 @@ describe("王座の間のフェーズ別イベント", () => {
 });
 
 describe("立ち絵の左右寄せ(StoryLine.position)", () => {
-  it("つなぎの橋(壊れかけた橋の背景)の場面は、中央だと落ちそうに見えるため左右に寄せてある", () => {
-    const intro = getStoryEvent(introStoryId("tsunagiNoHashi"))!;
-    expect(intro.lines[0].position).toBe("left");
-    const subBossIntro = getStoryEvent(subBossIntroStoryId("tsunagiNoHashi"))!;
-    expect(subBossIntro.lines[0].position).toBe("right");
+  it("顔が右向きのキャラクター(メイ・ジョゼット)は、視線が内側(会話テキスト側)を向くよう画面左に配置する", () => {
+    const mei = getStoryEvent(introStoryId("kotobaNoIchiba"))!.lines.find((l) => l.speaker === "メイ");
+    expect(mei?.position).toBe("left");
+    const josette = getStoryEvent(subBossIntroStoryId("tsunagiNoHashi"))!.lines.find((l) => l.speaker === "ジョゼット");
+    expect(josette?.position).toBe("left");
   });
 
-  it("位置の指定がない台詞は position が未指定(中央寄せ)のまま", () => {
-    const event = getStoryEvent(introStoryId("kotobaNoIchiba"))!;
-    for (const line of event.lines) expect(line.position).toBeUndefined();
+  it("それ以外の立ち絵つきキャラクター(コト・王様・他の小ボス)は画面右に配置する", () => {
+    const koto = getStoryEvent(introStoryId("prologue"))!.lines.find((l) => l.showMascot);
+    expect(koto?.position).toBe("right");
+    const reru = getStoryEvent(subBossIntroStoryId("sugatakaeNoKajiba"))!.lines.find((l) => l.speaker === "レル");
+    expect(reru?.position).toBe("right");
+    const king = getStoryEvent(lastBossClearStoryId("ohzaNoMa"))!.lines.find((l) => l.speaker === "ヴェルバルト");
+    expect(king?.position).toBe("right");
+  });
+
+  it("立ち絵のないナレーション行は position が未指定(中央=画面全体)のまま", () => {
+    const event = getStoryEvent(introStoryId("kizunaNoMa"))!;
+    const narrationOnly = event.lines.find((l) => !l.speaker && !l.showMascot);
+    expect(narrationOnly).toBeDefined();
+    expect(narrationOnly?.position).toBeUndefined();
   });
 });

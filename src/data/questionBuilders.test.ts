@@ -3,6 +3,7 @@ import {
   arrangeChoices,
   choiceQ,
   createChoiceArranger,
+  fillBlankQ,
   tapQ,
 } from "./questionBuilders";
 
@@ -76,19 +77,57 @@ describe("arrangeChoices / createChoiceArranger", () => {
     });
   });
 
-  it("位置は選択肢数で折り返す(2択でも正解位置が偏らない)", () => {
+  it("正解・誤答の内容から決定的に位置を決める(同じ内容なら常に同じ位置。呼び出し順には左右されない)", () => {
     const arrange = createChoiceArranger();
-    expect(arrange("正", ["誤"]).correctIndex).toBe(0);
-    expect(arrange("正", ["誤"]).correctIndex).toBe(1);
-    expect(arrange("正", ["誤"]).correctIndex).toBe(0);
+    const first = arrange("正", ["誤"]);
+    const again = createChoiceArranger()("正", ["誤"]);
+    expect(first).toEqual(again);
+    expect([0, 1]).toContain(first.correctIndex);
+  });
+
+  it("正解・誤答の組み合わせが違えば、位置が先頭に偏らず散らばる(単元ファイルの出現順に依存しない)", () => {
+    const arrange = createChoiceArranger();
+    // 単元ファイルの1問目に相当する呼び出しでも、内容次第で先頭以外にもなる
+    const indexes = [
+      arrange("正解A", ["誤1A", "誤2A"]).correctIndex,
+      arrange("正解B", ["誤1B", "誤2B"]).correctIndex,
+      arrange("正解C", ["誤1C", "誤2C"]).correctIndex,
+      arrange("正解D", ["誤1D", "誤2D"]).correctIndex,
+    ];
+    expect(new Set(indexes).size).toBeGreaterThan(1);
   });
 
   it("choiceQ に渡すと correctChoiceId が正解の位置を指す", () => {
     const arrange = createChoiceArranger();
-    arrange("x", ["y", "z"]); // 位置を進める
     const { choices, correctIndex } = arrange("正解", ["誤1", "誤2"]);
     const q = choiceQ({ id: "c", unit: "u", prompt: "p", choices, correctIndex });
     const correct = q.choices.find((c) => c.id === q.correctChoiceId);
     expect(correct?.text[0].text).toBe("正解");
+  });
+});
+
+describe("fillBlankQ", () => {
+  const base = {
+    id: "f1",
+    unit: "u",
+    instruction: "空欄に当てはまる形を選びましょう。",
+    sentenceTemplate: "手紙を___ない。",
+  };
+
+  it("正解カードは常に先頭とは限らず、内容から決定的に並べ替えられる(データの書き方の偏りをそのまま出題しない)", () => {
+    const q = fillBlankQ({ ...base, cards: ["書か", "書き", "書く"], correctIndex: 0 });
+    const correctId = q.correctOrder[0];
+    const correctCard = q.cards.find((c) => c.id === correctId);
+    expect(correctCard?.text[0].text).toBe("書か");
+    // 正解を差し替えても、そのカードが correctOrder の指す位置に来ることに変わりはない
+    const q2 = fillBlankQ({ ...base, cards: ["書か", "書き", "書く"], correctIndex: 0 });
+    expect(q2.cards.map((c) => c.text[0].text)).toEqual(q.cards.map((c) => c.text[0].text));
+  });
+
+  it("同じカード内容なら、呼ぶたびに同じ並び・同じ正解位置になる(決定的)", () => {
+    const a = fillBlankQ({ ...base, id: "f2", cards: ["食べ", "食べる", "食べれ"], correctIndex: 1 });
+    const b = fillBlankQ({ ...base, id: "f3", cards: ["食べ", "食べる", "食べれ"], correctIndex: 1 });
+    expect(a.cards.map((c) => c.text[0].text)).toEqual(b.cards.map((c) => c.text[0].text));
+    expect(a.correctOrder).toEqual(b.correctOrder);
   });
 });

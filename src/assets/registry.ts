@@ -61,8 +61,8 @@ export const listAudio = (): string[] => [...audioIndex.keys()].sort();
 
 /* ---------------- 素材の名前(置き場所とファイル名の取り決め) ---------------- */
 
-/** マスコットの表情(ベースの「通常」以外の差分): 喜び・しょんぼり・もぐもぐ・びっくり・眠そう */
-export const MASCOT_EXPRESSIONS = ["happy", "sad", "eating", "surprised", "sleepy"] as const;
+/** マスコットの表情(ベースの「通常」以外の差分): 喜び・しょんぼり・もぐもぐ・びっくり・眠そう・コンボ中・苦手問題への意欲 */
+export const MASCOT_EXPRESSIONS = ["happy", "sad", "eating", "surprised", "sleepy", "combo", "hungry"] as const;
 export type MascotExpression = (typeof MASCOT_EXPRESSIONS)[number];
 
 /** 画像の名前。src/assets/images/<名前>.png など */

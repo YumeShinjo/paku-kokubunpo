@@ -28,3 +28,10 @@ export function comboLabel(combo: number): string | null {
   if (combo < 2) return null;
   return `${combo}れんぞく!`;
 }
+
+/**
+ * この数以上のコンボが続いているとき、コトの表情を「combo」(テンション高め)にする。
+ * コンボ表示自体は2連続から出るが(comboLabel)、表情まで変えるのはそれよりもう一段テンションが
+ * 上がった「乗ってきた」タイミングにしたいので、表示開始のしきい値より高めに設定している。
+ */
+export const COMBO_EXCITED_THRESHOLD = 5;

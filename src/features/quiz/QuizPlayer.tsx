@@ -25,6 +25,7 @@ import { isUnitWeak } from "@/features/zukan/unitAccuracy";
 import {
   comboLabel,
   CORRECT_EFFECTS,
+  COMBO_EXCITED_THRESHOLD,
   pickDifferent,
   pickMessage,
   type CorrectEffect,
@@ -372,9 +373,17 @@ export function QuizPlayer({
                 <span>✨</span>
               </span>
             )}
-            {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ)、不正解=しょんぼり */}
+            {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ、長いコンボ中はテンション高め)、不正解=しょんぼり */}
             <MascotFace
-              expression={feedback.correct ? (feedback.review?.overcame ? "eating" : "happy") : "sad"}
+              expression={
+                feedback.correct
+                  ? feedback.review?.overcame
+                    ? "eating"
+                    : combo >= COMBO_EXCITED_THRESHOLD
+                      ? "combo"
+                      : "happy"
+                  : "sad"
+              }
               size="small"
             />
             <p className="feedback-message">

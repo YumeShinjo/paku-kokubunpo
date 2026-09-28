@@ -246,11 +246,13 @@ button.incorrect {
 .story-stage {
   flex: none;
   height: calc(100dvh - 19rem);
-  min-height: 13rem;
+  min-height: 16rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(180deg, var(--color-accent), var(--color-bg));
+  /* 左右に寄せた立ち絵を、画面端から少しはみ出させる演出のため、はみ出た分はここで切る */
+  overflow: hidden;
 }
 
 /* 立ち絵の左右寄せ(StoryLine.position)。壊れかけた橋の上など、中央だと落ちそうに見える場面で使う */
@@ -262,6 +264,19 @@ button.incorrect {
 .story-stage-right {
   justify-content: flex-end;
   padding-right: 1.5rem;
+}
+
+/*
+ * 王様・小ボスの立ち絵(.story-king)は、周囲に大きな透過のモヤ(浄化演出)があり、画面端に
+ * 寄せてもキャラクター本体はあまり動いて見えない。画面端から少しはみ出させることで、
+ * (はみ出るのは透過部分がほとんどなので実害はない)キャラクター本体がはっきり端に寄って見えるようにする。
+ */
+.story-stage-left .story-king {
+  margin-left: -2rem;
+}
+
+.story-stage-right .story-king {
+  margin-right: -2rem;
 }
 
 .story-character {
@@ -1078,7 +1093,12 @@ button.incorrect {
 }
 
 .story-character .mascot {
-  --mascot-size: 12rem;
+  --mascot-size: 15rem;
+}
+
+/* 本来の姿(王女コレット)は、他のキャラクターよりさらに大きく見せる */
+.story-character .mascot-true {
+  --mascot-size: 19rem;
 }
 
 .mascot-layers .mascot-image {
@@ -1104,7 +1124,7 @@ button.incorrect {
 /* ストーリーの立ち絵(王様・小ボス) */
 .story-king {
   display: block;
-  max-height: 14rem;
+  max-height: 18rem;
   width: auto;
 }
 

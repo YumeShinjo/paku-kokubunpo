@@ -203,6 +203,21 @@ describe("getQuestionsForArea", () => {
     }
   });
 
+  it("正解カードの位置も偏らない(穴埋め・組み立て問題。かつて先頭固定のデータが大半で偏っていた)", () => {
+    const byUnit = new Map<string, Set<number>>();
+    for (const question of getAllQuestions()) {
+      if (question.engine !== "assembly" || question.mode !== "fillBlank") continue;
+      const index = question.cards.findIndex((c) => c.id === question.correctOrder[0]);
+      byUnit.set(question.unit, (byUnit.get(question.unit) ?? new Set()).add(index));
+    }
+    for (const [unit, positions] of byUnit) {
+      const size = getAllQuestions().filter((q) => q.unit === unit).length;
+      if (size >= 5) {
+        expect(positions.size, `${unit} の正解カード位置が1種類のみ`).toBeGreaterThan(1);
+      }
+    }
+  });
+
   it("新エリアの文法用語にふりがなが付いている(格助詞・述語・尊敬語・音便)", () => {
     const rubyOf = (q: Question, word: string): string | undefined => {
       const texts =
