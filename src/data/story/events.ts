@@ -304,6 +304,7 @@ export const storyEvents: StoryEvent[] = [
       line("ニジュヴェール", "正しい言葉を、誰[だれ]よりも守ろうとしました。変わっていく話し言葉のひとつひとつが、崩[くず]れていくように見えて、恐[おそ]ろしくて……"),
       line("ニジュヴェール", "気づけば、その「正しさ」への執着[しゅうちゃく]そのものが、乱れにつけ込[こ]まれておりました。"),
       line("ニジュヴェール", "そして……あなた様こそ、行方知[ゆくえし]れずとなっていらっしゃられた、王家の…"),
+      narration("戸惑[とまど]うコトの手を、主人公がそっと握[にぎ]った。"),
       narration("コトの姿が、淡[あわ]く光り始める。", { showMascot: true, mascotForm: "glow" }),
       koto("わたし…わたしは…", "glow"),
     ],
@@ -331,6 +332,7 @@ export const storyEvents: StoryEvent[] = [
         showMascot: true,
         mascotForm: "true",
       }),
+      narration("驚[おどろ]いた様子も、たじろぐ様子もなく、主人公はいつも通り、すぐそばに立っていた。"),
       narration("同時に、王座[おうざ]に座っていた人物の輪郭[りんかく]もはっきりとしていく。"),
       line("ヴェルバルト", "……ここは……わたしは、一体……"),
       narration("正気[しょうき]を取り戻した王様が、ゆっくりと顔を上げる。"),
@@ -404,6 +406,21 @@ export const storyEvents: StoryEvent[] = [
     id: areaClearStoryId("ohzaNoMa"),
     lines: [
       narration("コトノハ王国に、正しい言葉と、賑[にぎ]やかな声が戻ってきた。"),
+      line(
+        "コレット",
+        "ねえ……わたしが王女だってわかっても、あなたの態度、全然変わらなかったね。",
+        { showMascot: true, mascotForm: "true" },
+      ),
+      line(
+        "コレット",
+        "みんな急に畏[かしこ]まったり、距離を置いたりする中で、あなただけ、ずっといつも通りだった。それが、すごく嬉[うれ]しかったんだ。",
+        { showMascot: true, mascotForm: "true" },
+      ),
+      narration("主人公は、いつものように小さく笑って、うなずいた。"),
+      line("コレット", "……ふふ、そういうところ、好きだよ。あ、変な意味じゃなくてね!", {
+        showMascot: true,
+        mascotForm: "true",
+      }),
       koto("さ、次はどこ行こっか!", "true"),
     ],
   },
