@@ -210,12 +210,12 @@ describe("ステージ背景: ボス戦は大きく、通常ステージは小�
     bossStage.done();
   });
 
-  it("CSS: 通常ステージの枠は小さく(装飾バー)、ボス戦は大きい", () => {
+  it("CSS: 通常ステージの枠(装飾バー)は、ボス戦より小さいが、背景が伝わる高さを確保する", () => {
     const css = readFileSync("src/styles/global.css", "utf-8");
     const vars = css.match(/\n\.screen-stage \{([^}]*)\}/)![1];
     const rem = (name: string) => Number(vars.match(new RegExp(`--${name}: (?:clamp\\()?([0-9.]+)rem`))![1]);
-    expect(rem("stage-visual-height")).toBeLessThanOrEqual(5);
-    expect(rem("stage-visual-height")).toBeGreaterThanOrEqual(4);
+    expect(rem("stage-visual-height")).toBeGreaterThanOrEqual(6);
+    expect(rem("stage-visual-height")).toBeLessThanOrEqual(rem("stage-visual-tall-height"));
     expect(rem("stage-visual-tall-height")).toBeGreaterThanOrEqual(8);
   });
 
@@ -264,14 +264,14 @@ describe("ボス戦のライフ(5)", () => {
 });
 
 describe("バトル中のことばのずかん", () => {
-  it("「📖 ずかん」から、すべてのページ(未クリアのエリアも)を開け、閉じると問題に戻る", () => {
+  it("「ずかん」から、すべてのページ(未クリアのエリアも)を開け、閉じると問題に戻る", () => {
     const { container, click, done } = setup();
     expect(container.querySelector(".zukan-modal")).toBeNull();
-    click("📖 ずかん");
+    click("ずかん");
     const modal = container.querySelector(".zukan-modal")!;
     expect(modal.querySelectorAll("details.zukan-page").length).toBeGreaterThan(1);
     expect(modal.textContent).not.toContain("🔒");
-    click("✕ とじる");
+    click("とじる");
     expect(container.querySelector(".zukan-modal")).toBeNull();
     expect(container.textContent).toContain("問題q1");
     done();
@@ -280,7 +280,7 @@ describe("バトル中のことばのずかん", () => {
   it("解答したあと(解説を読んでいるとき)も開ける", () => {
     const { container, click, done } = setup();
     click("正しい");
-    click("📖 ずかん");
+    click("ずかん");
     expect(container.querySelector(".zukan-modal")).not.toBeNull();
     done();
   });

@@ -1,5 +1,5 @@
 import { rb } from "@/data/ruby";
-import type { MascotForm, StoryEvent, StoryLine } from "./schema";
+import type { CharacterPosition, MascotForm, StoryEvent, StoryLine } from "./schema";
 import {
   areaClearStoryId,
   endingChoiceStoryId,
@@ -31,6 +31,8 @@ interface LineOptions {
   /** 発話者がコト以外でも、立ち絵(マスコット)を出したい場面で指定する */
   showMascot?: boolean;
   mascotForm?: MascotForm;
+  /** 立ち絵の左右の寄せ方。省略時は中央。橋の上など、中央だと落ちそうに見える場面で指定する */
+  position?: CharacterPosition;
 }
 
 /** コトの台詞は、立ち絵(マスコット)を出す。それ以外は指定したときだけ出す。 */
@@ -40,11 +42,13 @@ function line(speaker: string | undefined, text: string, opts: LineOptions = {})
     text: rb(text),
     showMascot: opts.showMascot ?? speaker === KOTO,
     mascotForm: opts.mascotForm,
+    position: opts.position,
   };
 }
 
 const narration = (text: string, opts?: LineOptions) => line(undefined, text, opts);
-const koto = (text: string, mascotForm?: MascotForm) => line(KOTO, text, { mascotForm });
+const koto = (text: string, mascotForm?: MascotForm, position?: CharacterPosition) =>
+  line(KOTO, text, { mascotForm, position });
 
 export const storyEvents: StoryEvent[] = [
   // ---- ことばの分かれ道(序章) ----
@@ -181,7 +185,8 @@ export const storyEvents: StoryEvent[] = [
   {
     id: introStoryId("tsunagiNoHashi"),
     lines: [
-      koto("橋が…バラバラになりかけてる!このままじゃお城に渡れないよ。"),
+      // 壊れかけた橋の背景で、真ん中に立たせると落ちそうに見えるため、左寄せにする
+      koto("橋が…バラバラになりかけてる!このままじゃお城に渡れないよ。", undefined, "left"),
       narration("橋の板同士をつなぐ言葉が、あちこちで抜け落ちている。"),
       narration("メイド長は、橋を渡ってくる客人を出迎える役目で、お盆を手にじっと立っていたらしい。"),
     ],
@@ -190,7 +195,8 @@ export const storyEvents: StoryEvent[] = [
   {
     id: subBossIntroStoryId("tsunagiNoHashi"),
     lines: [
-      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…"),
+      // 壊れかけた橋の背景で、真ん中に立たせると落ちそうに見えるため、右寄せにする
+      line("ジョゼット", "紅茶、お持ち…いたしました…あら?何か、言葉が足りない気が…", { position: "right" }),
     ],
   },
   {
@@ -408,12 +414,12 @@ export const storyEvents: StoryEvent[] = [
       narration("コトノハ王国に、正しい言葉と、賑[にぎ]やかな声が戻ってきた。"),
       line(
         "コレット",
-        "ねえ……わたしが王女だってわかっても、あなたの態度、全然変わらなかったね。",
+        "ねえ……わたしが王女だってわかったのに、あなたの態度、全然変わらないね。",
         { showMascot: true, mascotForm: "true" },
       ),
       line(
         "コレット",
-        "みんな急に畏[かしこ]まったり、距離を置いたりする中で、あなただけ、ずっといつも通りだった。それが、すごく嬉[うれ]しかったんだ。",
+        "これからはきっと、みんな畏[かしこ]まったり、急に距離を置いたりするようになるんだろうな。……でも、あなたにだけは、ずっといつも通りでいてほしいな。",
         { showMascot: true, mascotForm: "true" },
       ),
       narration("主人公は、いつものように小さく笑って、うなずいた。"),

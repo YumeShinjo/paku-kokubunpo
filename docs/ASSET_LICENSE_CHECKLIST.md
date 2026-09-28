@@ -49,13 +49,19 @@
 
 ## B. 画像(すべて「生成AI・自作」のため、ライセンス欄は埋まっているが、最終確認が必要)
 
+**ベース立ち絵(Stable Diffusion)と、そこからの差分(表情・浄化後など。Gemini の画像編集)を分けて記載している(2026-09-29 に区別を明確化)。**
+
 | 素材 | ファイル(`src/assets/images/`) | 記載されている出典 | 確認してほしいこと |
 | --- | --- | --- | --- |
-| マスコット コト(通常・喜び・しょんぼり・もぐもぐ・びっくり・眠そう) | `mascot/base.webp`, `happy`, `sad`, `eating`, `surprised`, `sleepy` | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集に Gemini) | 下の「生成AIの規約」 |
-| マスコット 本来の姿(コレット) | `mascot/true.webp` | 同上 | 同上 |
-| 王様ヴェルバルト(2形態) | `boss/lastboss-possessed.webp`, `boss/lastboss-purified.webp` | 同上 | 同上 |
-| 小ボス7人(浄化前・浄化後) | `boss/subboss-<エリアid>.webp`(7枚)、`boss/subboss-<エリアid>-purified.webp`(7枚) | 同上 | 同上 |
-| エリア背景8種(通常・荒れた姿) | `bg/<エリアid>.webp`(8枚。序章含む)、`bg/<エリアid>-corrupted.webp`(7枚。序章を除く) | 同上 | 同上 |
+| マスコット コト(通常。ベース立ち絵) | `mascot/base.webp` | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」) | 下の「生成AIの規約」 |
+| マスコット コト 表情差分(喜び・しょんぼり・もぐもぐ・びっくり・眠そう) | `mascot/happy.webp`, `sad`, `eating`, `surprised`, `sleepy` | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
+| マスコット 本来の姿(コレット。ベース立ち絵) | `mascot/true.webp` | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」) | 同上 |
+| 王様ヴェルバルト(取り憑かれた姿。ベース立ち絵) | `boss/lastboss-possessed.webp` | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」) | 同上 |
+| 王様ヴェルバルト(浄化後の姿。差分) | `boss/lastboss-purified.webp` | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
+| 小ボス7人(浄化前。ベース立ち絵) | `boss/subboss-<エリアid>.webp`(7枚) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」) | 同上 |
+| 小ボス7人(浄化後の姿。差分) | `boss/subboss-<エリアid>-purified.webp`(7枚) | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
+| マスコット コト 成長アクセサリー7段階(差分) | `mascot/accessory-1.webp` 〜 `accessory-7.webp` | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
+| エリア背景8種(通常・荒れた姿) | `bg/<エリアid>.webp`(8枚。序章含む)、`bg/<エリアid>-corrupted.webp`(7枚。序章を除く) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集に Gemini) | 同上 |
 | タイトルロゴ | `ui/title-logo.svg` | 「制作者による制作(SVG)」「オリジナル制作(制作者提供)」(2026-09-26 に、こちらで仮に記入した) | **実際の制作者・制作方法(手描き・ツール・AI か)に合っているか。合っていなければ書き換える** |
 | アプリアイコン(仮) | `public/icons/*`, `public/favicon.svg` | 自作(`scripts/generate-icons.py` で生成) | 仮素材。本番のアイコンに差し替えるときに、行も書き換える |
 

@@ -1,3 +1,4 @@
+import { Check, Play } from "lucide-react";
 import { areas } from "@/data/areas";
 import { ScreenBackground } from "@/components/ScreenBackground";
 import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
@@ -73,14 +74,15 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                   {stageQuestionCount(stage)}問
                 </span>
                 {isStageCleared(stage.id) && (
-                  <span>
-                    {" "}
-                    ✓クリア済み
+                  <span className="stage-cleared-mark">
+                    <Check aria-hidden="true" size={14} />
+                    クリア済み
                   </span>
                 )}
                 {resumable && (
                   <span className="stage-resume">
-                    ▶ つづきから あそべるよ({resumable.progress.index + 1}もんめ〜)
+                    <Play aria-hidden="true" size={12} fill="currentColor" />
+                    つづきから あそべるよ({resumable.progress.index + 1}もんめ〜)
                   </span>
                 )}
                 {!unlocked && (

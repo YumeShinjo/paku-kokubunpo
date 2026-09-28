@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BookOpen, Flame, Star, X as CloseIcon } from "lucide-react";
 import type { Question, RubyText } from "@/data/schema";
 import { EngineRouter } from "@/engines/EngineRouter";
 import { judgeAnswer, type Answer } from "@/engines/core/judge";
@@ -17,9 +18,8 @@ import { ZukanPages } from "@/features/zukan/ZukanPages";
 import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
-import { useExpStore } from "@/app/store/expStore";
+import { useMasteryStore } from "@/app/store/masteryStore";
 import { useProgressStore } from "@/app/store/progressStore";
-import { EXP_PER_CORRECT, WEAK_UNIT_BONUS_EXP, gainExp } from "@/features/exp/expAward";
 import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
 import { isUnitWeak } from "@/features/zukan/unitAccuracy";
 import {
@@ -43,10 +43,6 @@ export interface SessionResult {
   hpLeft: number;
   /** ボス戦のライフが0になって終わった(ステージを最初からやり直す) */
   lifeOut?: boolean;
-  /** このセッション中に正解して得た経験値の合計(クリア画面の演出強化。ボーナスの完了時exp分は含まない) */
-  expGained: number;
-  /** セッションを始めた時点の累計経験値(呼び出し側が、クリアボーナス込みでレベルアップを判定するために使う) */
-  expBefore: number;
 }
 
 interface Props {
@@ -76,8 +72,8 @@ interface Feedback {
   effect: CorrectEffect | null;
   /** 星のついていた問題を克服したときだけ入る */
   review: ReviewOutcome | null;
-  /** 「にがて」マークが付いていた単元の問題に正解し、経験値ボーナスが付いたときだけ入る */
-  weakBonusExp: number | null;
+  /** 「にがて」マークが付いていた単元の問題に正解したときだけ true(演出のみ。経験値などのボーナスはない) */
+  weakBonus: boolean;
 }
 
 /**
@@ -98,6 +94,7 @@ export function QuizPlayer({
   canResumeLater,
 }: Props) {
   const recordAnswer = useStatsStore((s) => s.recordAnswer);
+  const recordCorrect = useMasteryStore((s) => s.recordCorrect);
   const toggleStar = useReviewStore((s) => s.toggleStar);
   const starredIds = useReviewStore((s) => s.starredQuestionIds);
   const isStageCleared = useProgressStore((s) => s.isStageCleared);
@@ -113,9 +110,6 @@ export function QuizPlayer({
   // ボス戦のプレイヤーのライフ(誤答で1減り、0でそのステージを最初からやり直す)
   const [lives, setLives] = useState(resume?.lives ?? BOSS_LIVES);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  // クリア画面の経験値ゲージ用: このセッションで得た経験値の合計と、開始時点の累計(レベルアップ判定に使う)
-  const [expGained, setExpGained] = useState(0);
-  const [expBefore] = useState(() => useExpStore.getState().totalExp);
   // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
@@ -141,8 +135,6 @@ export function QuizPlayer({
         maxCombo: resume.maxCombo,
         bossDefeated: true,
         hpLeft: 0,
-        expGained: 0,
-        expBefore,
       });
     }
     // 再開の判定は、最初に開いたときの1回だけ
@@ -165,15 +157,11 @@ export function QuizPlayer({
     answeredIndex.current = index;
     const correct = judgeAnswer(question, answer);
     playSe(correct ? "correct" : "incorrect");
-    // 経験値ボーナスの判定は、この解答で unitRecent を更新する前に行う(いま現在「にがて」かどうかを見る)
+    // 「にがて克服」の演出判定は、この解答で unitRecent を更新する前に行う(いま現在「にがて」かどうかを見る)
     const wasWeakUnit = correct && isUnitWeak(useStatsStore.getState().unitRecent[question.unit] ?? []);
     recordAnswer(question, correct);
-
-    if (correct) {
-      const amount = EXP_PER_CORRECT + (wasWeakUnit ? WEAK_UNIT_BONUS_EXP : 0);
-      gainExp(amount);
-      setExpGained((e) => e + amount);
-    }
+    // 全問題中の累計正解数(進捗表示)。同じ問題に何度正解しても2重には数えない(ストア側で判定)
+    if (correct) recordCorrect(question.id);
 
     const kind = boss ? (correct ? "bossHit" : "bossMiss") : correct ? "correct" : "incorrect";
     const message = pickMessage(kind, lastMessage.current[kind]);
@@ -203,7 +191,7 @@ export function QuizPlayer({
       message,
       effect,
       review: review.overcame ? review : null,
-      weakBonusExp: wasWeakUnit ? WEAK_UNIT_BONUS_EXP : null,
+      weakBonus: wasWeakUnit,
     });
 
     // 再開用に、解答のたびに進行状況を通知する(次に解く位置。最後の問題のときは位置を進めない)
@@ -229,8 +217,6 @@ export function QuizPlayer({
         bossDefeated: defeated,
         hpLeft: hp,
         lifeOut,
-        expGained,
-        expBefore,
       });
       return;
     }
@@ -297,7 +283,7 @@ export function QuizPlayer({
         <p className="combo" aria-live="polite">
           {comboText && (
             <span key={combo} className="combo-badge">
-              🔥 {comboText}
+              <Flame aria-hidden="true" size={16} /> {comboText}
             </span>
           )}
         </p>
@@ -310,10 +296,12 @@ export function QuizPlayer({
           aria-pressed={starred}
           onClick={() => toggleStar(question.id)}
         >
-          {starred ? "⭐ にがてもんだい" : "☆ にがてもんだいに いれる"}
+          <Star aria-hidden="true" size={16} fill={starred ? "currentColor" : "none"} />
+          <span>{starred ? "にがてもんだい" : "にがてもんだいに いれる"}</span>
         </button>
         <button type="button" className="zukan-button" onClick={() => setZukanOpen(true)}>
-          📖 ずかん
+          <BookOpen aria-hidden="true" size={16} />
+          <span>ずかん</span>
         </button>
         {onQuit && (
           <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>
@@ -393,9 +381,9 @@ export function QuizPlayer({
               <Rb t={feedback.message} />
             </p>
             {feedback.review && <p className="feedback-overcome">⭐ にがてを こくふくした!</p>}
-            {feedback.weakBonusExp !== null && (
+            {feedback.weakBonus && (
               <p className="feedback-weak-bonus">
-                🌟 ニガテ<Rb t="克服[こくふく]" />!+{feedback.weakBonusExp}exp
+                🌟 ニガテ<Rb t="克服[こくふく]" />!
               </p>
             )}
             {boss && !feedback.correct && (
@@ -454,7 +442,8 @@ export function QuizPlayer({
         <div className="zukan-modal" role="dialog" aria-label="ことばのずかん">
           <div className="zukan-modal-inner">
             <button type="button" className="zukan-modal-close" onClick={() => setZukanOpen(false)}>
-              ✕ とじる
+              <CloseIcon aria-hidden="true" size={16} />
+              <span>とじる</span>
             </button>
             <ZukanPages />
           </div>

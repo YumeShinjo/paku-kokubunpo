@@ -54,22 +54,24 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
-    // 経験値(クリア画面の演出強化)。見た目上の成長演出だけに使い、ランキングのような
-    // 他人との比較には使わないため、自分のドキュメントだけが読み書きできる(他人からは見えない)。
+    // 累計正解数(進捗表示。クリア画面の演出強化)。全224問のうち一度でも正解した問題のユニーク数。
+    // 見た目上の進捗表示だけに使い、ランキングのような他人との比較には使わないため、
+    // 自分のドキュメントだけが読み書きできる(他人からは見えない)。
     //
-    // データの形: players/{匿名認証のuid} = { exp(0以上の整数、上限あり), updatedAt(サーバー時刻) }
+    // データの形: players/{匿名認証のuid} = { correctCount(0以上の整数、全問題数が上限), updatedAt(サーバー時刻) }
     //  - 得点と同じく「減らせない」。競争に使わないため、増え方の上限(不正対策)は設けていない。
+    //  - 上限は、全問題数に少し余裕を持たせた値(問題を追加しても壊れないように)。
     match /players/{uid} {
       function isOwner() {
         return request.auth != null && request.auth.uid == uid;
       }
 
       function validShape(data) {
-        return data.keys().hasOnly(['exp', 'updatedAt'])
-          && data.keys().hasAll(['exp', 'updatedAt'])
-          && data.exp is int
-          && data.exp >= 0
-          && data.exp <= 10000000
+        return data.keys().hasOnly(['correctCount', 'updatedAt'])
+          && data.keys().hasAll(['correctCount', 'updatedAt'])
+          && data.correctCount is int
+          && data.correctCount >= 0
+          && data.correctCount <= 2000
           && data.updatedAt == request.time;
       }
 
@@ -79,7 +81,7 @@ service cloud.firestore {
 
       allow update: if isOwner()
         && validShape(request.resource.data)
-        && request.resource.data.exp >= resource.data.exp;
+        && request.resource.data.correctCount >= resource.data.correctCount;
 
       allow delete: if isOwner();
     }

@@ -39,7 +39,7 @@ export async function getFirebaseApp(): Promise<FirebaseApp | null> {
 let db: Firestore | null = null;
 
 /**
- * Firestoreの接続を返す(未設定なら null)。ランキング(rankingApi.ts)と経験値(expApi.ts)の
+ * Firestoreの接続を返す(未設定なら null)。ランキング(rankingApi.ts)と累計正解数(masteryApi.ts)の
  * 両方から使われるため、ここで1度だけ初期化して共有する(initializeFirestoreは同じアプリに対して
  * 2回呼ぶとエラーになるため)。
  */

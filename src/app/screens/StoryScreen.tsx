@@ -103,7 +103,7 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
   return (
     <div className="screen screen-story" onClick={handleScreenTap}>
       <div
-        className="story-stage"
+        className={`story-stage${line.position && line.position !== "center" ? ` story-stage-${line.position}` : ""}`}
         style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
       >
         {kingUrl && (

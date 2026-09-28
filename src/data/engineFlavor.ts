@@ -38,7 +38,7 @@ const mayakashi = flavor(
   "まやかしを見破[みやぶ]る",
   "大臣の言葉のすり替えを、レンズ越しに見破る",
 );
-const sahou = flavor("作法[さほう]の間", "宮廷作法の試験官として、正しい言葉遣いを判定する");
+const sahou = flavor("作法[さほう]の間", "出された場面に合わせて、正しい敬語[けいご]の言い方を選ぶ");
 
 /** 「エリアid:エンジン」単位で決まる呼び名。エリア内で単元によりエンジンが変わる滝・橋はここで分かれる。 */
 const byAreaAndEngine: Record<string, EngineFlavor> = {

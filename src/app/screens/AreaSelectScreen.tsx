@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { playableAreas } from "@/data/areas";
 import { HungryBadge } from "@/components/HungryBadge";
 import { areaAccentStyle } from "@/data/areaTheme";
@@ -26,7 +27,10 @@ export function AreaSelectScreen() {
       <h2>
         エリアをえらぼう
       </h2>
-      <HungryBadge />
+      {/* バッジが出たり消えたりしても、下のエリア一覧がズレないよう、場所をあらかじめ確保しておく */}
+      <div className="hungry-badge-slot">
+        <HungryBadge />
+      </div>
       <ul className="area-list">
         {playableAreas.map((area, index) => {
           // エリアは固定の順番でしか進めない。1つ前のエリアの関門(小ボス撃破。序章はクリア)を越えるまで、入れない
@@ -42,9 +46,9 @@ export function AreaSelectScreen() {
                 <Rb t={unitLabelText(area)} />
               </span>
               {isAreaCleared(area.id) && (
-                <span>
-                  {" "}
-                  ✓クリア済み
+                <span className="stage-cleared-mark">
+                  <Check aria-hidden="true" size={14} />
+                  クリア済み
                 </span>
               )}
               {!unlocked && previous && (

@@ -7,11 +7,7 @@ import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { buildPostClearScreen } from "@/features/story/storyFlow";
 import { syncScore } from "@/features/ranking/scoreSync";
-import { syncExp } from "@/features/exp/expSync";
-import { AREA_CLEAR_EXP, LAST_BOSS_CLEAR_EXP, gainExp } from "@/features/exp/expAward";
-import { useExpStore } from "@/app/store/expStore";
-import { getLevelInfo, type LevelInfo } from "@/data/levelTable";
-import { ExpGainDisplay } from "@/features/quiz/ExpGainDisplay";
+import { syncMastery } from "@/features/mastery/masterySync";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useToastStore } from "@/app/store/toastStore";
 import { MascotFace } from "@/features/mascot/Mascot";
@@ -38,7 +34,6 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const markStageCleared = useProgressStore((s) => s.markStageCleared);
   const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
   const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
-  const isStageCleared = useProgressStore((s) => s.isStageCleared);
   const growTo = useMascotStore((s) => s.growTo);
   const pushToast = useToastStore((s) => s.push);
   const hasSeen = useStoryStore((s) => s.hasSeen);
@@ -55,8 +50,6 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [justClearedArea, setJustClearedArea] = useState(false);
-  // クリア画面の経験値ゲージ用(演出強化)。得た経験値と、開始前/終了後のレベル情報を持つ
-  const [expResult, setExpResult] = useState<{ gained: number; before: LevelInfo; after: LevelInfo } | null>(null);
   // 小ボス戦は、出題の前に「○○が あらわれた!」の画面を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
   const [encounterPending, setEncounterPending] = useState(() => stage?.type === "subBoss" && restored === null);
 
@@ -69,22 +62,11 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       setResult(r);
       return;
     }
-    // クリアボーナスの経験値は初回クリアのみ(周回プレイでは付与しない)。markStageClearedで既読になる前に判定する
-    const firstClear = !isStageCleared(stageId);
     markStageCleared(stageId, r.correctCount * SCORE_PER_QUESTION);
     // ランキングに参加中なら、得点を送る(オフラインなら後で自動で送られる)
     void syncScore();
-    let bonusExp = 0;
-    if (firstClear && isBoss) {
-      bonusExp = stage?.type === "lastBoss" ? LAST_BOSS_CLEAR_EXP : AREA_CLEAR_EXP;
-      gainExp(bonusExp);
-    }
-    void syncExp();
-    setExpResult({
-      gained: r.expGained + bonusExp,
-      before: getLevelInfo(r.expBefore),
-      after: getLevelInfo(useExpStore.getState().totalExp),
-    });
+    // 全問題中の累計正解数(進捗表示)も、オフラインなら後で自動で送られる
+    void syncMastery();
     // このステージのクリアでエリア全体(小ボス含む)が揃ったかを判定する(6章: エリアクリアごとに成長)。
     if (isAreaCleared(areaId)) {
       const areaOrder = areas.find((a) => a.id === areaId)?.order ?? 0;
@@ -173,7 +155,6 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
             さいだい 🔥 {result.maxCombo}れんぞく!
           </p>
         )}
-        {expResult && <ExpGainDisplay result={expResult} />}
         <button
           type="button"
           onClick={() =>

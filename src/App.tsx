@@ -15,7 +15,7 @@ import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
-import { syncExp } from "@/features/exp/expSync";
+import { syncMastery } from "@/features/mastery/masterySync";
 import { TransferIssueScreen } from "@/app/screens/TransferIssueScreen";
 import { TransferRestoreScreen } from "@/app/screens/TransferRestoreScreen";
 import { ReviewPracticeScreen } from "@/app/screens/ReviewPracticeScreen";
@@ -37,14 +37,14 @@ export default function App() {
     document.documentElement.dataset.textSize = textSize;
   }, [textSize]);
 
-  // 9章: オフラインで貯めた得点・経験値は、起動時と、通信が戻ったときに自動で送る
-  // (得点はランキング参加中のときだけ。経験値は参加の有無に関わらず常に貯まる)
+  // 9章: オフラインで貯めた得点・累計正解数は、起動時と、通信が戻ったときに自動で送る
+  // (得点はランキング参加中のときだけ。累計正解数は参加の有無に関わらず常に貯まる)
   useEffect(() => {
     void syncScore();
-    void syncExp();
+    void syncMastery();
     const handleOnline = () => {
       void syncScore();
-      void syncExp();
+      void syncMastery();
     };
     window.addEventListener("online", handleOnline);
     return () => window.removeEventListener("online", handleOnline);

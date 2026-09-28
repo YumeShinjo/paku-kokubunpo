@@ -1,3 +1,4 @@
+import { BookOpen, Info, Settings, Trophy } from "lucide-react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
@@ -5,6 +6,7 @@ import { ScreenBackground } from "@/components/ScreenBackground";
 import { findImage, IMAGE } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
+import { MasteryProgress } from "@/components/MasteryProgress";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { titleExpression } from "@/features/mascot/mood";
 import { getEndingTitle } from "@/data/titles";
@@ -35,20 +37,26 @@ export function TitleScreen() {
   return (
     <div className="screen screen-title">
       <ScreenBackground name="title" soft={false} />
-      <h1>
-        {logoUrl ? (
-          <img className="title-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
-        ) : (
-          "パクっと国文法"
-        )}
-      </h1>
-      <Mascot size="large" expression={titleExpression(starCount)} />
-      <HungryBadge />
-      {title && (
-        <p className="title-owned">
-          <TitleBadge title={title} />
-        </p>
-      )}
+      {/* ロゴ+マスコットを、ひとかたまりの「顔」として見せる */}
+      <div className="title-hero">
+        <h1>
+          {logoUrl ? (
+            <img className="title-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
+          ) : (
+            "パクっと国文法"
+          )}
+        </h1>
+        <Mascot size="large" expression={titleExpression(starCount)} />
+      </div>
+      {/* 状態表示(バッジ・称号・進捗)をひとまとめにする。バッジが出たり消えたりしても、
+          下の「はじめる」ボタンがズレないよう、場所をあらかじめ確保しておく */}
+      <div className="title-status">
+        <div className="hungry-badge-slot">
+          <HungryBadge />
+        </div>
+        <p className="title-owned">{title && <TitleBadge title={title} />}</p>
+        <MasteryProgress className="title-mastery" />
+      </div>
       {/* いちばん大きい主役のボタン。ほかより縦幅が大きく、やや濃いミントで、優先アクションだと分かるようにする */}
       <button type="button" className="title-primary" onClick={handleStart}>
         はじめる
@@ -62,15 +70,19 @@ export function TitleScreen() {
             goTo({ name: "zukan" });
           }}
         >
+          <BookOpen aria-hidden="true" size={18} />
           ことだまの書
         </button>
         <button type="button" onClick={() => goTo({ name: "ranking" })}>
+          <Trophy aria-hidden="true" size={18} />
           ランキング
         </button>
         <button type="button" onClick={handleSettings}>
+          <Settings aria-hidden="true" size={18} />
           せってい
         </button>
         <button type="button" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
+          <Info aria-hidden="true" size={18} />
           クレジット
         </button>
       </div>

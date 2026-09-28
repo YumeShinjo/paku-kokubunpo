@@ -11,12 +11,14 @@
 | 素材名 | 種別(画像/BGM/SE) | 出典・生成方法 | ライセンス | 使用箇所 |
 | --- | --- | --- | --- | --- |
 | (例)相棒_通常.png | 画像 | 生成AIツール名を記載 | 利用規約確認済み | マスコット全般 |
-| マスコット コト(通常・喜び・しょんぼり・もぐもぐ・びっくり・眠そう) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | マスコットの表示全般(タイトル・ストーリー・正誤フィードバック・結果画面) |
-| マスコット 本来の姿(コレット) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ラスボス撃破後・エンディング結果 |
-| 王様ヴェルバルト(取り憑かれた姿・浄化後) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ラスボス戦のパネル、ストーリーの王様の台詞 |
-| 小ボス7人(メイ・レル・オンヴィン・ジョゼット・ネジラルド・サイラス・ニジュヴェール) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | 小ボス戦のパネル、ストーリーの小ボスの台詞 |
-| 小ボス7人 浄化後の姿 | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | 小ボス撃破後のストーリーの台詞、思い出の再生 |
-| マスコット コト 成長アクセサリー7段階(ポーチ・腕輪・スカーフ・ブローチ・リボン・片眼鏡・王冠のかけら) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | マスコットの成長演出(エリアクリアごとに1つずつ重ねて表示) |
+| マスコット コト(通常) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの表示全般(タイトル・ストーリー・正誤フィードバック・結果画面) |
+| マスコット コト 表情差分(喜び・しょんぼり・もぐもぐ・びっくり・眠そう) | 画像 | 生成AIによる画像編集(ベース立ち絵から加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの表示全般(正誤フィードバック・結果画面など) |
+| マスコット 本来の姿(コレット) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ラスボス撃破後・エンディング結果 |
+| 王様ヴェルバルト(取り憑かれた姿) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ラスボス戦のパネル、ストーリーの王様の台詞 |
+| 王様ヴェルバルト(浄化後の姿) | 画像 | 生成AIによる画像編集(ベース立ち絵から加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ストーリーの王様(ヴェルバルト)の台詞 |
+| 小ボス7人(メイ・レル・オンヴィン・ジョゼット・ネジラルド・サイラス・ニジュヴェール) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | 小ボス戦のパネル、ストーリーの小ボスの台詞 |
+| 小ボス7人 浄化後の姿 | 画像 | 生成AIによる画像編集(ベース立ち絵から加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | 小ボス撃破後のストーリーの台詞、思い出の再生 |
+| マスコット コト 成長アクセサリー7段階(ポーチ・腕輪・スカーフ・ブローチ・リボン・片眼鏡・王冠のかけら) | 画像 | 生成AIによる画像編集(ベース立ち絵に加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの成長演出(エリアクリアごとに1つずつ重ねて表示) |
 | エリア背景8種(序章+エリア①〜⑦。通常の姿) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
 | エリア背景7種 荒れた姿(エリア①〜⑦。関門(小ボス。王座の間だけラスボス)を撃破するまで) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
 | タイトルロゴ「パクっと国文法 / NIBBLE GRAMMAR」 | 画像 | 制作者による制作(SVG) | オリジナル制作(制作者提供) | タイトル画面 |

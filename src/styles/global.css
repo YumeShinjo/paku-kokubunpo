@@ -253,6 +253,17 @@ button.incorrect {
   background: linear-gradient(180deg, var(--color-accent), var(--color-bg));
 }
 
+/* 立ち絵の左右寄せ(StoryLine.position)。壊れかけた橋の上など、中央だと落ちそうに見える場面で使う */
+.story-stage-left {
+  justify-content: flex-start;
+  padding-left: 1.5rem;
+}
+
+.story-stage-right {
+  justify-content: flex-end;
+  padding-right: 1.5rem;
+}
+
 .story-character {
   animation: story-character-in 0.2s ease-out;
 }
@@ -377,13 +388,19 @@ button.incorrect {
 }
 
 .combo-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   padding: 0.1rem 0.6rem;
   border-radius: 999px;
   background: var(--color-gold-soft);
   color: var(--color-gold-text);
   font-weight: bold;
   animation: combo-pop 0.25s ease-out;
+}
+
+.combo-badge svg {
+  flex: none;
 }
 
 @keyframes combo-pop {
@@ -790,7 +807,15 @@ button.incorrect {
 .title-owned,
 .zukan-title {
   margin: 0;
+  min-height: 1.8rem;
   text-align: center;
+}
+
+/* コトがお腹をすかせているバッジは、星の問題の有無で出たり消えたりするため、
+   場所を少しだけ確保しておく(出ていないときの余白を大きくしすぎないよう、
+   バッジ本来の高さよりは控えめにして、ズレの大きさを抑える程度にとどめる) */
+.hungry-badge-slot {
+  min-height: 1.6rem;
 }
 
 .zukan-title-none {
@@ -880,6 +905,38 @@ button.incorrect {
   max-width: 100%;
   height: auto;
   margin: 0 auto;
+}
+
+/* ロゴ+マスコットを、ひとかたまりの「顔」として見せる(上下に少し余白を足して、間延びした空白ではなく意図した余白にする) */
+.title-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.title-hero h1 {
+  margin: 0;
+}
+
+/* バッジ・称号・進捗をひとまとめにする帯 */
+.title-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mastery-progress {
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.mastery-complete {
+  color: var(--color-gold-text);
+  font-weight: bold;
 }
 
 /* マスコットの絵の大きさ(既定=normal 8rem)。small=表情アイコン程度、large=タイトル・結果画面の見せ場 */
@@ -1063,6 +1120,11 @@ button.incorrect {
   margin-right: 0.3em;
 }
 
+.title-badge-icon {
+  vertical-align: -0.2em;
+  margin-right: 0.3em;
+}
+
 .zukan-replay {
   display: flex;
   flex-direction: column;
@@ -1168,10 +1230,18 @@ button.incorrect {
   border-radius: 50%;
   font-size: 1.25rem;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.92);
   color: var(--color-text);
   border: 2px solid var(--color-primary);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.mute-button svg {
+  width: 1.25em;
+  height: 1.25em;
 }
 
 /* 会話シーンでは左上へ(右上はスキップ、右下はあけておく) */
@@ -1193,11 +1263,19 @@ button.incorrect {
 
 /* ---- 復習(星) ---- */
 .star-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   padding: 0.3rem 0.7rem;
   font-size: 0.8rem;
   background: transparent;
   color: var(--color-text-muted);
   border: 1px solid var(--color-text-muted);
+}
+
+.star-button svg {
+  flex: none;
 }
 
 .star-button.starred {
@@ -1367,9 +1445,18 @@ button.incorrect {
 
 /* ---- ステージの続きから ---- */
 .stage-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   color: var(--color-on-primary);
   font-size: 0.85rem;
   font-weight: bold;
+}
+
+.stage-cleared-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
 }
 
 .stage-restart {
@@ -1954,12 +2041,20 @@ button.incorrect {
 }
 
 .title-sub-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   min-height: 2.75rem;
   padding: 0.4rem 0.5rem;
   font-size: 0.9rem;
   /* サブ機能: ひと回り小さく、主役より薄いミント */
   background: #cfeee0;
   border: 1px solid #a8e0c8;
+}
+
+.title-sub-buttons button svg {
+  flex: none;
 }
 
 /* 正誤の判定: 画面の上に重ねるポップアップ。スクロールせず、「つぎへ」(または外側のタップ)で次の問題へ進む */
@@ -2060,8 +2155,13 @@ button.incorrect {
 
 /* ---- ステージ背景: 通常ステージは小さな装飾バー。ボス戦は、上半分に背景+ボス ---- */
 .screen-stage {
-  --stage-visual-height: 4.5rem;
+  --stage-visual-height: clamp(6.5rem, 20dvh, 10rem);
   --stage-visual-tall-height: clamp(9rem, 32dvh, 16rem);
+}
+
+/* 仕分けは、問題文・カゴなどが縦に詰まっているため、背景はほかの出題形式より控えめな高さにする */
+.screen-stage.is-compact {
+  --stage-visual-height: clamp(5rem, 11dvh, 6.5rem);
 }
 
 .stage-visual {
@@ -2070,11 +2170,11 @@ button.incorrect {
   height: var(--stage-visual-height);
   border-radius: 14px 14px 0 0;
   background-color: var(--color-bar-track);
-  background-size: cover;
-  /* 上端寄りで切り出すが、真上(空だけ)ではなく少し下げる。エリア背景は通常/荒れた姿の違いが
-     地面に近い高さ(倒れた露店・破れた旗など)に出るため、空だけが見える上端ぴったりだと、
-     通常ステージでは違いがほとんど分からなくなってしまう。 */
-  background-position: center 38%;
+  /* cover だと、この帯の高さが画像の縦横比に足りず、上のほう(空)しか見えなかった。
+     contain にして、帯の高さに関わらず画像全体が必ず収まるようにする(足りない分は
+     背景色の余白になる。中央寄せなので、余白は上下または左右に均等に出る)。 */
+  background-size: contain;
+  background-position: center;
   overflow: hidden;
 }
 
@@ -2093,6 +2193,8 @@ button.incorrect {
 .stage-visual-tall {
   border-radius: 14px;
   height: var(--stage-visual-tall-height);
+  /* ボス戦は枠が大きく、ボスの立ち絵を画面いっぱいに重ねるため、こちらは今まで通り cover のまま */
+  background-size: cover;
   background-position: center top;
   display: flex;
   align-items: flex-end;
@@ -2142,10 +2244,18 @@ button.incorrect {
 
 /* ---- バトル中の「ことばのずかん」 ---- */
 .zukan-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   font-size: 0.85rem;
   padding: 0.3rem 0.7rem;
   background: var(--color-gold-soft);
   border: 1px solid var(--color-gold-line);
+}
+
+.zukan-button svg {
+  flex: none;
 }
 
 .zukan-modal {
@@ -2163,6 +2273,9 @@ button.incorrect {
 }
 
 .zukan-modal-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   position: sticky;
   top: 0.4rem;
   z-index: 1;

@@ -121,19 +121,25 @@ describe("小ボス", () => {
     }
   });
 
-  it("出題数(pickCount)は15問(通常ステージの8〜10問より多い)。プールが15問未満のエリアはプール全問", () => {
+  it("出題数(pickCount)は20問(通常ステージの8〜10問より多い)。プールが20問未満のエリアはプール全問", () => {
     for (const id of bossAreas) {
       const boss = subBossOf(id)!;
-      expect(boss.pickCount!, id).toBe(Math.min(15, boss.questionIds.length));
+      expect(boss.pickCount!, id).toBe(Math.min(20, boss.questionIds.length));
       expect(boss.pickCount!, id).toBeGreaterThan(10); // 通常ステージの最大(10問)より多い
       expect(stageQuestionCount(boss)).toBe(boss.pickCount);
     }
   });
 
-  it("小ボスのエリアは、プールが15問以上あるので、すべて15問出題", () => {
+  it("ほとんどのエリアは、プールが20問以上あるので20問出題(つなぎの橋だけプールが20問未満で、プールの全問)", () => {
     for (const id of bossAreas) {
-      expect(subBossOf(id)!.questionIds.length, id).toBeGreaterThanOrEqual(15);
-      expect(subBossOf(id)!.pickCount, id).toBe(15);
+      const boss = subBossOf(id)!;
+      if (id === "tsunagiNoHashi") {
+        expect(boss.questionIds.length, id).toBeLessThan(20);
+        expect(boss.pickCount, id).toBe(boss.questionIds.length);
+      } else {
+        expect(boss.questionIds.length, id).toBeGreaterThanOrEqual(20);
+        expect(boss.pickCount, id).toBe(20);
+      }
     }
   });
 });
@@ -152,8 +158,8 @@ describe("ラスボス(王座の間)", () => {
   it("プールは全エリアの全問題で、全エリアの単元から複合出題される(3章)", () => {
     const boss = lastBosses[0];
     expect(new Set(boss.questionIds)).toEqual(new Set(getAllQuestions().map((q) => q.id)));
-    expect(boss.pickCount).toBe(16);
-    expect(stageQuestionCount(boss)).toBe(16);
+    expect(boss.pickCount).toBe(24);
+    expect(stageQuestionCount(boss)).toBe(24);
   });
 
   it("タイトルはラスボス名(王様)。小ボスは役職・名前(宰相・ニジュヴェール)", () => {

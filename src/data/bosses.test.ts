@@ -17,6 +17,12 @@ describe("小ボスの立ち絵の出し分け(浄化前/浄化後)", () => {
     expect(isSubBossPurifiedIn(introId, "kotobaNoIchiba", false)).toBe(false);
   });
 
+  it("エリア初回訪問(introStoryId)で小ボスが話すときも、あとで撃破していても常に浄化前の姿のまま(思い出の再生対策)", () => {
+    const introId = introStoryId("kotobaNoIchiba");
+    expect(isSubBossPurifiedIn(introId, "kotobaNoIchiba", true)).toBe(false);
+    expect(isSubBossPurifiedIn(introId, "kotobaNoIchiba", false)).toBe(false);
+  });
+
   it("戦う前以外の台詞は、そのステージが撃破済みなら浄化後の姿", () => {
     const clearId = subBossClearStoryId("kotobaNoIchiba");
     expect(isSubBossPurifiedIn(clearId, "kotobaNoIchiba", true)).toBe(true);

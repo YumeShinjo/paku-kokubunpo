@@ -8,6 +8,9 @@ import type { RubyText } from "@/data/schema";
 /** コト(マスコット)の見せ方。淡く光る(宰相撃破の予兆)/本来の姿(王女コレット)。2章「変身のタイミング」 */
 export type MascotForm = "glow" | "true";
 
+/** 立ち絵の左右の寄せ方。省略時は中央(既定)。橋の上など、中央だと落ちそうに見える場面で使う */
+export type CharacterPosition = "left" | "center" | "right";
+
 export interface StoryLine {
   /** 発話者の表示名。省略時はナレーション(地の文)として表示する */
   speaker?: string;
@@ -16,6 +19,8 @@ export interface StoryLine {
   showMascot?: boolean;
   /** 指定するとマスコットを通常の成長姿ではなく、この状態で見せる */
   mascotForm?: MascotForm;
+  /** 立ち絵(マスコット・王様・小ボス)の左右の寄せ方。省略時は中央 */
+  position?: CharacterPosition;
 }
 
 /** ストーリーの最後に出す選択肢(王座の間のエンディング分岐)。選ぶと eventId のイベントへ進む。 */

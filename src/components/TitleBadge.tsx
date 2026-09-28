@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { findImage, IMAGE } from "@/assets/registry";
 import { Ruby } from "@/components/Ruby";
 import type { PlayerTitle } from "@/data/titles";
@@ -13,7 +14,7 @@ export function TitleBadge({ title, className = "" }: { title: PlayerTitle; clas
       {badgeUrl ? (
         <img className="title-badge-image" src={badgeUrl} alt="" draggable={false} />
       ) : (
-        <span aria-hidden="true">🏅 </span>
+        <Award aria-hidden="true" size={16} className="title-badge-icon" />
       )}
       <Ruby text={title.name} />
     </span>

@@ -1,3 +1,4 @@
+import { Volume2, VolumeX } from "lucide-react";
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 
@@ -20,7 +21,7 @@ export function MuteButton() {
       aria-label={muted ? "ミュートを解除する" : "音をミュートする"}
       onClick={() => setMuted(!muted)}
     >
-      <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+      {muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
     </button>
   );
 }

@@ -300,3 +300,17 @@ describe("王座の間のフェーズ別イベント", () => {
     expect(texts.some((t) => t.includes("いらっしゃられる"))).toBe(true);
   });
 });
+
+describe("立ち絵の左右寄せ(StoryLine.position)", () => {
+  it("つなぎの橋(壊れかけた橋の背景)の場面は、中央だと落ちそうに見えるため左右に寄せてある", () => {
+    const intro = getStoryEvent(introStoryId("tsunagiNoHashi"))!;
+    expect(intro.lines[0].position).toBe("left");
+    const subBossIntro = getStoryEvent(subBossIntroStoryId("tsunagiNoHashi"))!;
+    expect(subBossIntro.lines[0].position).toBe("right");
+  });
+
+  it("位置の指定がない台詞は position が未指定(中央寄せ)のまま", () => {
+    const event = getStoryEvent(introStoryId("kotobaNoIchiba"))!;
+    for (const line of event.lines) expect(line.position).toBeUndefined();
+  });
+});
