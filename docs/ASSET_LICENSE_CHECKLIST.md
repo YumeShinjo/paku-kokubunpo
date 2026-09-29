@@ -63,6 +63,7 @@
 | マスコット コト 成長アクセサリー7段階(差分) | `mascot/accessory-1.webp` 〜 `accessory-7.webp` | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
 | エリア背景8種(通常・荒れた姿) | `bg/<エリアid>.webp`(8枚。序章含む)、`bg/<エリアid>-corrupted.webp`(7枚。序章を除く) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集に Gemini) | 同上 |
 | タイトルロゴ | `ui/title-logo.svg` | 「制作者による制作(SVG)」「オリジナル制作(制作者提供)」(2026-09-26 に、こちらで仮に記入した) | **実際の制作者・制作方法(手描き・ツール・AI か)に合っているか。合っていなければ書き換える** |
+| 最初の画面(タッチして はじめる)の背景・手を振るコト | `title/title_bg.webp`, `title/title_koto.webp` | **未記入(2026-09-30 に追加。制作方法を、制作者に確認して書く)** | **制作者・制作方法(生成AIか、使用したモデル・ツールなど)を確認して、ここと `docs/ASSET_CREDITS.md`(アプリ内のクレジット)に書く** |
 | アプリアイコン(仮) | `public/icons/*`, `public/favicon.svg` | 自作(`scripts/generate-icons.py` で生成) | 仮素材。本番のアイコンに差し替えるときに、行も書き換える |
 
 **生成AIの規約(判断が必要)**

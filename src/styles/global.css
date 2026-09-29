@@ -1636,21 +1636,61 @@ button.incorrect {
   }
 }
 
-/* 起動直後の「タップしてはじめる」画面 */
-.tap-to-start {
+/*
+ * 起動直後の「タッチしてはじめる」画面。背景・ロゴ・コトを、画面の高さに対する割合で重ねる。
+ * 縦長の画面(スマホ)ではそのまま画面いっぱい。横に広い画面では、背景の縦横比(572×1024)の幅の
+ * 縦長の枠を中央に置き、両側は地の色にする(枠の外に、元の位置関係が崩れた背景が広がらないように)。
+ */
+.splash {
   position: fixed;
   inset: 0;
+  display: flex;
+  justify-content: center;
+  background: #fbf4e4;
+  color: #8c7676;
+}
+
+.splash-stage {
+  position: relative;
+  height: 100%;
+  width: min(100vw, calc(100dvh * 572 / 1024));
+  overflow: hidden;
+}
+
+.tap-to-start {
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
+  padding: 0;
   border: 0;
   border-radius: 0;
-  background: #fbf4e4;
-  color: #4b3a2e;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
+}
+
+.splash-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ロゴ: 上端が画面の上から13%、幅は画面の88% */
+.splash-logo,
+.tap-to-start-name {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.splash-logo {
+  width: 88%;
+  height: auto;
 }
 
 .tap-to-start-name {
@@ -1658,19 +1698,178 @@ button.incorrect {
   font-weight: bold;
 }
 
+/* コト: 高さは画面の38%、中心は左から36%、足元は上から81%(画像の下端の少し上に足元がある) */
+.splash-koto {
+  position: absolute;
+  left: 36%;
+  transform: translateX(-50%);
+}
+
+.splash-koto-wave {
+  top: 43.5%;
+  height: 38%;
+  width: auto;
+}
+
+/* 手を振る絵がない・星が残っているときの、これまでのコト(正方形の絵。足元は絵の下から約7%上) */
+.splash-koto-mascot {
+  top: 43.8%;
+  height: 40%;
+  aspect-ratio: 1;
+}
+
+.splash-koto-mascot .mascot {
+  --mascot-size: 100%;
+  width: 100%;
+  height: 100%;
+}
+
+/* コトの足元の影: ぼかした半透明の楕円 */
+.splash-shadow {
+  position: absolute;
+  left: 36%;
+  top: 81.2%;
+  height: 3.4%;
+  aspect-ratio: 7.5 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(96, 76, 64, 0.26);
+  filter: blur(0.4rem);
+}
+
+/* 案内: 画像を読み込んでいるあいだは薄く、準備ができたら通常の濃さで、ゆっくり点滅させる */
 .tap-to-start-hint {
+  position: absolute;
+  top: 90%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  text-align: center;
   font-size: 1.1rem;
-  animation: tap-hint 1.6s ease-in-out infinite;
+  opacity: 0.35;
+  text-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.75);
+  transition: opacity 0.4s ease;
+}
+
+.tap-to-start-hint.is-ready {
+  opacity: 1;
+  animation: tap-hint 2.4s ease-in-out infinite;
 }
 
 @keyframes tap-hint {
   50% {
-    opacity: 0.35;
+    opacity: 0.4;
   }
 }
 
+/* 一番下: バージョン表記(お知らせを開く)とクレジット。ごく小さく、ふちに余白を確保する */
+.splash-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 0.5rem max(0.35rem, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.splash-version,
+.splash-credits {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: #8c7676;
+  font-size: 0.7rem;
+  font-weight: normal;
+}
+
+.splash-footer-label {
+  text-decoration: underline;
+}
+
+.splash-new {
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #e2634f;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+/* お知らせのモーダル */
+.announce-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(60, 45, 38, 0.45);
+}
+
+.announce-modal {
+  width: min(100%, 26rem);
+  max-height: 80dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: var(--color-surface, #fffdf6);
+  color: var(--color-text, #4b3a2e);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.announce-heading {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.announce-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.announce-date {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #8c7676);
+}
+
+.announce-title {
+  margin: 0.1rem 0 0.3rem;
+  font-size: 1rem;
+}
+
+.announce-item ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+.announce-close {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tap-to-start-hint {
+  .tap-to-start-hint.is-ready {
     animation: none;
   }
 }

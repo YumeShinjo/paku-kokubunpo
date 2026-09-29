@@ -14,3 +14,11 @@ export function titleExpression(starCount: number): MascotExpression | undefined
   if (starCount > 0) return "hungry";
   return undefined;
 }
+
+/**
+ * 最初の画面(タッチしてはじめる)のコト。星(苦手問題)が1つもないときだけ、手を振る専用の絵("wave")。
+ * 星が残っているときは、これまでどおり、タイトル画面と同じ表情(hungry / sleepy)を使い、手を振るポーズは使わない。
+ */
+export function splashPose(starCount: number): "wave" | MascotExpression {
+  return titleExpression(starCount) ?? "wave";
+}

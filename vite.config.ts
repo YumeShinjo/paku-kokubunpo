@@ -3,10 +3,15 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
+import { readFileSync } from "node:fs";
+
+const appVersion = (JSON.parse(readFileSync("./package.json", "utf-8")) as { version: string }).version;
 
 // 9章 技術要件: PWA化(オフラインキャッシュ) / レスポンシブ対応 を反映した基本設定。
 // 配色・アイコンは未決事項(12章)のため仮値。デザイン確定後に manifest を更新する。
 export default defineConfig({
+  // 最初の画面に出すバージョン表記。package.json の version が元(ここだけを直せばよい)
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   plugins: [
     react(),
     VitePWA({

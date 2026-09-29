@@ -7,8 +7,8 @@ import App from "./App";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** 起動直後は「タップしてはじめる」だけを出し、そのタップで音声を解禁してからタイトル画面を出す(9章) */
-describe("App: タップしてはじめる", () => {
+/** 起動直後は「タッチしてはじめる」だけを出し、そのタップで音声を解禁してからタイトル画面を出す(9章) */
+describe("App: タッチしてはじめる", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -32,11 +32,11 @@ describe("App: タップしてはじめる", () => {
   });
 
   it("解禁前は導入画面だけで、タイトル画面のボタン(はじめる・せってい等)は出ない", () => {
-    expect(container.textContent).toContain("タップして");
+    expect(container.textContent).toContain("タッチして");
     const names = buttons();
-    expect(names.some((n) => n.includes("タップして"))).toBe(true);
-    // タイトル画面のボタンは、まだ出ない
-    for (const title of ["はじめる", "せってい", "クレジット", "ことだまの書", "ランキング"]) {
+    expect(names.some((n) => n.includes("タッチして"))).toBe(true);
+    // タイトル画面のボタンは、まだ出ない(画面の一番下のクレジットの入口は、導入画面の一部なので出る)
+    for (const title of ["はじめる", "せってい", "ことだまの書", "ランキング"]) {
       expect(names.includes(title), title).toBe(false);
     }
     expect(useSettingsStore.getState().audioUnlocked).toBe(false);
@@ -46,7 +46,7 @@ describe("App: タップしてはじめる", () => {
     const start = container.querySelector<HTMLButtonElement>("button.tap-to-start")!;
     act(() => start.click());
     expect(useSettingsStore.getState().audioUnlocked).toBe(true);
-    expect(container.textContent).not.toContain("タップして");
+    expect(container.textContent).not.toContain("タッチして");
     const names = buttons();
     for (const title of ["はじめる", "せってい", "クレジット"]) expect(names, title).toContain(title);
   });

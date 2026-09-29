@@ -87,6 +87,12 @@ export const IMAGE = {
   background: (areaIdOrTitle: string) => `bg/${areaIdOrTitle}`,
   /** タイトルロゴ */
   titleLogo: "ui/title-logo",
+  /** 最初の画面(タッチしてはじめる)の素材。src/assets/images/title/ に置く */
+  splashBg: "title/title_bg",
+  splashKoto: "title/title_koto",
+  /** 最初の画面のロゴ。title_logo を優先し、なければハイフン表記(title-logo)、それもなければ通常のタイトルロゴ */
+  splashLogo: "title/title_logo",
+  splashLogoHyphen: "title/title-logo",
   /** 称号バッジ。選択肢のキー(castle / journey)ごと */
   titleBadge: (choiceKey: string) => `ui/badge-${choiceKey}`,
 } as const;
