@@ -21,6 +21,8 @@
 | マスコット コト 成長アクセサリー7段階(ポーチ・腕輪・スカーフ・ブローチ・リボン・片眼鏡・王冠のかけら) | 画像 | 生成AIによる画像編集(ベース立ち絵に加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの成長演出(エリアクリアごとに1つずつ重ねて表示) |
 | エリア背景8種(序章+エリア①〜⑦。通常の姿) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
 | エリア背景7種 荒れた姿(エリア①〜⑦。関門(小ボス。王座の間だけラスボス)を撃破するまで) | 画像 | 生成AIによるオリジナル制作(制作者が加工) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集にGeminiを使用)によるオリジナル制作 | ストーリー・ステージ選択・出題画面の背景 |
+| 最初の画面(タッチして はじめる)の背景 | 画像 | 生成AIによるオリジナル制作 | 生成AI(Geminiによる画像生成)によるオリジナル制作 | 最初の画面の背景 |
+| 最初の画面(タッチして はじめる)の手を振るコト | 画像 | 生成AIによるオリジナル制作(制作者が透過処理・輪郭の手直しを加工) | 生成AI(Geminiによる画像生成)によるオリジナル制作 | 最初の画面のコト(手を振る立ち絵) |
 | タイトルロゴ「パクっと国文法 / NIBBLE GRAMMAR」 | 画像 | 制作者による制作(SVG) | オリジナル制作(制作者提供) | タイトル画面 |
 | アプリアイコン(仮) | 画像 | 自作(scripts/generate-icons.py で生成) | 自作のため制限なし | ホーム画面のアイコン |
 | M PLUS Rounded 1c | フォント | Google Fonts(npmパッケージ @fontsource/m-plus-rounded-1c から同梱) | SIL Open Font License 1.1(自由に使用・再配布可) | アプリ全体の文字 |

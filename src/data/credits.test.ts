@@ -80,9 +80,9 @@ describe("ゲーム内クレジットの表示(ネタバレ防止のため簡略
     for (const secret of ["始まりの村", "禁忌の詠唱", "凍てつく世界", "The Forgotten Girl", "ヴェルバルト", "ニジュヴェール", "正解4", "hit02"]) {
       expect(all, secret).not.toContain(secret);
     }
-    // ベース立ち絵(Stable Diffusion)・差分(表情・浄化後など。Geminiによる画像編集)・背景(SD+Geminiの併記)は、
-    // 出典の書き方がそれぞれ違うので3行に分かれる
-    expect(groups.find((g) => g.kind === "画像")!.lines.filter((l) => l.startsWith("イラスト"))).toHaveLength(3);
+    // ベース立ち絵(Stable Diffusion)・差分(表情・浄化後など。Geminiによる画像編集)・背景(SD+Geminiの併記)・
+    // 最初の画面の素材(Geminiによる画像生成)は、出典の書き方がそれぞれ違うので4行に分かれる
+    expect(groups.find((g) => g.kind === "画像")!.lines.filter((l) => l.startsWith("イラスト"))).toHaveLength(4);
   });
 
   it("素材管理表そのものは、詳細(素材名・使用箇所)を保持している", () => {
