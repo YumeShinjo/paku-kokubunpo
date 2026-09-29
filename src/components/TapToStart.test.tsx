@@ -70,6 +70,12 @@ describe("最初の画面(TapToStart)", () => {
     expect(screen.name).toBe("credits");
   });
 
+  it("プライバシーポリシーの入口は、音声を解禁して、ポリシーの画面へつなぐ(もどるとタイトルへ)", () => {
+    click(".splash-privacy");
+    expect(useSettingsStore.getState().audioUnlocked).toBe(true);
+    expect(useNavigationStore.getState().screen).toEqual({ name: "privacy", next: { name: "title" } });
+  });
+
   it("星(苦手問題)が残っているときは、手を振る絵を使わず、これまでの表情のコトを出す", () => {
     act(() => useReviewStore.setState({ starredQuestionIds: ["a"] }));
     expect(q(".splash-koto-wave")).toBeNull();

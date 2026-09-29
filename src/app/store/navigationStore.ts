@@ -22,7 +22,9 @@ export type Screen =
   /** エンディング後の称号授与。見終わると next へ進む */
   | { name: "endingResult"; areaId: string; next: Screen }
   /** クレジット。ending は「エンディング後」の表示(ねぎらいの一言を添える)。閉じると next へ進む */
-  | { name: "credits"; next: Screen; areaId?: string; ending?: boolean };
+  | { name: "credits"; next: Screen; areaId?: string; ending?: boolean }
+  /** プライバシーポリシー。もどるボタンで next へ戻る */
+  | { name: "privacy"; next: Screen };
 
 interface NavigationState {
   screen: Screen;

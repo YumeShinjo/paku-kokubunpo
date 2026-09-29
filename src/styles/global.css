@@ -1751,6 +1751,10 @@ button.incorrect {
   transition: opacity 0.4s ease;
 }
 
+:root[data-text-size="large"] .tap-to-start-hint {
+  top: 86%;
+}
+
 .tap-to-start-hint.is-ready {
   opacity: 1;
   animation: tap-hint 2.4s ease-in-out infinite;
@@ -1771,12 +1775,14 @@ button.incorrect {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  flex-wrap: wrap;
   padding: 0 0.5rem max(0.35rem, env(safe-area-inset-bottom));
   pointer-events: none;
 }
 
 .splash-version,
-.splash-credits {
+.splash-credits,
+.splash-privacy {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
@@ -1790,6 +1796,7 @@ button.incorrect {
   color: #8c7676;
   font-size: 0.7rem;
   font-weight: normal;
+  white-space: nowrap;
 }
 
 .splash-footer-label {
@@ -1804,6 +1811,145 @@ button.incorrect {
   font-size: 0.6rem;
   font-weight: bold;
   line-height: 1.4;
+}
+
+/* 最初の画面の一番下、右側のリンク(クレジット・プライバシーポリシー) */
+.splash-links {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+/* タイトル画面: クレジットの下に、小さく置くプライバシーポリシーの入口 */
+.title-privacy {
+  align-self: center;
+  /* 幅360×高さ740の画面でも、縦にスクロールしないで収まるよう、高さと上の余白を詰めてある */
+  min-height: 1.5rem;
+  margin-top: -0.9rem;
+  padding: 0.1rem 0.6rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text-muted, #8c7676);
+  font-size: 0.7rem;
+  font-weight: normal;
+  text-decoration: underline;
+}
+
+/* プライバシーポリシーの画面 */
+.policy {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  line-height: 1.8;
+  font-size: 0.92rem;
+}
+
+.policy h2,
+.policy h3,
+.policy h4,
+.policy p,
+.policy ul,
+.policy ol {
+  margin: 0;
+}
+
+.policy-header h2 {
+  font-size: 1.35rem;
+}
+
+.policy-header p {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #8c7676);
+}
+
+/* 冒頭の「かんたんに言うと」: 第1条以降の本文とは区別がつくよう、色つきの枠にする */
+.policy-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--color-primary, #7fcfae);
+  border-radius: 14px;
+  background: var(--color-accent-soft, #eaf8f1);
+}
+
+.policy-summary h3 {
+  font-size: 1.05rem;
+}
+
+.policy-summary ul {
+  padding-left: 1.2rem;
+}
+
+.policy-summary li + li {
+  margin-top: 0.25rem;
+}
+
+.policy-summary p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #8c7676);
+}
+
+/* 第1条以降(正式な取り扱いの内容) */
+.policy-article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-bar-track, #e6dccb);
+}
+
+.policy-article h3 {
+  font-size: 1.02rem;
+}
+
+.policy-subheading {
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+}
+
+.policy-article ul,
+.policy-article ol {
+  padding-left: 1.3rem;
+}
+
+.policy-article li + li {
+  margin-top: 0.2rem;
+}
+
+.policy-table-wrap {
+  overflow-x: auto;
+}
+
+.policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.policy-table th,
+.policy-table td {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-bar-track, #e6dccb);
+  text-align: left;
+  vertical-align: top;
+}
+
+.policy-table th {
+  background: var(--color-surface, #fffdf6);
+  white-space: nowrap;
+}
+
+.policy-footer {
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-bar-track, #e6dccb);
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #8c7676);
 }
 
 /* お知らせのモーダル */

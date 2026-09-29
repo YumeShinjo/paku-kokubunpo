@@ -26,6 +26,12 @@ describe("日本語フォントの文字の網羅", () => {
         if (ch.codePointAt(0)! > 0x1f && !included.has(ch)) missing.add(ch);
       }
     }
+    // ビルド時に画面へ読み込まれる文章(ゲーム内クレジット・プライバシーポリシー)
+    for (const file of ["docs/ASSET_CREDITS.md", "docs/PRIVACY_POLICY.md"]) {
+      for (const ch of readFileSync(file, "utf-8")) {
+        if (ch.codePointAt(0)! > 0x1f && !included.has(ch)) missing.add(ch);
+      }
+    }
     expect([...missing].join(""), "足りない文字。`python scripts/subset-fonts.py` を実行し直してください").toBe("");
   });
 });

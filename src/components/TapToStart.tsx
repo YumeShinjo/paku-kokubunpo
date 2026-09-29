@@ -46,6 +46,11 @@ export function TapToStart() {
     goTo({ name: "credits", next: { name: "title" } });
   }
 
+  function openPrivacy() {
+    unlockPlayback();
+    goTo({ name: "privacy", next: { name: "title" } });
+  }
+
   return (
     <div className="splash">
       <div className="splash-stage">
@@ -74,9 +79,14 @@ export function TapToStart() {
             {hasUnseenAnnouncement(seenIds) && <span className="splash-new">NEW</span>}
             <span className="splash-footer-label">お知らせ</span>
           </button>
-          <button type="button" className="splash-credits" onClick={openCredits}>
-            クレジット
-          </button>
+          <span className="splash-links">
+            <button type="button" className="splash-credits" onClick={openCredits}>
+              クレジット
+            </button>
+            <button type="button" className="splash-privacy" onClick={openPrivacy}>
+              プライバシーポリシー
+            </button>
+          </span>
         </div>
       </div>
       {announceOpen && <AnnouncementModal onClose={() => setAnnounceOpen(false)} />}

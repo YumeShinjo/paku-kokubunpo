@@ -15,6 +15,7 @@ describe("sceneForScreen", () => {
       { name: "settings" },
       { name: "zukan" },
       { name: "credits", next: { name: "title" } },
+      { name: "privacy", next: { name: "title" } },
     ] as Screen[]) {
       expect(sceneForScreen(screen)).toBe("title");
     }

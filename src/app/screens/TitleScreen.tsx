@@ -86,6 +86,9 @@ export function TitleScreen() {
           クレジット
         </button>
       </div>
+      <button type="button" className="title-privacy" onClick={() => goTo({ name: "privacy", next: { name: "title" } })}>
+        プライバシーポリシー
+      </button>
     </div>
   );
 }

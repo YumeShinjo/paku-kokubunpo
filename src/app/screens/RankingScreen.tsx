@@ -148,7 +148,7 @@ function JoinForm({
             onChange={(e) => setCodeInput(e.target.value)}
           />
           <small className="ranking-hint">
-            <Rb t="先生[せんせい]から聞[き]いた、推測[すいそく]されにくい合言葉[あいことば]を入力[にゅうりょく]してね。(かんたんな言葉[ことば]だと、ほかのクラスの人[ひと]に見[み]られてしまうかも)" />
+            <Rb t="クラスコードは、ほかの人[ひと]に推測[すいそく]されにくい合言葉[あいことば]にしてください。(かんたんな言葉[ことば]だと、ほかのクラスの人[ひと]に見[み]られてしまうかも)" />
           </small>
         </label>
         <label>
@@ -160,6 +160,9 @@ function JoinForm({
             autoComplete="off"
             onChange={(e) => setNameInput(e.target.value)}
           />
+          <small className="ranking-hint">
+            <Rb t="ニックネームに、本名[ほんみょう]・学校名[がっこうめい]など、自分[じぶん]だとわかる名前[なまえ]は入[い]れないでください。" />
+          </small>
         </label>
         <div className="ranking-icon-field">
           <span>
@@ -276,6 +279,9 @@ function JoinedView({
               autoComplete="off"
               onChange={(e) => setNameInput(e.target.value)}
             />
+            <small className="ranking-hint">
+              <Rb t="ニックネームに、本名[ほんみょう]・学校名[がっこうめい]など、自分[じぶん]だとわかる名前[なまえ]は入[い]れないでください。" />
+            </small>
           </label>
           {nameError && (
             <p className="ranking-error" role="alert">

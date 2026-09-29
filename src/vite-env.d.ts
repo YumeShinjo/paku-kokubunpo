@@ -1,5 +1,10 @@
 /// <reference types="vite/client" />
 
+declare module "*.md?public" {
+  const text: string;
+  export default text;
+}
+
 /** package.json の version(vite.config.ts の define で埋め込む) */
 declare const __APP_VERSION__: string;
 

@@ -23,7 +23,8 @@ OUT = os.path.join(ROOT, "src", "assets", "fonts")
 
 def source_chars() -> set[str]:
     chars: set[str] = set()
-    for pattern in ("src/**/*.ts", "src/**/*.tsx", "src/**/*.css", "index.html"):
+    # docs の2つは、ビルド時に画面へ読み込まれる文章(ゲーム内クレジット・プライバシーポリシー)
+    for pattern in ("src/**/*.ts", "src/**/*.tsx", "src/**/*.css", "index.html", "docs/ASSET_CREDITS.md", "docs/PRIVACY_POLICY.md"):
         for path in glob.glob(os.path.join(ROOT, pattern), recursive=True):
             if path.endswith((".test.ts", ".test.tsx")):
                 continue

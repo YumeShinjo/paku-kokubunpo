@@ -160,3 +160,44 @@ describe("ランキング画面: ニックネームの変更とアイコン", ()
     expect(useRankingStore.getState()).toMatchObject({ classCode: "3a", nickname: "たろう", syncedIcon: "blue-square" });
   });
 });
+
+describe("ランキング画面: 入力の近くの注意書き", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  /** ふりがな(rt)を除いた、画面に見える文 */
+  const plain = (el: Element) => {
+    const clone = el.cloneNode(true) as Element;
+    clone.querySelectorAll("rt, rp").forEach((n) => n.remove());
+    return clone.textContent?.replace(/\s+/g, "") ?? "";
+  };
+  const hintsIn = (label: Element | null) => [...(label?.querySelectorAll(".ranking-hint") ?? [])].map(plain);
+
+  beforeEach(() => {
+    api.fetchRanking.mockReset().mockResolvedValue({ entries: [], me: null });
+    useRankingStore.setState({ classCode: null, nickname: null, lastSyncedScore: 0, lastSyncedAt: null, syncedIcon: null });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => root.render(<RankingScreen />));
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("ニックネームの入力欄の近くに、本名・学校名などを入れない注意書きがある(ふりがな付き)", () => {
+    const label = [...container.querySelectorAll("label")].find((l) => l.textContent?.includes("ニックネーム"))!;
+    expect(hintsIn(label)).toEqual(["ニックネームに、本名・学校名など、自分だとわかる名前は入れないでください。"]);
+    expect([...label.querySelectorAll("rt")].map((rt) => rt.textContent)).toContain("ほんみょう");
+  });
+
+  it("クラスコードの入力欄の近くに、推測されにくい合言葉にする注意書きがある", () => {
+    const label = [...container.querySelectorAll("label")].find((l) => l.textContent?.includes("クラスコード"))!;
+    const hints = hintsIn(label);
+    expect(hints).toHaveLength(1);
+    expect(hints[0]).toContain("クラスコードは、ほかの人に推測されにくい合言葉にしてください。");
+    expect([...label.querySelectorAll("rt")].map((rt) => rt.textContent)).toContain("すいそく");
+  });
+});

@@ -5,6 +5,22 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 
+/**
+ * プライバシーポリシー(docs/PRIVACY_POLICY.md)は、末尾に「運営者向けメモ」の節を持つ(公開前に削除するための内部メモ)。
+ * 画面に出さないだけでなく、公開するファイル(JS)にも入らないよう、`?public` を付けて読み込んだときは、
+ * ビルド時にその節を取り除く。(見出しの書き方を変えたら、src/data/privacyPolicy.ts の stripOperatorNotes も同じに直す)
+ */
+const policyPublicOnly = () => ({
+  name: "privacy-policy-public-only",
+  enforce: "pre" as const,
+  load(id: string) {
+    if (!id.endsWith("PRIVACY_POLICY.md?public")) return null;
+    const text = readFileSync(id.replace(/\?public$/, ""), "utf-8");
+    const start = text.search(/^##\s*[(（]運営者向けメモ/m);
+    return `export default ${JSON.stringify(start < 0 ? text : text.slice(0, start))};`;
+  },
+});
+
 const appVersion = (JSON.parse(readFileSync("./package.json", "utf-8")) as { version: string }).version;
 
 // 9章 技術要件: PWA化(オフラインキャッシュ) / レスポンシブ対応 を反映した基本設定。
@@ -13,6 +29,7 @@ export default defineConfig({
   // 最初の画面に出すバージョン表記。package.json の version が元(ここだけを直せばよい)
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
   plugins: [
+    policyPublicOnly(),
     react(),
     VitePWA({
       registerType: "autoUpdate",
