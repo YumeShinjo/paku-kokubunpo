@@ -20,14 +20,14 @@ const ALL_AREA_IDS = areas.map((a) => a.id);
 
 describe("getQuestionsForArea", () => {
   const expectedCounts: Record<string, number> = {
-    prologue: 16, // 文節8+単語8
-    kotobaNoIchiba: 33, // 品詞分類3バッチ+自立語付属語15+活用の有無15
-    sugatakaeNoKajiba: 60, // 活用の種類・活用形・形容詞・形容動詞 各15
-    namerakaNoTaki: 22, // 自動詞他動詞4画面(16語)+可能動詞10+音便8
-    tsunagiNoHashi: 18, // 格助詞4+接続助詞5+副助詞3+終助詞3+がの識別3
-    kizunaNoMa: 23, // ステージ1の12問+ステージ2の11問
-    mikakeNoMa: 22, // 助動詞の意味12+紛らわしい語10
-    ohzaNoMa: 30, // 尊敬語7+謙譲語7+丁寧語10+敬語の識別6
+    prologue: 24, // 文節12+単語12(2026年9月分でそれぞれ+4)
+    kotobaNoIchiba: 45, // 品詞分類5バッチ+自立語付属語20+活用の有無20(2026年9月分で増量)
+    sugatakaeNoKajiba: 80, // 活用の種類・活用形・形容詞・形容動詞 各20(2026年9月分で各+5)
+    namerakaNoTaki: 33, // 自動詞他動詞6画面(26語)+可能動詞15+音便12(2026年9月分で増量)
+    tsunagiNoHashi: 60, // 格助詞12+接続助詞12+副助詞12+終助詞12+がの識別12(2026年9月分で大幅増量)
+    kizunaNoMa: 72, // 主語述語12+修飾被修飾12+並立12+補助12+接続12+独立12(2026年9月分で大幅増量)
+    mikakeNoMa: 30, // 助動詞の意味15+紛らわしい語15(2026年9月分で増量)
+    ohzaNoMa: 48, // 尊敬語12+謙譲語12+丁寧語12+敬語の識別12(2026年9月分で増量)
   };
 
   it.each(Object.entries(expectedCounts))("%s は %i 画面", (areaId, count) => {
@@ -58,7 +58,7 @@ describe("getQuestionsForArea", () => {
     const taps = getAllQuestions().filter(
       (q) => q.engine === "choice" && q.display === "tapInSentence",
     );
-    expect(taps.length).toBe(10); // 絆の間の文中タップ10問
+    expect(taps.length).toBe(35); // 絆の間の文中タップ35問(2026年9月分で10→35に増量)
     for (const question of taps) {
       if (question.engine !== "choice") continue;
       const given = question.choices.filter((c) => c.given);
@@ -132,15 +132,15 @@ describe("getQuestionsForArea", () => {
 
   it("追加出題データ(2026年9月分)の単元別の問題数", () => {
     const count = (unit: string) => getQuestionsForUnit(unit).length;
-    expect(count("jidoushi-tadoushi")).toBe(4); // 画面数(6語+10語=16語)
+    expect(count("jidoushi-tadoushi")).toBe(6); // 画面数(6語+10語+10語=26語。2026年9月分で4→6画面に増量)
     const words = getQuestionsForUnit("jidoushi-tadoushi").flatMap((q) => (q.engine === "sorting" ? q.items : []));
-    expect(words).toHaveLength(16);
-    expect(count("kanou-doushi")).toBe(10);
-    expect(count("onbin")).toBe(8);
-    expect(count("sonkeigo")).toBe(7);
-    expect(count("kenjougo")).toBe(7);
-    expect(count("teineigo")).toBe(10);
-    expect(count("keigo-shikibetsu")).toBe(6);
+    expect(words).toHaveLength(26);
+    expect(count("kanou-doushi")).toBe(15);
+    expect(count("onbin")).toBe(12);
+    expect(count("sonkeigo")).toBe(12);
+    expect(count("kenjougo")).toBe(12);
+    expect(count("teineigo")).toBe(12);
+    expect(count("keigo-shikibetsu")).toBe(12);
   });
 
   it("丁寧語は新しい単元で、王座の間に属する", () => {
@@ -257,7 +257,7 @@ describe("単元メタ情報(units.ts)", () => {
 
   it("getQuestionsForUnit は指定単元の問題だけを返す", () => {
     const questions = getQuestionsForUnit("hinshi-bunrui");
-    expect(questions.length).toBe(3);
+    expect(questions.length).toBe(5); // 5バッチ(2026年9月分で3→5に増量)
     expect(questions.every((q) => q.unit === "hinshi-bunrui")).toBe(true);
     expect(getQuestionsForUnit("no-such-unit")).toEqual([]);
   });
@@ -268,8 +268,8 @@ describe("getQuestionsForStage", () => {
     expect(getQuestionsForStage("no-such-stage")).toEqual([]);
   });
 
-  it("prologue-stage1 は8問を解決できる", () => {
-    expect(getQuestionsForStage("prologue-stage1")).toHaveLength(8);
+  it("prologue-stage1 は12問を解決できる", () => {
+    expect(getQuestionsForStage("prologue-stage1")).toHaveLength(12); // 2026年9月分で8→12に増量
   });
 
   it("小ボスステージは通常ステージの問題からのみ構成される", () => {

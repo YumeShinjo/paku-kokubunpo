@@ -148,4 +148,81 @@ export const jidoushiTadoushiQuestions: SortingQuestion[] = [
       },
     ],
   }),
+  // 追加出題データ(2026年9月分)。対になる語(割れる/割る など)が同じ画面に偏らないよう分けている。
+  q({
+    id: "taki-jitasu-batch-05",
+    unit: UNIT,
+    instruction: INSTRUCTION,
+    categories: CATEGORIES,
+    items: [
+      {
+        id: "taki-jitasu-17",
+        text: "割[わ]れる",
+        correctCategoryId: "jidoushi",
+        explanation: "「ガラスが割れる」のように、主語(ガラス)が自分で変化する。目的語を取らない。",
+      },
+      {
+        id: "taki-jitasu-18",
+        text: "集[あつ]める",
+        correctCategoryId: "tadoushi",
+        explanation: "「切手を集める」のように、他のもの(切手)に働きかける動作。目的語を取る。",
+      },
+      {
+        id: "taki-jitasu-19",
+        text: "焼[や]ける",
+        correctCategoryId: "jidoushi",
+        explanation: "「パンが焼ける」のように、主語(パン)が自分で変化する。目的語を取らない。",
+      },
+      {
+        id: "taki-jitasu-20",
+        text: "治[なお]す",
+        correctCategoryId: "tadoushi",
+        explanation: "「けがを治す」のように、他のもの(けが)に働きかける動作。目的語を取る。",
+      },
+      {
+        id: "taki-jitasu-21",
+        text: "冷[ひ]える",
+        correctCategoryId: "jidoushi",
+        explanation: "「体が冷える」のように、主語(体)が自分で変化する。目的語を取らない。",
+      },
+    ],
+  }),
+  q({
+    id: "taki-jitasu-batch-06",
+    unit: UNIT,
+    instruction: INSTRUCTION,
+    categories: CATEGORIES,
+    items: [
+      {
+        id: "taki-jitasu-22",
+        text: "割[わ]る",
+        correctCategoryId: "tadoushi",
+        explanation: "「皿を割る」のように、他のもの(皿)に働きかける動作。目的語を取る。",
+      },
+      {
+        id: "taki-jitasu-23",
+        text: "集[あつ]まる",
+        correctCategoryId: "jidoushi",
+        explanation: "「人が集まる」のように、主語(人)が自分で動く。目的語を取らない。",
+      },
+      {
+        id: "taki-jitasu-24",
+        text: "焼[や]く",
+        correctCategoryId: "tadoushi",
+        explanation: "「パンを焼く」のように、他のもの(パン)に働きかける動作。目的語を取る。",
+      },
+      {
+        id: "taki-jitasu-25",
+        text: "治[なお]る",
+        correctCategoryId: "jidoushi",
+        explanation: "「けがが治る」のように、主語(けが)が自分で変化する。目的語を取らない。",
+      },
+      {
+        id: "taki-jitasu-26",
+        text: "冷[ひ]やす",
+        correctCategoryId: "tadoushi",
+        explanation: "「飲み物を冷やす」のように、他のもの(飲み物)に働きかける動作。目的語を取る。",
+      },
+    ],
+  }),
 ];

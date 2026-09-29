@@ -36,8 +36,9 @@ describe("getStagesForArea(全エリア共通)", () => {
     }
   });
 
-  it("通常ステージは10問以下で、問題数の少ないエリアでも極端に小さくならない(5問以上)", () => {
+  it("通常ステージは10問以下で、問題数の少ないエリアでも極端に小さくならない(5問以上)。序章は文節/単語の区切りで自然に分けるため、この上限の対象外(2026年9月分の増量で12問/ステージに)", () => {
     for (const id of ALL_AREA_IDS) {
+      if (id === "prologue") continue;
       for (const stage of normalStages(id)) {
         expect(stage.questionIds.length, `${stage.id}`).toBeLessThanOrEqual(10);
         expect(stage.questionIds.length, `${stage.id}`).toBeGreaterThanOrEqual(5);
@@ -67,19 +68,19 @@ describe("エリアごとのステージ構成", () => {
     expect(stages.every((s) => s.type === "normal")).toBe(true);
   });
 
-  it("kotobaNoIchibaは5通常ステージ+小ボス、sugatakaeNoKajibaは6通常ステージ+小ボス", () => {
+  it("kotobaNoIchibaは5通常ステージ+小ボス、sugatakaeNoKajibaは8通常ステージ+小ボス(2026年9月分の増量で8に)", () => {
     expect(normalStages("kotobaNoIchiba")).toHaveLength(5);
-    expect(normalStages("sugatakaeNoKajiba")).toHaveLength(6);
+    expect(normalStages("sugatakaeNoKajiba")).toHaveLength(8);
     expect(subBossOf("kotobaNoIchiba")).toBeDefined();
     expect(subBossOf("sugatakaeNoKajiba")).toBeDefined();
   });
 
-  it("残り5エリアの通常ステージ数(問題数から均等分割)", () => {
-    expect(normalStages("namerakaNoTaki").map((s) => s.questionIds.length)).toEqual([8, 7, 7]);
-    expect(normalStages("tsunagiNoHashi").map((s) => s.questionIds.length)).toEqual([9, 9]);
-    expect(normalStages("kizunaNoMa").map((s) => s.questionIds.length)).toEqual([8, 8, 7]);
-    expect(normalStages("mikakeNoMa").map((s) => s.questionIds.length)).toEqual([8, 7, 7]);
-    expect(normalStages("ohzaNoMa").map((s) => s.questionIds.length)).toEqual([10, 10, 10]);
+  it("残り5エリアの通常ステージ数(問題数から均等分割。2026年9月分の増量で問題数・ステージ数が変化)", () => {
+    expect(normalStages("namerakaNoTaki").map((s) => s.questionIds.length)).toEqual([9, 8, 8, 8]);
+    expect(normalStages("tsunagiNoHashi").map((s) => s.questionIds.length)).toEqual([10, 10, 10, 10, 10, 10]);
+    expect(normalStages("kizunaNoMa").map((s) => s.questionIds.length)).toEqual([9, 9, 9, 9, 9, 9, 9, 9]);
+    expect(normalStages("mikakeNoMa").map((s) => s.questionIds.length)).toEqual([10, 10, 10]);
+    expect(normalStages("ohzaNoMa").map((s) => s.questionIds.length)).toEqual([10, 10, 10, 9, 9]);
   });
 
   it("小ボスは、小ボスを持つ全エリアに1つずつある(序章を除く)", () => {
@@ -130,16 +131,11 @@ describe("小ボス", () => {
     }
   });
 
-  it("ほとんどのエリアは、プールが20問以上あるので20問出題(つなぎの橋だけプールが20問未満で、プールの全問)", () => {
+  it("全エリアでプールが20問以上あるので20問出題する(2026年9月分の増量で、つなぎの橋もプールが20問以上になった)", () => {
     for (const id of bossAreas) {
       const boss = subBossOf(id)!;
-      if (id === "tsunagiNoHashi") {
-        expect(boss.questionIds.length, id).toBeLessThan(20);
-        expect(boss.pickCount, id).toBe(boss.questionIds.length);
-      } else {
-        expect(boss.questionIds.length, id).toBeGreaterThanOrEqual(20);
-        expect(boss.pickCount, id).toBe(20);
-      }
+      expect(boss.questionIds.length, id).toBeGreaterThanOrEqual(20);
+      expect(boss.pickCount, id).toBe(20);
     }
   });
 });
@@ -152,7 +148,15 @@ describe("ラスボス(王座の間)", () => {
   it("ラスボスがいるのは王座の間だけで、小ボスの後ろに並ぶ", () => {
     expect(lastBosses.map((s) => s.areaId)).toEqual(["ohzaNoMa"]);
     const types = getStagesForArea("ohzaNoMa").map((s) => s.type);
-    expect(types).toEqual(["normal", "normal", "normal", "subBoss", "lastBoss"]);
+    expect(types).toEqual([
+      "normal",
+      "normal",
+      "normal",
+      "normal",
+      "normal",
+      "subBoss",
+      "lastBoss",
+    ]); // 2026年9月分の増量で48問→5通常ステージに
   });
 
   it("プールは全エリアの全問題で、全エリアの単元から複合出題される(3章)", () => {

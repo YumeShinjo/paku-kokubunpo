@@ -37,8 +37,8 @@ describe("buildStageSession: 復習(星)の混ぜ方", () => {
     expect(appeared).toBeGreaterThan(0);
   });
 
-  it("出題数は変わらない(ステージ1は8問)", () => {
+  it("出題数は変わらない(ステージ1は12問。2026年9月分の増量で8→12に)", () => {
     useReviewStore.setState({ starredQuestionIds: ["wakare-tango-01"] });
-    expect(buildStageSession("prologue-stage1", "prologue")).toHaveLength(8);
+    expect(buildStageSession("prologue-stage1", "prologue")).toHaveLength(12);
   });
 });

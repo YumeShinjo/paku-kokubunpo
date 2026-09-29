@@ -146,4 +146,88 @@ export const hinshiBunruiQuestions: SortingQuestion[] = [
       },
     ],
   }),
+  // 追加出題データ(2026年9月分)。これまでの3画面と語彙が重ならないようにしている。
+  sortingQ({
+    id: "ichiba-pos-batch-04",
+    unit: UNIT,
+    instruction: INSTRUCTION,
+    categories: CATEGORIES,
+    items: [
+      {
+        id: "ichiba-pos-16",
+        text: "電車が「もうすぐ」到着する。",
+        correctCategoryId: "fukushi",
+        explanation: "活用しない自立語[じりつご]で、用言[ようげん]「到着する」を修飾する。",
+      },
+      {
+        id: "ichiba-pos-17",
+        text: "「もしもし」、聞こえますか。",
+        correctCategoryId: "kandoushi",
+        explanation:
+          "活用しない自立語[じりつご]で、他の文節と直接結びつかず、呼びかけを表す。",
+      },
+      {
+        id: "ichiba-pos-18",
+        text: "彼は最後まで諦め「ない」。",
+        correctCategoryId: "jodoushi",
+        explanation:
+          "動詞「諦め」(未然形[みぜんけい])に付いて打ち消しの意味を加える、活用する付属語[ふぞくご]。",
+      },
+      {
+        id: "ichiba-pos-19",
+        text: "山の「向こう」に町がある。",
+        correctCategoryId: "meishi",
+        explanation:
+          "活用しない自立語[じりつご]で、文の主語や修飾される語になれる体言[たいげん]。",
+      },
+      {
+        id: "ichiba-pos-20",
+        text: "姉は毎年、旅行の計画を「立てる」。",
+        correctCategoryId: "doushi",
+        explanation: "言い切りの形がウ段の音(る)で終わる自立語[じりつご]で、動作を表す。",
+      },
+    ],
+  }),
+  sortingQ({
+    id: "ichiba-pos-batch-05",
+    unit: UNIT,
+    instruction: INSTRUCTION,
+    categories: CATEGORIES,
+    items: [
+      {
+        id: "ichiba-pos-21",
+        text: "彼女は毎朝、この道を「通る」。",
+        correctCategoryId: "doushi",
+        explanation: "言い切りの形がウ段の音(る)で終わる自立語[じりつご]で、動作を表す。",
+      },
+      {
+        id: "ichiba-pos-22",
+        text: "今年の冬は「ずいぶん」寒い。",
+        correctCategoryId: "fukushi",
+        explanation:
+          "活用しない自立語[じりつご]で、程度を表し、用言[ようげん]「寒い」を修飾する。",
+      },
+      {
+        id: "ichiba-pos-23",
+        text: "「小さい」子どもが公園で遊んでいる。",
+        correctCategoryId: "keiyoushi",
+        explanation:
+          "言い切りの形が「い」で終わる、活用する自立語[じりつご]。「小さな」(連体詞)と混同しないよう注意。",
+      },
+      {
+        id: "ichiba-pos-24",
+        text: "「いわゆる」天才少年だ。",
+        correctCategoryId: "rentaishi",
+        explanation:
+          "活用せず、体言[たいげん]「天才少年」を修飾するだけの自立語[じりつご]。",
+      },
+      {
+        id: "ichiba-pos-25",
+        text: "電話に出ると、「おや」、声が違う。",
+        correctCategoryId: "kandoushi",
+        explanation:
+          "活用しない自立語[じりつご]で、他の文節と直接関係を結ばず、驚きの気持ちを表す。",
+      },
+    ],
+  }),
 ];

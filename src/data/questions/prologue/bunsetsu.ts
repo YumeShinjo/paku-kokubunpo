@@ -96,4 +96,58 @@ export const bunsetsuQuestions: ChoiceQuestion[] = [
     correctIndex: 1,
     explanation: "「静かに」の後にもネを入れられる。",
   }),
+  // 追加出題データ(2026年9月分)
+  choiceQ({
+    id: "wakare-bunsetsu-09",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "母は台所で夕飯を作る。",
+    choices: [
+      "母は／台所で／夕飯を／作る。",
+      "母は台所で／夕飯を／作る。",
+      "母／は台所で夕飯を作る。",
+    ],
+    correctIndex: 0,
+    explanation: "「台所で」の後にもネを入れられるので、そこも切れ目になる。",
+  }),
+  choiceQ({
+    id: "wakare-bunsetsu-10",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "小さな子どもが元気に走る。",
+    choices: [
+      "小さな子どもが／元気に／走る。",
+      "小さな／子どもが／元気に／走る。",
+      "小さな／子どもが元気に走る。",
+    ],
+    correctIndex: 1,
+    explanation:
+      "「小さな」の後にもネを入れられるので、「小さな子どもが」を1つにまとめてはいけない。",
+  }),
+  choiceQ({
+    id: "wakare-bunsetsu-11",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "兄は毎晩数学を勉強する。",
+    choices: [
+      "兄は毎晩／数学を／勉強する。",
+      "兄／は毎晩数学を勉強する。",
+      "兄は／毎晩／数学を／勉強する。",
+    ],
+    correctIndex: 2,
+    explanation: "「毎晩」の後にもネを入れられる。",
+  }),
+  choiceQ({
+    id: "wakare-bunsetsu-12",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "冷たい風がさっと吹いた。",
+    choices: [
+      "冷たい風が／さっと／吹いた。",
+      "冷たい／風が／さっと／吹いた。",
+      "冷たい／風がさっと吹いた。",
+    ],
+    correctIndex: 1,
+    explanation: "「冷たい」の後にもネを入れられる。",
+  }),
 ];

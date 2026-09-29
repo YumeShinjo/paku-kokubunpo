@@ -1,6 +1,7 @@
 import type { Question, Stage } from "./schema";
 import { areas } from "./areas";
 import { prologueQuestions } from "./questions/prologue";
+import { bunsetsuQuestions } from "./questions/prologue/bunsetsu";
 import { kotobaNoIchibaQuestions } from "./questions/kotobaNoIchiba";
 import { sugatakaeNoKajibaQuestions } from "./questions/sugatakaeNoKajiba";
 import { namerakaNoTakiQuestions } from "./questions/namerakaNoTaki";
@@ -158,29 +159,32 @@ function buildAreaStages(areaId: string, questions: Question[]): Stage[] {
   return [...normal, buildSubBossStage(areaId, subBossTitle(areaId), normal)];
 }
 
-// 序章(16問)は文節/単語の区切りで自然に2ステージへ分かれ、小ボスはいない(3章)。
+// 序章(24問 = 文節12+単語12)は文節/単語の区切りで自然に2ステージへ分かれ、小ボスはいない(3章)。
+// bunsetsuQuestions が先、tangoQuestions が後という prologueQuestions の並び順を前提に、
+// その境目(bunsetsuQuestions.length)でステージを分ける。単元の問題数が増減しても自動で追従する。
 export const prologueStages: Stage[] = [
   {
     id: "prologue-stage1",
     areaId: "prologue",
     type: "normal",
     title: "文節の区切り",
-    questionIds: prologueQuestions.slice(0, 8).map((q) => q.id),
+    questionIds: prologueQuestions.slice(0, bunsetsuQuestions.length).map((q) => q.id),
   },
   {
     id: "prologue-stage2",
     areaId: "prologue",
     type: "normal",
     title: "単語の区切り",
-    questionIds: prologueQuestions.slice(8, 16).map((q) => q.id),
+    questionIds: prologueQuestions.slice(bunsetsuQuestions.length).map((q) => q.id),
   },
 ];
 
-// ことばの市場(33画面 = 品詞分類3バッチ+自立語付属語15+活用の有無15)を5ステージ程度に分割。
-const kotobaNoIchibaNormalStages = buildNormalStages(
+// ことばの市場(2026年9月分の追加出題データで45画面に増加)を、8〜10問の範囲に収まる
+// 最小のステージ数へ均等に分割する(固定7問ずつの分割だと、増量後に端数の小さいステージが
+// 残ってしまうため、残り5エリアと同じ均等分割方式に変更)。
+const kotobaNoIchibaNormalStages = buildNormalStagesEvenly(
   "kotobaNoIchiba",
   kotobaNoIchibaQuestions,
-  7,
 );
 export const kotobaNoIchibaStages: Stage[] = [
   ...kotobaNoIchibaNormalStages,

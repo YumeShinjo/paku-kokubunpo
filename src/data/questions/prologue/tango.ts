@@ -111,4 +111,60 @@ export const tangoQuestions: ChoiceQuestion[] = [
     explanation:
       "「は」「が」はそれぞれ独立した助詞として区切る。「天気」と「が」を1つにまとめないよう注意。",
   }),
+  // 追加出題データ(2026年9月分)。文節の区切りで使った9〜12番の文を、さらに単語まで区切る。
+  choiceQ({
+    id: "wakare-tango-09",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "母は台所で夕飯を作る。",
+    choices: [
+      "母／は／台所／で／夕飯／を／作る。",
+      "母は／台所で／夕飯を／作る。",
+      "母／は／台所／で／夕飯を／作る。",
+    ],
+    correctIndex: 0,
+    explanation: "「で」「を」はそれぞれ独立した助詞として区切る。",
+  }),
+  choiceQ({
+    id: "wakare-tango-10",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "小さな子どもが元気に走る。",
+    choices: [
+      "小さな子どもが／元気に／走る。",
+      "小さ／な／子ども／が／元気／に／走る。",
+      "小さな／子ども／が／元気に／走る。",
+    ],
+    correctIndex: 2,
+    explanation:
+      "「小さな」は連体詞1語でこれ以上分けられない。「元気に」も形容動詞「元気だ」の活用した形で1語なので、「元気」と「に」に分けないよう注意。",
+  }),
+  choiceQ({
+    id: "wakare-tango-11",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "兄は毎晩数学を勉強する。",
+    choices: [
+      "兄／は／毎晩／数学／を／勉強する。",
+      "兄は毎晩／数学を／勉強する。",
+      "兄／は／毎晩／数学／を／勉強／する。",
+    ],
+    correctIndex: 0,
+    explanation:
+      "「勉強する」は「勉強+する」で1つの動詞(複合動詞)として扱うので、「勉強」と「する」に分けない。",
+  }),
+  choiceQ({
+    id: "wakare-tango-12",
+    unit: UNIT,
+    prompt: PROMPT,
+    situation: "冷たい風がさっと吹いた。",
+    choices: [
+      "冷たい風が／さっと／吹いた。",
+      "冷たい／風／が／さっと吹いた。",
+      "冷たい／風／が／さっと／吹いた。",
+    ],
+    correctIndex: 2,
+    explanation:
+      "「が」は名詞「風」に付く助詞、「さっと」は動詞「吹いた」を修飾する副詞で、それぞれ独立した単語。",
+  }),
 ];
