@@ -28,45 +28,33 @@ import {
 const KOTO = "コト";
 
 /**
- * 立ち絵の左右配置(2026-09-29 見直し): 顔の向きに応じて、視線が会話テキスト側(画面内側)を
- * 向くように配置する。顔が右向きのキャラクター(メイ・ジョゼット)は画面左寄り、それ以外
- * (コト/コレット・王様・他の小ボス)は画面右寄りに配置する。個別の call site では指定せず、
- * 話者名から自動で決める(手動指定だと、キャラクター追加のたびに全箇所を直す必要があり、
- * 抜け漏れや上書き事故の原因になりやすいため)。
+ * 立ち絵の左右配置は、顔の向き(data/story/characterFacing.ts)から自動で決まる(features/story/portraitLayout.ts)。
+ * このファイルでは、既定と違う置き方をしたい場面だけ position で上書きする。
  */
-const FACES_RIGHT_SPEAKERS = new Set(["メイ", "ジョゼット"]);
-/** 立ち絵(王様・小ボス)を持つ話者。コト/コレットは showMascot の有無で判定するのでここには含めない */
-const PORTRAIT_SPEAKERS = new Set(["ヴェルバルト", "ネジラルド", "サイラス", "ニジュヴェール", "レル", "オンヴィン", "メイ", "ジョゼット"]);
 
-function defaultPosition(speaker: string | undefined, showMascot: boolean): CharacterPosition | undefined {
-  const hasPortrait =
-    showMascot || (speaker !== undefined && (PORTRAIT_SPEAKERS.has(speaker) || speaker.startsWith("王(")));
-  if (!hasPortrait) return undefined;
-  return speaker && FACES_RIGHT_SPEAKERS.has(speaker) ? "left" : "right";
-}
+/** 王女コレットの立ち絵は左に置く(王様は右向きの立ち絵が右に出るので、二人が向かい合い、同じ場面でも重ならない) */
+const COLETTE_SIDE: CharacterPosition = "left";
 
 interface LineOptions {
   /** 発話者がコト以外でも、立ち絵(マスコット)を出したい場面で指定する */
   showMascot?: boolean;
   mascotForm?: MascotForm;
-  /** 既定の左右配置(顔の向きから自動計算)を、個別の場面で上書きしたいときだけ指定する */
+  /** 主役の立ち絵の左右を、顔の向きからの自動配置と違う側にしたい場面だけ指定する */
   position?: CharacterPosition;
 }
 
 /** コトの台詞は、立ち絵(マスコット)を出す。それ以外は指定したときだけ出す。 */
 function line(speaker: string | undefined, text: string, opts: LineOptions = {}): StoryLine {
-  const showMascot = opts.showMascot ?? speaker === KOTO;
   return {
     speaker,
     text: rb(text),
-    showMascot,
+    showMascot: opts.showMascot ?? speaker === KOTO,
     mascotForm: opts.mascotForm,
-    position: opts.position ?? defaultPosition(speaker, showMascot),
+    position: opts.position,
   };
 }
 
 const narration = (text: string, opts?: LineOptions) => line(undefined, text, opts);
-/** position は、既定の右寄せだと背景の特定の物(金床など)の真上に重なってしまう場面だけ、個別に上書きする */
 const koto = (text: string, mascotForm?: MascotForm, position?: CharacterPosition) =>
   line(KOTO, text, { mascotForm, position });
 
@@ -356,21 +344,27 @@ export const storyEvents: StoryEvent[] = [
       narration("光の中心で、丸い体がすっとほどけていき、代[か]わりに人影[ひとかげ]が浮[う]かび上[あ]がる。", {
         showMascot: true,
         mascotForm: "true",
+        position: COLETTE_SIDE,
       }),
       narration("同時に、王座[おうざ]に座っていた人物の輪郭[りんかく]もはっきりとしていく。"),
       narration("驚[おどろ]いた様子も、たじろぐ様子もなく、主人公はいつも通り、すぐそばに立っていた。"),
       line("ヴェルバルト", "……ここは……わたしは、一体……"),
       narration("正気[しょうき]を取り戻した王様が、ゆっくりと顔を上げる。"),
       line("ヴェルバルト", "(コトを見て)まさか……お前は……", { showMascot: true, mascotForm: "true" }),
-      koto("……お父さん?", "true"),
+      koto("……お父さん?", "true", COLETTE_SIDE),
       line("ヴェルバルト", "よく…よく無事で……", { showMascot: true, mascotForm: "true" }),
       line("ヴェルバルト", "……思い出した。乱れが王座[おうざ]に忍[しの]び込[こ]んだあの日、まだ幼[おさな]かったお前は、王家に伝わる守り獣[じゅう]の御守[おまも]りを抱[いだ]いて、わたしを庇[かば]おうとしたのだったな。", { showMascot: true, mascotForm: "true" }),
       line("ヴェルバルト", "あの御守りは、王家の言葉を代々守ってきたと伝わる、化[ば]け狸[たぬき]の姿を宿[やど]すもの。乱れはお前ごと、その姿に閉[と]じ込[こ]めてしまった。", { showMascot: true, mascotForm: "true" }),
       line("ヴェルバルト", "小さな体のまま、ずっと城を彷徨[さまよ]っていたというのか……すまない、気づいてやれなかった。", { showMascot: true, mascotForm: "true" }),
-      line("コレット", "ううん。わたしも、途中までしか覚えてない。でも、あなたのおかげで、思い出せた。", { showMascot: true, mascotForm: "true" }),
+      line("コレット", "ううん。わたしも、途中までしか覚えてない。でも、あなたのおかげで、思い出せた。", {
+        showMascot: true,
+        mascotForm: "true",
+        position: COLETTE_SIDE,
+      }),
       narration("長い沈黙[ちんもく]のあと、王様が静かに問いかける。", {
         showMascot: true,
         mascotForm: "true",
+        position: COLETTE_SIDE,
       }),
     ],
   },
@@ -434,19 +428,20 @@ export const storyEvents: StoryEvent[] = [
       line(
         "コレット",
         "ねえ……わたしが王女だってわかったのに、あなたの態度、全然変わらないね。",
-        { showMascot: true, mascotForm: "true" },
+        { showMascot: true, mascotForm: "true", position: COLETTE_SIDE },
       ),
       line(
         "コレット",
         "これからはきっと、みんな畏[かしこ]まったり、急に距離を置いたりするようになるんだろうな。……でも、あなたにだけは、ずっといつも通りでいてほしいな。",
-        { showMascot: true, mascotForm: "true" },
+        { showMascot: true, mascotForm: "true", position: COLETTE_SIDE },
       ),
       narration("主人公は、いつものように小さく笑って、うなずいた。"),
       line("コレット", "……ふふ、そういうところ、好きだよ。あ、変な意味じゃなくてね!", {
         showMascot: true,
         mascotForm: "true",
+        position: COLETTE_SIDE,
       }),
-      koto("さ、次はどこ行こっか!", "true"),
+      koto("さ、次はどこ行こっか!", "true", COLETTE_SIDE),
     ],
   },
 ];

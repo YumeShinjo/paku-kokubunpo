@@ -301,27 +301,23 @@ describe("王座の間のフェーズ別イベント", () => {
   });
 });
 
-describe("立ち絵の左右寄せ(StoryLine.position)", () => {
-  it("顔が右向きのキャラクター(メイ・ジョゼット)は、視線が内側(会話テキスト側)を向くよう画面左に配置する", () => {
-    const mei = getStoryEvent(introStoryId("kotobaNoIchiba"))!.lines.find((l) => l.speaker === "メイ");
-    expect(mei?.position).toBe("left");
-    const josette = getStoryEvent(subBossIntroStoryId("tsunagiNoHashi"))!.lines.find((l) => l.speaker === "ジョゼット");
-    expect(josette?.position).toBe("left");
+describe("立ち絵の左右寄せの上書き(StoryLine.position)", () => {
+  it("既定(顔の向きからの自動配置)のままの台詞は、position を持たない", () => {
+    for (const event of storyEvents) {
+      for (const l of event.lines) {
+        if (l.speaker === "メイ" || l.speaker === "ニジュヴェール" || l.speaker === "ヴェルバルト") {
+          expect(l.position, `${event.id}: ${l.speaker}`).toBeUndefined();
+        }
+      }
+    }
   });
 
-  it("それ以外の立ち絵つきキャラクター(コト・王様・他の小ボス)は画面右に配置する", () => {
-    const koto = getStoryEvent(introStoryId("prologue"))!.lines.find((l) => l.showMascot);
-    expect(koto?.position).toBe("right");
-    const reru = getStoryEvent(subBossIntroStoryId("sugatakaeNoKajiba"))!.lines.find((l) => l.speaker === "レル");
-    expect(reru?.position).toBe("right");
-    const king = getStoryEvent(lastBossClearStoryId("ohzaNoMa"))!.lines.find((l) => l.speaker === "ヴェルバルト");
-    expect(king?.position).toBe("right");
-  });
-
-  it("立ち絵のないナレーション行は position が未指定(中央=画面全体)のまま", () => {
-    const event = getStoryEvent(introStoryId("kizunaNoMa"))!;
-    const narrationOnly = event.lines.find((l) => !l.speaker && !l.showMascot);
-    expect(narrationOnly).toBeDefined();
-    expect(narrationOnly?.position).toBeUndefined();
+  it("王女コレットだけの場面は、王様(右)と向かい合う左に上書きしてある", () => {
+    const clear = getStoryEvent(lastBossClearStoryId("ohzaNoMa"))!;
+    const alone = clear.lines.filter((l) => l.mascotForm === "true" && l.speaker !== "ヴェルバルト");
+    expect(alone.length).toBeGreaterThan(0);
+    for (const l of alone) expect(l.position).toBe("left");
+    const areaClear = getStoryEvent(areaClearStoryId("ohzaNoMa"))!;
+    for (const l of areaClear.lines.filter((x) => x.mascotForm === "true")) expect(l.position).toBe("left");
   });
 });

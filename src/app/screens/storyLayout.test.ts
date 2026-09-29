@@ -23,6 +23,20 @@ describe("ストーリー画面のレイアウト", () => {
     expect(stage).not.toContain("flex: 1;");
   });
 
+  it("立ち絵の領域は、はみ出した透過の余白を切り取り(overflow: hidden)、立ち絵は下端にそろえて左右の置き場に置く", () => {
+    expect(rule(".story-stage")).toContain("overflow: hidden;");
+    const character = rule(".story-character");
+    expect(character).toContain("position: absolute;");
+    expect(character).toContain("bottom: var(--story-foot);");
+    expect(rule(".story-character-left")).toContain("left: 0;");
+    expect(rule(".story-character-right")).toContain("right: 0;");
+  });
+
+  it("幅360px以下でも、ストーリー画面の背景は左右いっぱいに敷く(.screen の余白が戻らない)", () => {
+    const media = css.slice(css.indexOf("@media (max-width: 360px)"));
+    expect(media).toMatch(/\.screen-story \{\s*padding-left: 0;\s*padding-right: 0;/);
+  });
+
   it("画面は上から積む(下寄せにしない)ので、テキストボックスが伸びても、上の立ち絵は動かない", () => {
     const screen = rule(".screen-story");
     expect(screen).toContain("justify-content: flex-start;");

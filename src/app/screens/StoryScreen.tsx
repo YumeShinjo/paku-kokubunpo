@@ -3,6 +3,7 @@ import { getStoryEvent } from "@/data/story/events";
 import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
 import { Mascot } from "@/features/mascot/Mascot";
+import { layoutPortraits } from "@/features/story/portraitLayout";
 import { findImage, IMAGE } from "@/assets/registry";
 import { areaBackgroundName, areaPurifyGateStageId, isSubBossPurifiedIn, subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -72,6 +73,15 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
   const bossUrl = bossAreaId
     ? findImage(bossPurified ? IMAGE.subBossPurified(bossAreaId) : IMAGE.subBoss(bossAreaId))
     : undefined;
+  // 立ち絵の左右は、顔の向きから決まる(王様・小ボスとマスコットが同じ場面にいるときは、反対側に置く)
+  const layout = layoutPortraits({
+    speaker: line.speaker,
+    showKing: Boolean(kingUrl),
+    showBoss: Boolean(bossUrl),
+    showMascot: Boolean(line.showMascot),
+    mascotForm: line.mascotForm,
+    override: line.position,
+  });
   const lastIndex = event.lines.length - 1;
   const isLast = lineIndex >= lastIndex;
   const options = event.choice?.options;
@@ -103,21 +113,21 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
   return (
     <div className="screen screen-story" onClick={handleScreenTap}>
       <div
-        className={`story-stage${line.position && line.position !== "center" ? ` story-stage-${line.position}` : ""}`}
+        className="story-stage"
         style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
       >
         {kingUrl && (
-          <div className="story-character">
+          <div className={`story-character story-character-${layout.king}`}>
             <img className="story-king" src={kingUrl} alt="" draggable={false} />
           </div>
         )}
         {bossUrl && (
-          <div className="story-character">
+          <div className={`story-character story-character-${layout.boss}`}>
             <img className="story-king" src={bossUrl} alt="" draggable={false} />
           </div>
         )}
         {line.showMascot && (
-          <div className="story-character">
+          <div className={`story-character story-character-${layout.mascot}`}>
             <Mascot form={line.mascotForm} />
           </div>
         )}

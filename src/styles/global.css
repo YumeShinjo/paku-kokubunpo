@@ -244,43 +244,43 @@ button.incorrect {
  * 下向きに伸び縮みするだけなので、台詞を送っても立ち絵は動かない。
  */
 .story-stage {
+  position: relative;
   flex: none;
   height: calc(100dvh - 19rem);
-  min-height: 16rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 19rem;
   background: linear-gradient(180deg, var(--color-accent), var(--color-bg));
-  /* 左右に寄せた立ち絵を、画面端から少しはみ出させる演出のため、はみ出た分はここで切る */
+  /* 立ち絵の画像は、周囲に透過の余白が大きい。余白が画面の外へはみ出しても、ここで切る */
   overflow: hidden;
 }
 
-/* 立ち絵の左右寄せ(StoryLine.position)。壊れかけた橋の上など、中央だと落ちそうに見える場面で使う */
-.story-stage-left {
-  justify-content: flex-start;
-  padding-left: 1.5rem;
-}
-
-.story-stage-right {
-  justify-content: flex-end;
-  padding-right: 1.5rem;
-}
-
 /*
- * 王様・小ボスの立ち絵(.story-king)は、周囲に大きな透過のモヤ(浄化演出)があり、画面端に
- * 寄せてもキャラクター本体はあまり動いて見えない。画面端から少しはみ出させることで、
- * (はみ出るのは透過部分がほとんどなので実害はない)キャラクター本体がはっきり端に寄って見えるようにする。
+ * 立ち絵は、画面の左右どちらかの「置き場」に、足元をそろえて置く(StoryScreen が顔の向きから左右を決める)。
+ * 置き場は画面の幅の64%で、中身をその中央に寄せる。画像の枠が置き場より広くても、左右均等にはみ出るだけなので、
+ * 見えている部分(透過でない部分)の中心が、左は画面の32%、右は68%の位置になる。
+ * 2人が同じ場面にいても、それぞれが反対側の置き場に入るので、重ならず、画面の外にも出ない。
+ * 足元は、画面の下端より少し上(画像の下の透過の余白は約7%で、--story-foot はその余白の下端の位置)。
  */
-.story-stage-left .story-king {
-  margin-left: -2rem;
-}
-
-.story-stage-right .story-king {
-  margin-right: -2rem;
-}
-
 .story-character {
+  --story-foot: 0.3rem;
+  position: absolute;
+  bottom: var(--story-foot);
+  width: 64%;
+  display: flex;
+  justify-content: center;
   animation: story-character-in 0.2s ease-out;
+}
+
+/* 画像の枠は、置き場の幅に合わせて縮めない(縮めると、絵の大きさが場面ごとに変わってしまう) */
+.story-character > * {
+  flex: none;
+}
+
+.story-character-left {
+  left: 0;
+}
+
+.story-character-right {
+  right: 0;
 }
 
 @keyframes story-character-in {
@@ -1124,7 +1124,7 @@ button.incorrect {
 /* ストーリーの立ち絵(王様・小ボス) */
 .story-king {
   display: block;
-  max-height: 18rem;
+  max-height: 17rem;
   width: auto;
 }
 
@@ -2575,6 +2575,12 @@ input[type="range"]:focus-visible {
   .stage-actions button {
     padding: 0.3rem 0.45rem;
     font-size: 0.72rem;
+  }
+
+  /* ストーリー画面は、もともと余白なしで背景を左右いっぱいに敷く(ここで .screen の余白が戻らないようにする) */
+  .screen-story {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .title-primary {
