@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { setupAppUpdate } from "./lib/appUpdate";
 // フォント: M PLUS Rounded 1c(SIL Open Font License)。日本語は、使う文字だけに絞ったもの(styles/fonts.css)、
 // 英数字は、通常・太字の2種類だけ同梱する。
 import "./styles/fonts.css";
@@ -11,6 +12,9 @@ import "./styles/global.css";
 // iOS(Safari)は、touchstart を受け取るリスナーが文書のどこかにないと、ボタンの :active(押している間の見た目)が働かない。
 // 何もしないリスナーを1つ置いて、ボタンのタップ演出(global.css)が iPhone でも効くようにする。
 document.addEventListener("touchstart", () => {}, { passive: true });
+
+// 新しい版に入れ替わったら、安全な画面で読み込み直す(差し替えた画像などが、開いたままの端末にも届くように)
+setupAppUpdate();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
