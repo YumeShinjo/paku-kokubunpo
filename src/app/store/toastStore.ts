@@ -9,7 +9,8 @@ import type { MascotExpression } from "@/assets/registry";
  */
 export interface Toast {
   id: number;
-  icon: string;
+  /** 通知のアイコン(Toaster が、対応するアイコンを出す。絵文字は使わない) */
+  icon: "sparkles" | "book";
   message: string;
   se: SeKind;
   /** マスコットの表情(素材があれば、アイコンの代わりに出す) */
@@ -18,8 +19,8 @@ export interface Toast {
 
 /** エリアクリアで出す通知の内容 */
 export const TOAST_CONTENT = {
-  growth: { icon: "✨", message: "コトが せいちょうしたよ!", se: "growth", face: "surprised" },
-  pageUnlock: { icon: "📖", message: "ずかんが ふえたよ!", se: "pageUnlock" },
+  growth: { icon: "sparkles", message: "コトが せいちょうしたよ!", se: "growth", face: "surprised" },
+  pageUnlock: { icon: "book", message: "ずかんが ふえたよ!", se: "pageUnlock" },
 } as const satisfies Record<string, Omit<Toast, "id">>;
 
 interface ToastState {

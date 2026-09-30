@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { BookOpen, Sparkles } from "lucide-react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useToastStore, type Toast } from "@/app/store/toastStore";
 import { duckBgm, playSe, seBusyRemainingMs, seDurationMs } from "@/lib/audio";
@@ -122,7 +123,9 @@ export function Toaster() {
         {shown.face && findImage(IMAGE.mascotExpression(shown.face)) ? (
           <MascotFace expression={shown.face} size="small" />
         ) : (
-          <span aria-hidden="true">{shown.icon}</span>
+          <span aria-hidden="true" className="toast-icon">
+            {shown.icon === "book" ? <BookOpen size="1.1em" /> : <Sparkles size="1.1em" />}
+          </span>
         )}{" "}
         <Rb t={shown.message} />
       </div>

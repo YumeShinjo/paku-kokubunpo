@@ -1,3 +1,4 @@
+import { BookOpen } from "lucide-react";
 import { findPartOfSpeech } from "@/data/partOfSpeech";
 import { zukanPages, type ExampleWord } from "@/data/zukanPages";
 import { autoRuby } from "@/data/furigana";
@@ -32,12 +33,15 @@ export function ZukanPages() {
         ことばの ずかん
       </h3>
       <p className="zukan-pages-lead">
-        <Rb t="わからなくなったら、いつでも見[み]られるよ。(バトル中[ちゅう]も「📖 ずかん」から開[ひら]けるよ)" />
+        <Rb t="わからなくなったら、いつでも見[み]られるよ。(バトル中[ちゅう]も「" /><BookOpen className="inline-icon" aria-hidden="true" size="1.05em" /><Rb t="ずかん」から開[ひら]けるよ)" />
       </p>
       {zukanPages.map((page) => {
         return (
           <details key={page.areaId} className="zukan-page">
-            <summary>📖 {page.title}</summary>
+            <summary>
+              <BookOpen className="inline-icon" aria-hidden="true" size="1.05em" />
+              {page.title}
+            </summary>
             <p className="zukan-page-intro">{page.intro}</p>
             {page.areaId === "kotobaNoIchiba" && (
               <p className="zukan-pos-legend" aria-label="品詞のいろ">

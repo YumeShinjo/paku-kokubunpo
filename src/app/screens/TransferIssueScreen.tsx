@@ -1,3 +1,4 @@
+import { TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
@@ -88,7 +89,8 @@ export function TransferIssueScreen() {
         </p>
       )}
       <p className="settings-note">
-        <Rb t="⚠ このコードは、あなたのデータそのものだよ。ほかの人[ひと]には見[み]せないでね。ランキングの参加[さんか]は引[ひ]き継[つ]がれないので、新[あたら]しい端末[たんまつ]でもう一度[いちど]クラスに入[はい]ってね(得点[とくてん]は続[つづ]きから)。" />
+        <TriangleAlert className="inline-icon" aria-hidden="true" size="1.05em" />
+        <Rb t="このコードは、あなたのデータそのものだよ。ほかの人[ひと]には見[み]せないでね。ランキングの参加[さんか]は引[ひ]き継[つ]がれないので、新[あたら]しい端末[たんまつ]でもう一度[いちど]クラスに入[はい]ってね(得点[とくてん]は続[つづ]きから)。" />
       </p>
     </div>
   );

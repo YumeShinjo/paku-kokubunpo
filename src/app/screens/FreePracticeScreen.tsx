@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUnitMeta } from "@/data/units";
 import { buildFreePracticeSession } from "@/features/quiz/buildSession";
@@ -63,7 +64,7 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            さいだい 🔥 {result.maxCombo}れんぞく!
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
           </p>
         )}
         <button type="button" onClick={again}>

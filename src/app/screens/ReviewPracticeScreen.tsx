@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUnitMeta } from "@/data/units";
 import { buildReviewSession } from "@/features/quiz/buildSession";
@@ -52,7 +53,9 @@ export function ReviewPracticeScreen() {
         <p>
           {result.correctCount} / {result.answered} もん せいかい
         </p>
-        {result.maxCombo >= 2 && <p>さいだい 🔥 {result.maxCombo}れんぞく!</p>}
+        {result.maxCombo >= 2 && <p>
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
+          </p>}
         <p>
           <Rb t={`のこりの苦手[にがて]問題[もんだい]: ${starCount}問[もん]`} />
         </p>

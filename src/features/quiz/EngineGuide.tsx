@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { engineGuides, guideFooter, type GuideKey } from "@/data/engineGuide";
 import { Ruby } from "@/components/Ruby";
 
@@ -10,7 +11,8 @@ export function EngineGuide({ guideKey, onDismiss }: { guideKey: GuideKey; onDis
   return (
     <aside className="engine-guide" aria-label="操作の説明">
       <p className="engine-guide-title">
-        💡 <Ruby text={guide.title} />
+        <Lightbulb className="inline-icon" aria-hidden="true" size="1.05em" />
+        <Ruby text={guide.title} />
       </p>
       <ol className="engine-guide-steps">
         {guide.steps.map((step, i) => (

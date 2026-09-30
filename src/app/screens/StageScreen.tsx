@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getStage } from "@/data/stages";
 import { areas } from "@/data/areas";
@@ -152,7 +153,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            さいだい 🔥 {result.maxCombo}れんぞく!
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
           </p>
         )}
         <button

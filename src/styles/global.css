@@ -3956,6 +3956,39 @@ input[type="range"]:focus-visible {
   align-self: flex-start;
 }
 
+/* ---- 文字の行に添える小さなアイコン(絵文字の代わり。lucide のアイコン) ---- */
+.inline-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: -0.15em;
+  margin-inline-end: 0.25em;
+}
+
+.icon-gold {
+  color: var(--color-gold-line);
+}
+
+.icon-flame {
+  color: #e8823a;
+}
+
+/* ボス戦のライフ(ハート) */
+.player-lives .life-icon {
+  display: inline-block;
+  vertical-align: -0.12em;
+  margin-inline-end: 0.12em;
+}
+
+.sparkles span {
+  color: var(--color-gold-line);
+}
+
+.toast-icon {
+  display: inline-flex;
+  vertical-align: -0.2em;
+  color: var(--color-gold-line);
+}
+
 /*
  * ふりがな(rt)を含む文章の行の高さ。
  * ふりがなが行を押し広げると、ふりがなのある行だけ行間が広がって、そろわない。

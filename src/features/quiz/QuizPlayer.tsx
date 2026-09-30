@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Flame, Star, X as CloseIcon } from "lucide-react";
+import { BookOpen, Flame, Heart, Sparkles, Star, X as CloseIcon } from "lucide-react";
 import type { Question, RubyText } from "@/data/schema";
 import { EngineRouter } from "@/engines/EngineRouter";
 import { judgeAnswer, type Answer } from "@/engines/core/judge";
@@ -269,8 +269,13 @@ export function QuizPlayer({
           </p>
           <p className="player-lives" role="img" aria-label={`ライフ ${lives} / ${BOSS_LIVES}`}>
             <span aria-hidden="true">
-              {"❤".repeat(lives)}
-              <span className="life-lost">{"♡".repeat(BOSS_LIVES - lives)}</span>
+              {Array.from({ length: BOSS_LIVES }, (_, i) =>
+                i < lives ? (
+                  <Heart key={i} className="life-icon" size="1em" fill="currentColor" />
+                ) : (
+                  <Heart key={i} className="life-icon life-lost" size="1em" />
+                ),
+              )}
             </span>
           </p>
         </div>
@@ -368,9 +373,15 @@ export function QuizPlayer({
           >
             {feedback.effect === "sparkle" && (
               <span className="sparkles" aria-hidden="true">
-                <span>✨</span>
-                <span>✨</span>
-                <span>✨</span>
+                <span>
+                  <Sparkles size="1em" />
+                </span>
+                <span>
+                  <Sparkles size="1em" />
+                </span>
+                <span>
+                  <Sparkles size="1em" />
+                </span>
               </span>
             )}
             {/* コトの表情: 正解=喜び(苦手を克服したときはもぐもぐ、長いコンボ中はテンション高め)、不正解=しょんぼり */}
@@ -389,10 +400,14 @@ export function QuizPlayer({
             <p className="feedback-message">
               <Rb t={feedback.message} />
             </p>
-            {feedback.review && <p className="feedback-overcome">⭐ にがてを こくふくした!</p>}
+            {feedback.review && <p className="feedback-overcome">
+                <Star className="inline-icon icon-gold" aria-hidden="true" size="1.05em" fill="currentColor" />
+                にがてを こくふくした!
+              </p>}
             {feedback.weakBonus && (
               <p className="feedback-weak-bonus">
-                🌟 ニガテ<Rb t="克服[こくふく]" />!
+                <Sparkles className="inline-icon icon-gold" aria-hidden="true" size="1.05em" />
+                ニガテ<Rb t="克服[こくふく]" />!
               </p>
             )}
             {boss && !feedback.correct && (

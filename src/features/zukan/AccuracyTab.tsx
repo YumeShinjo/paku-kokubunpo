@@ -1,3 +1,4 @@
+import { Star, TriangleAlert } from "lucide-react";
 import { useMemo } from "react";
 import { areas } from "@/data/areas";
 import { getAllQuestions, getAvailableUnitIds } from "@/data/questionLoader";
@@ -46,7 +47,10 @@ export function AccuracyTab() {
       {/* 苦手かもしれない単元(直近の正答率が低い単元)を、いちばん上で知らせる。タップでその単元の自由練習へ */}
       {weakRows.length > 0 && (
         <section className="zukan-weak-callout" role="status">
-          <p className="zukan-weak-callout-title">⚠ にがてかも?</p>
+          <p className="zukan-weak-callout-title">
+            <TriangleAlert className="inline-icon" aria-hidden="true" size="1.05em" />
+            にがてかも?
+          </p>
           <p className="zukan-weak-callout-lead">
             <Rb t="正答率[せいとうりつ]が低[ひく]い単元[たんげん]があるよ。タップして練習[れんしゅう]してみよう!" />
           </p>
@@ -97,7 +101,10 @@ export function AccuracyTab() {
                           </span>
                         )}
                         {(starsByUnit.get(row.unitId) ?? 0) > 0 && (
-                          <span className="zukan-stars">⭐{starsByUnit.get(row.unitId)}</span>
+                          <span className="zukan-stars">
+                            <Star className="inline-icon icon-gold" aria-hidden="true" size="0.9em" fill="currentColor"  />
+                            {starsByUnit.get(row.unitId)}
+                          </span>
                         )}
                       </span>
                       <span className="zukan-bar" aria-hidden="true">
@@ -124,7 +131,8 @@ export function AccuracyTab() {
       ))}
 
       <p className="zukan-review">
-        <Rb t="⭐ 苦手[にがて]問題[もんだい]:" /> <strong>{starredIds.length}</strong>
+        <Star className="inline-icon icon-gold" aria-hidden="true" size="1.05em" fill="currentColor" />
+        <Rb t="苦手[にがて]問題[もんだい]:" /> <strong>{starredIds.length}</strong>
         <Rb t="問[もん](コトの好物[こうぶつ]!正解[せいかい]すると克服[こくふく]できるよ)" />
       </p>
     </>

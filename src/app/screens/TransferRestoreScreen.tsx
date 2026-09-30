@@ -1,3 +1,4 @@
+import { Camera, Image } from "lucide-react";
 import { useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
@@ -124,10 +125,12 @@ export function TransferRestoreScreen() {
       {!pending && !scanning && (
         <div className="transfer-scan-buttons">
           <button type="button" onClick={() => setScanning(true)}>
-            📷 カメラで QRコードを よみとる
+            <Camera className="inline-icon" aria-hidden="true" size="1.05em" />
+            カメラで QRコードを よみとる
           </button>
           <label className="transfer-file-button">
-            🖼 写真から よみとる
+            <Image className="inline-icon" aria-hidden="true" size="1.05em" />
+            写真から よみとる
             <input
               type="file"
               accept="image/*"

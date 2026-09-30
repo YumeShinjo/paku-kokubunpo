@@ -1,3 +1,4 @@
+import { ScrollText } from "lucide-react";
 import { buildStoryArchive, countReplayableStories } from "@/features/story/storyArchive";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
@@ -29,7 +30,10 @@ export function StoryArchive() {
       ) : (
         groups.map((group) => (
           <details key={group.areaId} className="zukan-page">
-            <summary>📜 {group.areaName}</summary>
+            <summary>
+              <ScrollText className="inline-icon" aria-hidden="true" size="1.05em" />
+              {group.areaName}
+            </summary>
             <ul className="memory-list">
               {group.entries.map((entry) => (
                 <li key={entry.id}>
