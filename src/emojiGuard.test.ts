@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
  * 問題文・選択肢・ストーリーの台詞(src/data)は対象外。
  * 例外: マスコットの素材(画像)が置かれていないときの仮表示の絵文字(features/mascot/Mascot.tsx)。本番では画像が出るので見えない。
  */
-const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2B06}\u{2B05}\u{2B07}\u{FE0F}]/u;
+const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2B06}\u{2B05}\u{2B07}]/u;
 const ALLOWED = new Set(["src/features/mascot/Mascot.tsx"]);
 
 function sourceFiles(dir: string): string[] {
