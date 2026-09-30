@@ -24,6 +24,7 @@ import { AnnouncementModal } from "@/components/AnnouncementModal";
  */
 export function TapToStart() {
   const goTo = useNavigationStore((s) => s.goTo);
+  const closeSplash = useNavigationStore((s) => s.closeSplash);
   const starCount = useReviewStore((s) => s.starredQuestionIds.length);
   const seenIds = useAnnouncementStore((s) => s.seenIds);
   const markAllSeen = useAnnouncementStore((s) => s.markAllSeen);
@@ -42,20 +43,28 @@ export function TapToStart() {
     setAnnounceOpen(true);
   }
 
+  /** どこをタップしても始まる: 音声(BGM・タップ音)を解禁して、ホーム画面へ。戻ってきたときも、同じ */
+  function start() {
+    unlockPlayback();
+    closeSplash();
+  }
+
   function openCredits() {
     unlockPlayback();
+    closeSplash();
     goTo({ name: "credits", next: { name: "title" } });
   }
 
   function openPrivacy() {
     unlockPlayback();
+    closeSplash();
     goTo({ name: "privacy", next: { name: "title" } });
   }
 
   return (
     <div className="splash">
       <div className="splash-stage">
-        <button type="button" data-no-tap className="tap-to-start" onClick={unlockPlayback}>
+        <button type="button" data-no-tap className="tap-to-start" onClick={start}>
           {bgUrl && <img className="splash-bg" src={bgUrl} alt="" draggable={false} />}
           {/* 飾り: ゆっくり流れる雲 */}
           <span className="splash-sky" aria-hidden="true">

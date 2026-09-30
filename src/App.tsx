@@ -28,6 +28,7 @@ import { Toaster } from "@/components/Toaster";
 export default function App() {
   const screen = useNavigationStore((s) => s.screen);
   const audioUnlocked = useSettingsStore((s) => s.audioUnlocked);
+  const splashOpen = useNavigationStore((s) => s.splashOpen);
   const textSize = useSettingsStore((s) => s.textSize);
 
   // 場面(画面)に合わせてBGMを切り替える。素材が置かれていなければ無音のまま。
@@ -70,7 +71,8 @@ export default function App() {
 
   // 9章: 起動直後は「タップしてはじめる」の1枚だけを出し、そのタップで音声を解禁してから、はじめて本編(タイトル画面)を出す。
   // audioUnlocked は端末には保存しないので、アプリを起動するたびにこの画面が出る。
-  if (!audioUnlocked) return <TapToStart />;
+  // (ホーム画面の「タイトルへもどる」で、解禁後にこの画面へ戻ることもある)
+  if (!audioUnlocked || splashOpen) return <TapToStart />;
 
   return (
     <>

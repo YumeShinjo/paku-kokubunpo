@@ -1,3 +1,4 @@
+import { Utensils } from "lucide-react";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { Rb } from "@/components/Rb";
@@ -13,7 +14,10 @@ export function HungryBadge() {
   if (count === 0) return null;
   return (
     <button type="button" className="hungry-badge" onClick={() => goTo({ name: "reviewPractice" })}>
-      <Rb t={`🍙 コトがお腹[なか]をすかせているよ!(苦手[にがて]問題[もんだい] ${count}問[もん])`} />
+      <span className="hungry-badge-title">
+        <Utensils aria-hidden="true" size={16} />
+        <Rb t={`コトがお腹[なか]をすかせているよ!(苦手[にがて]問題[もんだい] ${count}問[もん])`} />
+      </span>
       <small>
         <Rb t="タップして、苦手[にがて]問題[もんだい]を練習[れんしゅう]しよう!" />
       </small>

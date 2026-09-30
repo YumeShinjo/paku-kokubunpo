@@ -21,6 +21,28 @@ test.describe("タイトル画面", () => {
     await expectNoHorizontalOverflow(page);
     await expect(page).toHaveScreenshot("title.png");
   });
+
+  test("左上の「タイトルへもどる」で最初の画面へ戻り、タップでまたホーム画面へ(ホーム → 最初の画面 → ホーム)", async ({ page }) => {
+    await startApp(page);
+    const historyBefore = await page.evaluate(() => window.history.length);
+    const back = page.getByRole("button", { name: "タイトルへもどる" });
+    await expect(back).toBeVisible();
+    const box = (await back.boundingBox())!;
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+
+    await back.click();
+    await expect(page.locator(".tap-to-start")).toBeVisible();
+    await expect(page.locator(".title-primary")).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+
+    // 最初の画面の、どこをタップしても始まる
+    await page.locator(".tap-to-start").click({ position: { x: 40, y: 300 } });
+    await expect(page.locator(".title-primary")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    // ブラウザの履歴は、増えていない(ブラウザの戻る操作と干渉しない)
+    expect(await page.evaluate(() => window.history.length)).toBe(historyBefore);
+  });
 });
 
 test.describe("出題画面と正誤ポップアップ(通常ステージ)", () => {

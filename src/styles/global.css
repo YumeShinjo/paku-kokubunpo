@@ -836,7 +836,7 @@ button.incorrect {
    場所を少しだけ確保しておく(出ていないときの余白を大きくしすぎないよう、
    バッジ本来の高さよりは控えめにして、ズレの大きさを抑える程度にとどめる) */
 .hungry-badge-slot {
-  min-height: 1.6rem;
+  min-height: 0.9rem;
 }
 
 .zukan-title-none {
@@ -933,8 +933,94 @@ button.incorrect {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0 0.25rem;
+  gap: 0.25rem;
+  padding: 0;
+}
+
+/*
+ * ホーム画面(タップ後のタイトル画面)。左上の戻るボタンとロゴが重ならないよう、上に余白をとる。
+ * 下の余白は、右下の固定の音量ボタン(高さ44px+余白)に「つづく一番下の行」が隠れない最小限にする
+ * (プライバシーポリシーのリンクは中央にあり、音量ボタンとは、横にずれる)。
+ */
+.screen-title {
+  position: relative;
+  gap: 0.55rem;
+  /* ロゴの文字は、画像の上端より約27px下から始まる。戻るボタン(高さ2.75rem)の下端に、文字が掛からない最小の余白(文字サイズ「大」でも) */
+  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 1.6rem);
+  /* 一番下までスクロールしたとき、右下の固定の音量ボタン(下から56pxまで)が、ボタンの角に掛からないだけの高さ */
+  padding-bottom: calc(2.15rem + env(safe-area-inset-bottom));
+}
+
+/* 背景: 最初の画面の背景画像を、軽くぼかして、薄く(不透明度35%)敷く。地のクリーム色は残る */
+.title-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
+  filter: blur(0.3rem);
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+/* 左上: 最初の画面へ戻る、小さな丸いボタン(44px以上。ノッチ・ダイナミックアイランドを避ける) */
+.title-back {
+  position: absolute;
+  top: max(0.6rem, env(safe-area-inset-top));
+  left: max(0.6rem, env(safe-area-inset-left));
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.14);
+}
+
+/* コト: 1.15倍に大きくする(静止。揺らさない)。後ろに光の輪、足元にやわらかい楕円の影。絵の上下の透明な余白は詰める */
+.title-koto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-block: -0.6rem -1rem;
+}
+
+.title-koto > * {
+  grid-area: 1 / 1;
+}
+
+.title-koto .mascot-large {
+  --mascot-size: 12.65rem;
+}
+
+.title-koto-glow {
+  width: 135%;
+  height: 135%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(236, 251, 244, 0.75) 50%,
+    rgba(236, 251, 244, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.title-koto-shadow {
+  align-self: end;
+  width: 54%;
+  height: 6.5%;
+  margin-bottom: 3.5%;
+  border-radius: 50%;
+  background: rgba(96, 76, 64, 0.24);
+  filter: blur(0.3rem);
+  pointer-events: none;
 }
 
 .title-hero h1 {
@@ -945,14 +1031,68 @@ button.incorrect {
 .title-status {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
+}
+
+/* 称号・進捗バー・正解数を、ひとつのカード(白に近い半透明・薄い縁・軽い影)にまとめる */
+.title-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.9rem 0.45rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(168, 224, 200, 0.75);
+  box-shadow: 0 2px 8px rgba(75, 58, 46, 0.09);
+}
+
+.title-card .title-badge {
+  padding: 0.1rem 0.7rem;
+}
+
+.title-card .title-owned {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mastery-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  margin: 0;
+}
+
+/* 進捗バー: ミント色・角丸・細め。進捗が0のときも、空のバーの枠が出る */
+.mastery-bar {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-bar-track);
+  overflow: hidden;
+}
+
+.mastery-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8ddab7, #62c39b);
+}
+
+.mastery-text {
   margin: 0;
   text-align: center;
   font-size: 0.9rem;
   color: var(--color-text-muted);
+}
+
+.mastery-complete-icon {
+  vertical-align: -0.2em;
 }
 
 .mastery-complete {
@@ -1450,6 +1590,15 @@ button.incorrect {
 }
 
 /* ---- ホーム画面のバッジ ---- */
+/* 見出しの行: 食器のアイコン(絵文字は使わない)と、文を、ひとつの行にそろえる */
+.hungry-badge-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
 .hungry-badge {
   width: 100%;
   color: var(--color-text);
@@ -2115,7 +2264,7 @@ button.incorrect {
   align-self: center;
   /* 幅360×高さ740の画面でも、縦にスクロールしないで収まるよう、高さと上の余白を詰めてある */
   min-height: 1.5rem;
-  margin-top: -0.9rem;
+  margin-top: -0.35rem;
   padding: 0.1rem 0.6rem;
   border: 0;
   background: transparent;
@@ -2684,12 +2833,33 @@ button.incorrect {
 
 /* ---- タイトル画面: 「はじめる」を主役に、サブ機能は小さく2×2 ---- */
 .title-primary {
-  min-height: 4.5rem;
-  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 5.2rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
   /* 主役: 他のボタンより、やや濃いめのミント。彩度は抑えたパステルトーンのまま */
   background: #7fcaa9;
-  border: 2px solid #5fb896;
-  box-shadow: 0 3px 0 rgba(95, 184, 150, 0.55);
+  background-image: linear-gradient(180deg, #93dcba 0%, #7fcaa9 100%);
+  border: 0;
+  border-radius: 18px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  /* 立体感: 下に濃いミントの縁(厚み)、上辺にうっすら明るいハイライト、やわらかい影 */
+  box-shadow:
+    0 0.3rem 0 #4fae8a,
+    0 0.75rem 1rem rgba(79, 174, 138, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* 押している間は、縁(厚み)の分だけ沈む(共通のボタンの縮みより、優先する) */
+button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {
+  transform: translateY(0.3rem);
+  box-shadow:
+    0 0 0 #4fae8a,
+    0 0.25rem 0.5rem rgba(79, 174, 138, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.35);
 }
 
 .title-sub-buttons {
@@ -2704,11 +2874,67 @@ button.incorrect {
   justify-content: center;
   gap: 0.4rem;
   min-height: 2.75rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.4rem 0.4rem;
   font-size: 0.9rem;
-  /* サブ機能: ひと回り小さく、主役より薄いミント */
+  /* 文字サイズ「大」の幅360pxでも、ラベルが2行に割れないようにする */
+  white-space: nowrap;
+  /* サブ機能: ひと回り小さく、主役より薄い色。4つとも同系の明るい色で、色相だけ少しずつ変える(文字は濃い茶色で、読みやすさを保つ) */
   background: #cfeee0;
   border: 1px solid #a8e0c8;
+  background: var(--sub-bg, #cfeee0);
+  border-color: var(--sub-edge, #a8e0c8);
+  box-shadow: 0 2px 0 var(--sub-edge, #a8e0c8);
+}
+
+/* 左の、色つきの丸いバッジ(アイコンの土台) */
+.sub-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  background: var(--sub-badge-bg, #8fd6b5);
+  color: var(--sub-badge-fg, #1f5d46);
+}
+
+.title-sub-buttons .sub-book {
+  --sub-bg: #d6f1e4;
+  --sub-bg-pressed: #bfe6d3;
+  --sub-edge: #a9dcc4;
+  --sub-badge-bg: #8fd6b5;
+  --sub-badge-fg: #1f5d46;
+}
+
+.title-sub-buttons .sub-rank {
+  --sub-bg: #fcf0c8;
+  --sub-bg-pressed: #f5e3a6;
+  --sub-edge: #ecd99a;
+  --sub-badge-bg: #f4d36b;
+  --sub-badge-fg: #6b4e00;
+}
+
+.title-sub-buttons .sub-settings {
+  --sub-bg: #d5ebf6;
+  --sub-bg-pressed: #bcdcec;
+  --sub-edge: #a9d3e8;
+  --sub-badge-bg: #8cc9e6;
+  --sub-badge-fg: #124a66;
+}
+
+.title-sub-buttons .sub-credits {
+  --sub-bg: #f8e7d8;
+  --sub-bg-pressed: #f0d3bc;
+  --sub-edge: #e6cbb3;
+  --sub-badge-bg: #f0bf9a;
+  --sub-badge-fg: #6b3a17;
+}
+
+/* 押したときは、少し沈み(縁の分)、色が濃くなる */
+.title-sub-buttons button:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {
+  transform: translateY(2px);
+  background: var(--sub-bg-pressed, #bfe6d3);
+  box-shadow: 0 0 0 var(--sub-edge, #a8e0c8);
 }
 
 .title-sub-buttons button svg {

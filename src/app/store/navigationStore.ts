@@ -29,9 +29,20 @@ export type Screen =
 interface NavigationState {
   screen: Screen;
   goTo: (screen: Screen) => void;
+  /**
+   * 最初の「タッチして はじめる」画面を、もう一度出しているか。音声を解禁したあとでも、ホーム画面の
+   * 「タイトルへもどる」で出せる。ブラウザの履歴(pushState)は使わないので、ブラウザの戻る操作とは干渉しない。
+   * 端末には保存しない(アプリを開き直せば、解禁前の最初の画面から始まる)。
+   */
+  splashOpen: boolean;
+  openSplash: () => void;
+  closeSplash: () => void;
 }
 
 export const useNavigationStore = create<NavigationState>((set) => ({
   screen: { name: "title" },
   goTo: (screen) => set({ screen }),
+  splashOpen: false,
+  openSplash: () => set({ splashOpen: true }),
+  closeSplash: () => set({ splashOpen: false }),
 }));

@@ -38,8 +38,11 @@ describe("ふりがな付きテキストの折り返し", () => {
     const root = createRoot(container);
     act(() => root.render(<HungryBadge />));
     const badge = container.querySelector(".hungry-badge")!;
-    expect(badge.children).toHaveLength(2); // 本文の塊 + small
-    expect(badge.children[0].classList.contains("ruby-text")).toBe(true);
+    expect(badge.children).toHaveLength(2); // 見出しの行(食器のアイコン + 本文の塊) + small
+    expect(badge.children[0].classList.contains("hungry-badge-title")).toBe(true);
+    expect(badge.children[0].querySelectorAll(".ruby-text")).toHaveLength(1); // 本文は、1つの塊のまま
+    expect(badge.children[0].querySelector("svg")).not.toBeNull(); // 絵文字ではなく、アイコン
+    expect(badge.textContent).not.toContain("🍙");
     act(() => root.unmount());
     container.remove();
     useReviewStore.setState({ starredQuestionIds: [] });
