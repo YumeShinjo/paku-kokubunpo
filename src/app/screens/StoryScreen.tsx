@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent } from "react";
 import { getStoryEvent } from "@/data/story/events";
 import type { StoryChoiceOption } from "@/data/story/schema";
 import { Ruby } from "@/components/Ruby";
@@ -21,6 +21,10 @@ import type { Screen } from "@/app/store/navigationStore";
  * スキップは選択肢の手前までしか進めない(選択そのものは飛ばせない)。
  * 選ぶと選択を記録し、選んだ分岐のイベントを経て、渡された next へ進む。
  */
+/** 立ち絵の表示倍率(global.css の --portrait-scale)。1のときは指定しない */
+const scaleStyle = (scale: number | undefined): CSSProperties | undefined =>
+  scale === undefined || scale === 1 ? undefined : ({ "--portrait-scale": scale } as CSSProperties);
+
 export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }) {
   const goTo = useNavigationStore((s) => s.goTo);
   const isStageCleared = useProgressStore((s) => s.isStageCleared);
@@ -117,17 +121,17 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
         style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
       >
         {kingUrl && (
-          <div className={`story-character story-character-${layout.king}`}>
+          <div className={`story-character story-character-${layout.king}`} style={scaleStyle(layout.scale?.king)}>
             <img className="story-king" src={kingUrl} alt="" draggable={false} />
           </div>
         )}
         {bossUrl && (
-          <div className={`story-character story-character-${layout.boss}`}>
+          <div className={`story-character story-character-${layout.boss}`} style={scaleStyle(layout.scale?.boss)}>
             <img className="story-king" src={bossUrl} alt="" draggable={false} />
           </div>
         )}
         {line.showMascot && (
-          <div className={`story-character story-character-${layout.mascot}`}>
+          <div className={`story-character story-character-${layout.mascot}`} style={scaleStyle(layout.scale?.mascot)}>
             <Mascot form={line.mascotForm} />
           </div>
         )}

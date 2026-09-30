@@ -270,9 +270,15 @@ button.incorrect {
   animation: story-character-in 0.2s ease-out;
 }
 
-/* 画像の枠は、置き場の幅に合わせて縮めない(縮めると、絵の大きさが場面ごとに変わってしまう) */
+/*
+ * 画像の枠は、置き場の幅に合わせて縮めない(縮めると、絵の大きさが場面ごとに変わってしまう)。
+ * 2人以上の場面の縮小(--portrait-scale。data/story/portraitScale.ts)は、足元(絵の高さの約93%)を原点にする。
+ * 足元の高さと、左右の置き場は変わらず、その場で小さくなる。
+ */
 .story-character > * {
   flex: none;
+  transform: scale(var(--portrait-scale, 1));
+  transform-origin: 50% 93%;
 }
 
 .story-character-left {
@@ -1640,6 +1646,7 @@ button.incorrect {
  * 起動直後の「タッチしてはじめる」画面。背景・ロゴ・コトを、画面の高さに対する割合で重ねる。
  * 縦長の画面(スマホ)ではそのまま画面いっぱい。横に広い画面では、背景の縦横比(572×1024)の幅の
  * 縦長の枠を中央に置き、両側は地の色にする(枠の外に、元の位置関係が崩れた背景が広がらないように)。
+ * 飾りの動き(雲・葉・キラキラ・コトの揺れ)は、transform と opacity だけ。タップの邪魔をしない(pointer-events: none)。
  */
 .splash {
   position: fixed;
@@ -1647,7 +1654,7 @@ button.incorrect {
   display: flex;
   justify-content: center;
   background: #fbf4e4;
-  color: #8c7676;
+  color: #6f5a5a;
 }
 
 .splash-stage {
@@ -1679,7 +1686,7 @@ button.incorrect {
   object-position: center;
 }
 
-/* ロゴ: 上端が画面の上から13%、幅は画面の88% */
+/* ロゴ: 上端が画面の上から13%、幅は画面の88%。縁取り付きのロゴに、茶色系のやわらかい影を付けて、背景の雲の上でも浮かせる */
 .splash-logo,
 .tap-to-start-name {
   position: absolute;
@@ -1691,6 +1698,7 @@ button.incorrect {
 .splash-logo {
   width: 88%;
   height: auto;
+  filter: drop-shadow(0 0.2rem 0.45rem rgba(111, 90, 90, 0.38));
 }
 
 .tap-to-start-name {
@@ -1703,11 +1711,17 @@ button.incorrect {
   position: absolute;
   left: 36%;
   transform: translateX(-50%);
+  display: block;
 }
 
 .splash-koto-wave {
   top: 43.5%;
   height: 38%;
+}
+
+.splash-koto-wave img {
+  display: block;
+  height: 100%;
   width: auto;
 }
 
@@ -1724,7 +1738,23 @@ button.incorrect {
   height: 100%;
 }
 
-/* コトの足元の影: ぼかした半透明の楕円 */
+/* コトが、足元を軸に、ゆっくり上下に揺れる(数px。周期3.6秒) */
+.splash-koto > * {
+  transform-origin: 50% 100%;
+  animation: splash-bob 3.6s ease-in-out infinite;
+}
+
+@keyframes splash-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0.7deg);
+  }
+}
+
+/* コトの足元の影: ぼかした半透明の楕円。コトが上がると、少し細く、薄くなる */
 .splash-shadow {
   position: absolute;
   left: 36%;
@@ -1735,72 +1765,277 @@ button.incorrect {
   border-radius: 50%;
   background: rgba(96, 76, 64, 0.26);
   filter: blur(0.4rem);
+  pointer-events: none;
+  animation: splash-shadow 3.6s ease-in-out infinite;
 }
 
-/* 案内: 画像を読み込んでいるあいだは薄く、準備ができたら通常の濃さで、ゆっくり点滅させる */
+@keyframes splash-shadow {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scaleX(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scaleX(0.9);
+    opacity: 0.75;
+  }
+}
+
+/* コトの横の吹き出し: コトの頭の右上。しっぽ・手にかからない位置 */
+.splash-bubble {
+  position: absolute;
+  left: 58%;
+  top: 41.5%;
+  max-width: 37%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #6f5a5a;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: left;
+  /* 単語の途中では折り返さない(「ことば」が割れないよう、空白の位置だけで折り返す) */
+  word-break: keep-all;
+  box-shadow: 0 2px 8px rgba(111, 90, 90, 0.18);
+  pointer-events: none;
+  animation: splash-float-small 4.2s ease-in-out infinite;
+}
+
+.splash-bubble::after {
+  content: "";
+  position: absolute;
+  left: -0.4rem;
+  bottom: 0.7rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0 0 0 4px;
+  transform: rotate(45deg) skew(8deg, 8deg);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+@keyframes splash-float-small {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 雲: ロゴの後ろを、ゆっくり左から右へ流れる(80〜110秒で画面を横切る) */
+.splash-sky,
+.splash-dust {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.splash-cloud {
+  position: absolute;
+  left: 0;
+  width: 34%;
+  height: 5.5%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  filter: blur(0.3rem);
+  opacity: 0.8;
+  will-change: transform;
+  animation: splash-cloud-drift 90s linear infinite;
+}
+
+.splash-cloud::before,
+.splash-cloud::after {
+  content: "";
+  position: absolute;
+  bottom: 35%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.splash-cloud::before {
+  left: 14%;
+  width: 34%;
+}
+
+.splash-cloud::after {
+  left: 40%;
+  width: 44%;
+}
+
+.splash-cloud-a {
+  top: 5%;
+  animation-duration: 95s;
+  animation-delay: -20s;
+}
+
+.splash-cloud-b {
+  top: 31%;
+  width: 28%;
+  opacity: 0.6;
+  animation-duration: 120s;
+  animation-delay: -75s;
+}
+
+.splash-cloud-c {
+  top: 36.5%;
+  width: 24%;
+  opacity: 0.5;
+  animation-duration: 105s;
+  animation-delay: -45s;
+}
+
+@keyframes splash-cloud-drift {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+/* 葉とキラキラ: 数個だけ、ふわふわ漂う(吹き出しの文字・コトのしっぽや手には、かからない位置) */
+.splash-leaf,
+.splash-sparkle {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+.splash-leaf {
+  width: 0.7rem;
+  height: 0.95rem;
+  border-radius: 0 100% 0 100%;
+  background: #8fd3ad;
+  opacity: 0.85;
+  animation: splash-drift 7s ease-in-out infinite;
+}
+
+.splash-leaf-a {
+  left: 80%;
+  top: 68%;
+}
+
+.splash-leaf-b {
+  left: 64%;
+  top: 33.5%;
+  animation-duration: 8.5s;
+  animation-delay: -3s;
+}
+
+.splash-leaf-c {
+  left: 90%;
+  top: 74%;
+  animation-duration: 9s;
+  animation-delay: -5s;
+}
+
+@keyframes splash-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(0.9rem, -1rem) rotate(28deg);
+  }
+}
+
+.splash-sparkle {
+  width: 0.85rem;
+  height: 0.85rem;
+  background: #fff8cf;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: splash-twinkle 3.2s ease-in-out infinite;
+}
+
+.splash-sparkle-a {
+  left: 9%;
+  top: 36%;
+}
+
+.splash-sparkle-b {
+  left: 86%;
+  top: 60%;
+  animation-delay: -1.1s;
+}
+
+.splash-sparkle-c {
+  left: 24%;
+  top: 31.5%;
+  animation-delay: -2s;
+}
+
+.splash-sparkle-d {
+  left: 91%;
+  top: 31%;
+  animation-delay: -0.6s;
+}
+
+@keyframes splash-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* 案内: 薄いクリーム色の丸い背景の上に、文字を出す。画像を読み込んでいるあいだは薄く、準備ができたら通常の濃さにして、文字だけをゆっくり点滅させる */
 .tap-to-start-hint {
   position: absolute;
-  top: 90%;
-  left: 0;
-  right: 0;
-  transform: translateY(-50%);
-  text-align: center;
-  font-size: 1.1rem;
-  opacity: 0.35;
-  text-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.75);
-  transition: opacity 0.4s ease;
-}
-
-:root[data-text-size="large"] .tap-to-start-hint {
   top: 86%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  background: rgba(253, 255, 231, 0.85);
+  box-shadow: 0 2px 10px rgba(111, 90, 90, 0.14);
+  color: #6f5a5a;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  opacity: 0.35;
+  transition: opacity 0.4s ease;
 }
 
 .tap-to-start-hint.is-ready {
   opacity: 1;
+}
+
+.tap-to-start-hint.is-ready .tap-to-start-hint-text {
+  display: inline-block;
   animation: tap-hint 2.4s ease-in-out infinite;
 }
 
 @keyframes tap-hint {
   50% {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 }
 
-/* 一番下: バージョン表記(お知らせを開く)とクレジット。ごく小さく、ふちに余白を確保する */
-.splash-footer {
+/* 右上: お知らせ(小さな丸いボタン。未読のときは NEW) */
+.splash-announce {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  padding: 0 0.5rem max(0.35rem, env(safe-area-inset-bottom));
-  pointer-events: none;
-}
-
-.splash-version,
-.splash-credits,
-.splash-privacy {
-  pointer-events: auto;
+  top: max(0.6rem, env(safe-area-inset-top));
+  right: 0.6rem;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-height: 2rem;
-  padding: 0.25rem 0.5rem;
+  min-height: 2.2rem;
+  padding: 0.25rem 0.85rem;
   border: 0;
-  border-radius: 8px;
-  background: transparent;
-  box-shadow: none;
-  color: #8c7676;
-  font-size: 0.7rem;
-  font-weight: normal;
+  border-radius: 999px;
+  background: rgba(253, 255, 231, 0.85);
+  box-shadow: 0 1px 6px rgba(111, 90, 90, 0.2);
+  color: #6f5a5a;
+  font-size: 0.75rem;
+  font-weight: bold;
   white-space: nowrap;
-}
-
-.splash-footer-label {
-  text-decoration: underline;
 }
 
 .splash-new {
@@ -1813,14 +2048,66 @@ button.incorrect {
   line-height: 1.4;
 }
 
-/* 最初の画面の一番下、右側のリンク(クレジット・プライバシーポリシー) */
-.splash-links {
-  margin-left: auto;
-  display: inline-flex;
+/* 一番下: バージョン・クレジット・プライバシーポリシーを、中央寄せの1行に。押せるボタンは高さ44px、下端は端末の安全領域の分あける */
+.splash-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  padding: 0 0.5rem max(0.35rem, env(safe-area-inset-bottom));
+  color: #6f5a5a;
+  font-size: 0.7rem;
   pointer-events: none;
+}
+
+.splash-version,
+.splash-dot {
+  padding: 0 0.15rem;
+}
+
+.splash-dot {
+  opacity: 0.6;
+}
+
+.splash-credits,
+.splash-privacy {
+  pointer-events: auto;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: #6f5a5a;
+  font-size: 0.7rem;
+  font-weight: normal;
+  white-space: nowrap;
+  text-decoration: underline;
+}
+
+/* 動きを減らす設定のときは、飾りの動きをすべて止める(雲は消し、葉・キラキラ・吹き出しは、その場に止める) */
+@media (prefers-reduced-motion: reduce) {
+  .splash-koto > *,
+  .splash-shadow,
+  .splash-bubble,
+  .splash-cloud,
+  .splash-leaf,
+  .splash-sparkle,
+  .tap-to-start-hint.is-ready .tap-to-start-hint-text {
+    animation: none;
+  }
+
+  .splash-sparkle {
+    opacity: 0.8;
+  }
+
+  .splash-sky {
+    display: none;
+  }
 }
 
 /* タイトル画面: クレジットの下に、小さく置くプライバシーポリシーの入口 */

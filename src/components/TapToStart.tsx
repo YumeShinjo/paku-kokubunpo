@@ -16,10 +16,11 @@ import { AnnouncementModal } from "@/components/AnnouncementModal";
  * iOSは pointerdown / touchstart を有効なユーザー操作と認めないので、click で解禁する
  * (ボタンなので、キーボードの Enter / Space でも click になる)。
  *
- * 画面の一番下のバージョン表記(お知らせを開く)とクレジットは、始まるボタンとは別のボタン。押しても、ゲームは始まらない
- * (クレジットだけは、音声を解禁してから、クレジット画面へ進む)。
+ * 右上の「お知らせ」と、一番下のクレジット・プライバシーポリシーは、始まるボタンとは別のボタン。押しても、ゲームは始まらない
+ * (クレジット・プライバシーポリシーだけは、音声を解禁してから、それぞれの画面へ進む)。
  * 配置は、画面の高さに対する割合(global.css の .splash-*)。星(苦手問題)が残っているときは、
  * 手を振る専用の絵ではなく、タイトル画面と同じ表情のコトを出す。
+ * 雲・葉・キラキラ・コトの揺れは、飾りの動き(transform / opacity だけ。タップの邪魔をしない。動きを減らす設定では止まる)。
  */
 export function TapToStart() {
   const goTo = useNavigationStore((s) => s.goTo);
@@ -56,6 +57,22 @@ export function TapToStart() {
       <div className="splash-stage">
         <button type="button" data-no-tap className="tap-to-start" onClick={unlockPlayback}>
           {bgUrl && <img className="splash-bg" src={bgUrl} alt="" draggable={false} />}
+          {/* 飾り: ゆっくり流れる雲 */}
+          <span className="splash-sky" aria-hidden="true">
+            <span className="splash-cloud splash-cloud-a" />
+            <span className="splash-cloud splash-cloud-b" />
+            <span className="splash-cloud splash-cloud-c" />
+          </span>
+          {/* 飾り: ふわふわ漂う葉とキラキラ */}
+          <span className="splash-dust" aria-hidden="true">
+            <span className="splash-leaf splash-leaf-a" />
+            <span className="splash-leaf splash-leaf-b" />
+            <span className="splash-leaf splash-leaf-c" />
+            <span className="splash-sparkle splash-sparkle-a" />
+            <span className="splash-sparkle splash-sparkle-b" />
+            <span className="splash-sparkle splash-sparkle-c" />
+            <span className="splash-sparkle splash-sparkle-d" />
+          </span>
           {logoUrl ? (
             <img className="splash-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
           ) : (
@@ -63,30 +80,43 @@ export function TapToStart() {
           )}
           <span className="splash-shadow" aria-hidden="true" />
           {waveUrl ? (
-            <img className="splash-koto splash-koto-wave" src={waveUrl} alt="" draggable={false} />
+            <span className="splash-koto splash-koto-wave">
+              <img src={waveUrl} alt="" draggable={false} />
+            </span>
           ) : (
             <span className="splash-koto splash-koto-mascot">
               {/* 手を振る絵が置かれていないとき、または星が残っているときの、これまでのコト */}
               <Mascot expression={pose === "wave" ? undefined : pose} />
             </span>
           )}
-          <span className={`tap-to-start-hint${ready ? " is-ready" : ""}`}>タッチして はじめる</span>
+          <span className="splash-bubble">
+            いっしょに <br />
+            ことばを あつめよう!
+          </span>
+          <span className={`tap-to-start-hint${ready ? " is-ready" : ""}`}>
+            <span className="tap-to-start-hint-text">タッチして はじめる</span>
+          </span>
+        </button>
+
+        <button type="button" className="splash-announce" onClick={openAnnouncements}>
+          {hasUnseenAnnouncement(seenIds) && <span className="splash-new">NEW</span>}
+          <span>お知らせ</span>
         </button>
 
         <div className="splash-footer">
-          <button type="button" className="splash-version" onClick={openAnnouncements}>
-            <span>v{__APP_VERSION__}</span>
-            {hasUnseenAnnouncement(seenIds) && <span className="splash-new">NEW</span>}
-            <span className="splash-footer-label">お知らせ</span>
-          </button>
-          <span className="splash-links">
-            <button type="button" className="splash-credits" onClick={openCredits}>
-              クレジット
-            </button>
-            <button type="button" className="splash-privacy" onClick={openPrivacy}>
-              プライバシーポリシー
-            </button>
+          <span className="splash-version">v{__APP_VERSION__}</span>
+          <span className="splash-dot" aria-hidden="true">
+            ・
           </span>
+          <button type="button" className="splash-credits" onClick={openCredits}>
+            クレジット
+          </button>
+          <span className="splash-dot" aria-hidden="true">
+            ・
+          </span>
+          <button type="button" className="splash-privacy" onClick={openPrivacy}>
+            プライバシーポリシー
+          </button>
         </div>
       </div>
       {announceOpen && <AnnouncementModal onClose={() => setAnnounceOpen(false)} />}

@@ -47,8 +47,34 @@ describe("最初の画面(TapToStart)", () => {
     expect(q(".tap-to-start-hint")?.classList.contains("is-ready")).toBe(false);
   });
 
-  it("バージョン表記を押すと、お知らせが開く。ゲームは始まらず、音声も解禁されない", () => {
-    click(".splash-version");
+  it("コトの横に、吹き出し「いっしょに ことばを あつめよう!」がある", () => {
+    expect(q(".splash-bubble")?.textContent?.replace(/\s+/g, " ").trim()).toBe("いっしょに ことばを あつめよう!");
+  });
+
+  it("下部は、「v… ・ クレジット ・ プライバシーポリシー」の1行。バージョンは押せない文字で、2つは押せるボタン", () => {
+    const footer = q(".splash-footer")!;
+    expect(footer.textContent?.replace(/\s+/g, "")).toBe(`v${__APP_VERSION__}・クレジット・プライバシーポリシー`);
+    expect(footer.querySelector(".splash-version")?.tagName).toBe("SPAN");
+    expect([...footer.querySelectorAll("button")].map((b) => b.textContent?.trim())).toEqual(["クレジット", "プライバシーポリシー"]);
+  });
+
+  it("お知らせは、始まるボタンの外の、画面の右上のボタン(押しても、ゲームは始まらない)", () => {
+    const announce = q<HTMLButtonElement>(".splash-announce")!;
+    expect(announce.textContent).toContain("お知らせ");
+    expect(q("button.tap-to-start")!.contains(announce)).toBe(false);
+    // 「NEW」は、お知らせのボタンの中
+    expect(announce.querySelector(".splash-new")?.textContent).toBe("NEW");
+  });
+
+  it("飾り(雲・葉・キラキラ)は、読み上げの対象にしない(aria-hidden)", () => {
+    for (const selector of [".splash-sky", ".splash-dust", ".splash-shadow"]) expect(q(selector)?.getAttribute("aria-hidden"), selector).toBe("true");
+    expect(container.querySelectorAll(".splash-cloud")).toHaveLength(3);
+    expect(container.querySelectorAll(".splash-leaf").length).toBeGreaterThanOrEqual(2);
+    expect(container.querySelectorAll(".splash-sparkle").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("お知らせのボタンを押すと、お知らせが開く。ゲームは始まらず、音声も解禁されない", () => {
+    click(".splash-announce");
     expect(q('[role="dialog"]')?.getAttribute("aria-label")).toBe("お知らせ");
     for (const a of announcements) expect(container.textContent).toContain(a.title.replace(/\[[^\]]*\]/g, ""));
     expect(useSettingsStore.getState().audioUnlocked).toBe(false);
@@ -58,7 +84,7 @@ describe("最初の画面(TapToStart)", () => {
 
   it("まだ見ていないお知らせがあるあいだ「NEW」を出し、お知らせを開くと消える(見たことは保存される)", () => {
     expect(q(".splash-new")?.textContent).toBe("NEW");
-    click(".splash-version");
+    click(".splash-announce");
     expect(q(".splash-new")).toBeNull();
     expect(useAnnouncementStore.getState().seenIds).toEqual(announcements.map((a) => a.id));
   });
@@ -66,7 +92,7 @@ describe("最初の画面(TapToStart)", () => {
   it("以前のお知らせだけを見た端末には、新しいお知らせがあるので、NEW を出す。開くと、本文が1つのお知らせは段落で出る", () => {
     act(() => useAnnouncementStore.setState({ seenIds: ["2026-09-30"] }));
     expect(q(".splash-new")?.textContent).toBe("NEW");
-    click(".splash-version");
+    click(".splash-announce");
     expect(q(".splash-new")).toBeNull();
     const single = [...container.querySelectorAll(".announce-item")].find((el) => el.textContent?.includes("プライバシーポリシーを追加"))!;
     expect(single.querySelector("p.announce-text")).not.toBeNull();

@@ -24,13 +24,22 @@ export function isKingSpeaker(speaker: string | undefined): boolean {
   return speaker === "ヴェルバルト" || (speaker?.startsWith("王(") ?? false);
 }
 
-/** 話者名から、顔の向きの定義のキーを引く(王様は、取り憑かれた姿も「ヴェルバルト」として扱う) */
-export function facingOfSpeaker(speaker: string | undefined): Facing | undefined {
-  if (isKingSpeaker(speaker)) return PORTRAIT_FACING["ヴェルバルト"];
-  return speaker === undefined ? undefined : PORTRAIT_FACING[speaker];
+/** 話者名から、立ち絵のキー(顔の向き・表示倍率の定義に使う)を引く。王様は、取り憑かれた姿も「ヴェルバルト」として扱う */
+export function keyOfSpeaker(speaker: string | undefined): string | undefined {
+  return isKingSpeaker(speaker) ? "ヴェルバルト" : speaker;
 }
 
-/** マスコットの立ち絵の顔の向き。本来の姿(form: "true")はコレット、それ以外はコト */
+/** マスコットの立ち絵のキー。本来の姿(form: "true")はコレット、それ以外はコト */
+export function keyOfMascot(form: string | undefined): string {
+  return form === "true" ? "コレット" : "コト";
+}
+
+export function facingOfSpeaker(speaker: string | undefined): Facing | undefined {
+  const key = keyOfSpeaker(speaker);
+  return key === undefined ? undefined : PORTRAIT_FACING[key];
+}
+
+/** マスコットの立ち絵の顔の向き */
 export function facingOfMascot(form: string | undefined): Facing {
-  return PORTRAIT_FACING[form === "true" ? "コレット" : "コト"];
+  return PORTRAIT_FACING[keyOfMascot(form)];
 }

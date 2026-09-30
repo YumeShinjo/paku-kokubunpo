@@ -32,6 +32,13 @@ describe("ストーリー画面のレイアウト", () => {
     expect(rule(".story-character-right")).toContain("right: 0;");
   });
 
+  it("立ち絵の縮小(--portrait-scale)は、足元(縦の93%)を原点にする。足元の高さと、左右の置き場は変えない", () => {
+    expect(css).toMatch(/\.story-character > \* \{[^}]*transform: scale\(var\(--portrait-scale, 1\)\);[^}]*transform-origin: 50% 93%;/);
+    const character = rule(".story-character");
+    expect(character).toContain("bottom: var(--story-foot);");
+    expect(character).toContain("width: 64%;");
+  });
+
   it("幅360px以下でも、ストーリー画面の背景は左右いっぱいに敷く(.screen の余白が戻らない)", () => {
     const media = css.slice(css.indexOf("@media (max-width: 360px)"));
     expect(media).toMatch(/\.screen-story \{\s*padding-left: 0;\s*padding-right: 0;/);
