@@ -94,9 +94,11 @@ describe("複数人の場面での縮小(scale)", () => {
     expect(multiScaleFor("レル")).toBeCloseTo(MULTI_SCALE);
     expect(multiScaleFor("コレット")).toBeCloseTo(MULTI_SCALE * (MULTI_SCALE_ADJUST["コレット"] ?? 1));
     expect(MULTI_SCALE_ADJUST["コレット"]).toBeLessThan(1);
+    // 王様は、コレットと並ぶとき、基準より約8%大きい
+    expect(MULTI_SCALE_ADJUST["ヴェルバルト"]).toBeCloseTo(1.08);
   });
 
-  it("王様とコレットが並ぶ場面で、コレットの見た目の高さが、王様を超えない", () => {
+  it("王様とコレットが並ぶ場面で、コレットの見えている高さは、王様の約85%", () => {
     // 立ち絵の画像に対する、キャラクター本体(透過でない部分)の高さの割合。画像を測った値(どちらも512px四方の画像)
     const KING_BODY = 444 / 512;
     const COLETTE_BODY = 440 / 512;
@@ -108,9 +110,11 @@ describe("複数人の場面での縮小(scale)", () => {
     expect(coletteBox).toBeGreaterThan(0);
     // 1人のときは、コレットを特に大きく見せている(この設計は、変えない)
     expect(coletteBox * COLETTE_BODY).toBeGreaterThan(kingBox * KING_BODY);
-    // 2人のときは、王様のほうが大きい
+    // 2人のときは、王様のほうが大きく、コレットは王様の約85%の高さ(頭が大きく、ドレスも広いので、高さを低めにして見た目を合わせる)
     const king = kingBox * KING_BODY * multiScaleFor("ヴェルバルト");
     const colette = coletteBox * COLETTE_BODY * multiScaleFor("コレット");
     expect(colette).toBeLessThan(king);
+    expect(colette / king).toBeGreaterThanOrEqual(0.83);
+    expect(colette / king).toBeLessThanOrEqual(0.87);
   });
 });

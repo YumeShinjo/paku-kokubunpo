@@ -32,6 +32,28 @@ describe("ホーム画面のスタイル", () => {
     expect(back).toContain("left: max(0.6rem, env(safe-area-inset-left));");
   });
 
+  it("音量ボタン(ホーム画面だけ): 右上。左上の戻るボタンと、同じ大きさ・同じ余白で、左右対称", () => {
+    const back = rule(".title-back");
+    const mute = rule(".mute-button");
+    const home = rule(".mute-button.on-home");
+    expect(rem(mute, "width")).toBe(rem(back, "width"));
+    expect(rem(mute, "height")).toBe(rem(back, "height"));
+    expect(home).toContain("top: max(0.6rem, env(safe-area-inset-top));");
+    expect(home).toContain("right: max(0.6rem, env(safe-area-inset-right));");
+    expect(home).toContain("bottom: auto;");
+    // 戻るボタンと同じく、画面と一緒にスクロールする(片方だけ残らない)
+    expect(home).toContain("position: absolute;");
+    // 音量ボタンが右下を空けたので、下の余白は小さい(safe-area は残す)
+    expect(Number(rule(".screen-title").match(/padding-bottom: calc\(([0-9.]+)rem/)?.[1])).toBeLessThanOrEqual(1);
+    expect(rule(".screen-title")).toContain("env(safe-area-inset-bottom)");
+  });
+
+  it("音量ボタンの位置は、ホーム画面以外では変えない(会話は左上、ほかは右下)", () => {
+    expect(rule(".mute-button")).toContain("right: max(0.75rem, env(safe-area-inset-right));");
+    expect(rule(".mute-button")).toContain("bottom: max(0.75rem, env(safe-area-inset-bottom));");
+    expect(rule(".mute-button.in-story")).toContain("left: max(0.75rem, env(safe-area-inset-left));");
+  });
+
   it("「はじめる」: 従来(4.5rem)の1.15倍前後の高さ。厚み(濃いミントの縁)・上辺のハイライト・やわらかい影がある", () => {
     const primary = rule(".title-primary");
     expect(rem(primary, "min-height") / 4.5).toBeGreaterThanOrEqual(1.1);

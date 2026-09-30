@@ -939,16 +939,14 @@ button.incorrect {
 
 /*
  * ホーム画面(タップ後のタイトル画面)。左上の戻るボタンとロゴが重ならないよう、上に余白をとる。
- * 下の余白は、右下の固定の音量ボタン(高さ44px+余白)に「つづく一番下の行」が隠れない最小限にする
- * (プライバシーポリシーのリンクは中央にあり、音量ボタンとは、横にずれる)。
+ * 音量ボタンは、この画面だけ右上に置く(左上の戻るボタンと左右対称。下は空くので、下の余白は小さくてよい)。
  */
 .screen-title {
   position: relative;
   gap: 0.55rem;
-  /* ロゴの文字は、画像の上端より約27px下から始まる。戻るボタン(高さ2.75rem)の下端に、文字が掛からない最小の余白(文字サイズ「大」でも) */
-  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 1.6rem);
-  /* 一番下までスクロールしたとき、右下の固定の音量ボタン(下から56pxまで)が、ボタンの角に掛からないだけの高さ */
-  padding-bottom: calc(2.15rem + env(safe-area-inset-bottom));
+  /* 左右上のボタン(高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる)が、掛からない余白(文字サイズ「大」でも) */
+  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 1.9rem);
+  padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
 }
 
 /* 背景: 最初の画面の背景画像を、軽くぼかして、薄く(不透明度35%)敷く。地のクリーム色は残る */
@@ -988,7 +986,7 @@ button.incorrect {
   position: relative;
   display: grid;
   place-items: center;
-  margin-block: -0.6rem -1rem;
+  margin-block: 0.4rem -0.75rem;
 }
 
 .title-koto > * {
@@ -1021,6 +1019,17 @@ button.incorrect {
   background: rgba(96, 76, 64, 0.24);
   filter: blur(0.3rem);
   pointer-events: none;
+}
+
+/* 背の低い画面(375x667 など)では、プライバシーポリシーのリンクが最初の画面から外れないよう、コトの上の余白と行の間を詰める */
+@media (max-height: 700px) {
+  .screen-title {
+    gap: 0.45rem;
+  }
+
+  .title-koto {
+    margin-top: -0.3rem;
+  }
 }
 
 .title-hero h1 {
@@ -1420,6 +1429,15 @@ button.incorrect {
   width: 2.25rem;
   height: 2.25rem;
   font-size: 1.05rem;
+}
+
+/* ホーム画面だけ右上へ(左上の戻るボタンと左右対称: 同じ高さ・同じ余白。戻るボタンと同じく、画面と一緒にスクロールする) */
+.mute-button.on-home {
+  position: absolute;
+  top: max(0.6rem, env(safe-area-inset-top));
+  right: max(0.6rem, env(safe-area-inset-right));
+  bottom: auto;
+  left: auto;
 }
 
 .mute-button.is-muted {
