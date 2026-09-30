@@ -2,7 +2,7 @@ import { useState } from "react";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
 import { splashPose } from "@/features/mascot/mood";
-import { findImage, IMAGE } from "@/assets/registry";
+import { findImage, findTitleLogo, IMAGE } from "@/assets/registry";
 import { useImagesReady } from "@/lib/useImagesReady";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { hasUnseenAnnouncement, useAnnouncementStore } from "@/app/store/announcementStore";
@@ -30,7 +30,7 @@ export function TapToStart() {
   const [announceOpen, setAnnounceOpen] = useState(false);
 
   const bgUrl = findImage(IMAGE.splashBg);
-  const logoUrl = findImage(IMAGE.splashLogo) ?? findImage(IMAGE.splashLogoHyphen) ?? findImage(IMAGE.titleLogo);
+  const logoUrl = findTitleLogo();
   const pose = splashPose(starCount);
   const waveUrl = pose === "wave" ? findImage(IMAGE.splashKoto) : undefined;
 

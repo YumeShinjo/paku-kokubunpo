@@ -3,7 +3,7 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
 import { ScreenBackground } from "@/components/ScreenBackground";
-import { findImage, IMAGE } from "@/assets/registry";
+import { findTitleLogo } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
 import { MasteryProgress } from "@/components/MasteryProgress";
@@ -21,7 +21,7 @@ import { useStoryStore } from "@/app/store/storyStore";
 export function TitleScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const title = getEndingTitle(useStoryStore((s) => s.choices));
-  const logoUrl = findImage(IMAGE.titleLogo);
+  const logoUrl = findTitleLogo(); // 最初の画面と同じ、縁取り付きのロゴ
   const starCount = useReviewStore((s) => s.starredQuestionIds.length); // 星の問題がたくさん(5問以上)残っているときだけ眠そう
 
   function handleStart() {

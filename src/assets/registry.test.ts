@@ -6,10 +6,24 @@ import {
   findAudio,
   findBgm,
   findImage,
+  findTitleLogo,
   IMAGE,
   MASCOT_ACCESSORY_STAGES,
   seAssetName,
+  TITLE_LOGO_CANDIDATES,
 } from "./registry";
+
+describe("タイトルロゴの探し方", () => {
+  it("縁取り付きのロゴ(title/)を優先し、なければ従来のロゴ(ui/)。最初の画面とタイトル画面で共通", () => {
+    expect(TITLE_LOGO_CANDIDATES).toEqual(["title/title_logo", "title/title-logo", "ui/title-logo"]);
+  });
+
+  it("置かれているロゴがあれば、そのURLを返す(縁取り付きのロゴが置かれていれば、それ)", () => {
+    const outlined = findImage("title/title_logo") ?? findImage("title/title-logo");
+    const legacy = findImage("ui/title-logo");
+    expect(findTitleLogo()).toBe(outlined ?? legacy);
+  });
+});
 
 describe("素材の受け皿(registry)", () => {
   it("置かれていない素材は undefined を返す(仮表示のままになる)", () => {

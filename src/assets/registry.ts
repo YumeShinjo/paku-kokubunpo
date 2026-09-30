@@ -97,6 +97,21 @@ export const IMAGE = {
   titleBadge: (choiceKey: string) => `ui/badge-${choiceKey}`,
 } as const;
 
+/**
+ * タイトルロゴの候補。縁取り付きのロゴ(title/title_logo、なければ title/title-logo)を優先し、
+ * どちらも置かれていなければ、従来のロゴ(ui/title-logo)を使う。最初の画面と、タップ後のタイトル画面で共通。
+ */
+export const TITLE_LOGO_CANDIDATES: readonly string[] = [IMAGE.splashLogo, IMAGE.splashLogoHyphen, IMAGE.titleLogo];
+
+/** タイトルロゴの実ファイルのURL。どれも置かれていなければ undefined(文字の見出しにする) */
+export function findTitleLogo(): string | undefined {
+  for (const name of TITLE_LOGO_CANDIDATES) {
+    const url = findImage(name);
+    if (url) return url;
+  }
+  return undefined;
+}
+
 /** マスコットの成長アクセサリーの段階数(エリア数 7 + 序章分は素体のまま) */
 export const MASCOT_ACCESSORY_STAGES = 7;
 
