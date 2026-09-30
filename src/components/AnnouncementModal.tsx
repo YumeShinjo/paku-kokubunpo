@@ -29,13 +29,19 @@ export function AnnouncementModal({ onClose }: { onClose: () => void }) {
               <h3 className="announce-title">
                 <Rb t={a.title} />
               </h3>
-              <ul>
-                {a.body.map((line) => (
-                  <li key={line}>
-                    <Rb t={line} />
-                  </li>
-                ))}
-              </ul>
+              {a.body.length === 1 ? (
+                <p className="announce-text">
+                  <Rb t={a.body[0]} />
+                </p>
+              ) : (
+                <ul>
+                  {a.body.map((line) => (
+                    <li key={line}>
+                      <Rb t={line} />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           ))}
         </div>

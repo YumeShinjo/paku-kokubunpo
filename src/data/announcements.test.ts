@@ -30,6 +30,18 @@ describe("お知らせのデータ", () => {
     ]);
   });
 
+  it("プライバシーポリシーのお知らせが、新しいものとして先頭にある(本文は、指定された文章のとおり)", () => {
+    const first = announcements[0];
+    expect(first.id).toBe("2026-09-30-privacy");
+    expect(first.date).toBe("2026-09-30");
+    expect(plain(first.title)).toBe("プライバシーポリシーを追加しました");
+    expect(first.body.map(plain)).toEqual([
+      "このアプリが、どんな情報を、何のために保存するかを、まとめたページを追加しました。タイトル画面と設定画面の「プライバシーポリシー」から、読めます。ランキングでは、ニックネームに本名や学校名を入れないようにしてください。",
+    ]);
+    // 本名など、方針で残る語のふりがなが付いている
+    expect(first.body[0]).toContain("本名[ほんみょう]");
+  });
+
   it("日付は「2026年9月30日」の形で表示する", () => {
     expect(formatAnnouncementDate("2026-09-30")).toBe("2026年9月30日");
   });
@@ -40,5 +52,7 @@ describe("hasUnseenAnnouncement", () => {
     expect(hasUnseenAnnouncement([])).toBe(true);
     expect(hasUnseenAnnouncement(announcements.map((a) => a.id))).toBe(false);
     expect(hasUnseenAnnouncement(["古いお知らせ"])).toBe(true);
+    // すでに「2026-09-30 の更新」だけを見た端末には、新しいお知らせがあるので、NEW が出る
+    expect(hasUnseenAnnouncement(["2026-09-30"])).toBe(true);
   });
 });

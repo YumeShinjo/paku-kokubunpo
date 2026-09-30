@@ -63,6 +63,19 @@ describe("最初の画面(TapToStart)", () => {
     expect(useAnnouncementStore.getState().seenIds).toEqual(announcements.map((a) => a.id));
   });
 
+  it("以前のお知らせだけを見た端末には、新しいお知らせがあるので、NEW を出す。開くと、本文が1つのお知らせは段落で出る", () => {
+    act(() => useAnnouncementStore.setState({ seenIds: ["2026-09-30"] }));
+    expect(q(".splash-new")?.textContent).toBe("NEW");
+    click(".splash-version");
+    expect(q(".splash-new")).toBeNull();
+    const single = [...container.querySelectorAll(".announce-item")].find((el) => el.textContent?.includes("プライバシーポリシーを追加"))!;
+    expect(single.querySelector("p.announce-text")).not.toBeNull();
+    expect(single.querySelector("ul")).toBeNull();
+    // 本文が複数のお知らせは、これまでどおり箇条書き
+    const multi = [...container.querySelectorAll(".announce-item")].find((el) => el.textContent?.includes("今日の更新"))!;
+    expect(multi.querySelectorAll("li")).toHaveLength(4);
+  });
+
   it("クレジットの入口は、音声を解禁して、クレジット画面へつなぐ", () => {
     click(".splash-credits");
     expect(useSettingsStore.getState().audioUnlocked).toBe(true);

@@ -2000,6 +2000,12 @@ button.incorrect {
   font-size: 1rem;
 }
 
+.announce-text {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
 .announce-item ul {
   margin: 0;
   padding-left: 1.2rem;
