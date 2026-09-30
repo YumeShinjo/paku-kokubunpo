@@ -43,7 +43,7 @@ describe("称号バッジの統一", () => {
   it("3つの画面とも、称号バッジは王冠のアイコンつきで、勲章(リボン)のアイコンは出ない", () => {
     const screens: [string, React.ReactElement][] = [
       ["ホーム", <TitleScreen key="t" />],
-      ["ことだまの書", <ZukanScreen key="z" />],
+      ["ことだまの書", <ZukanScreen key="z" initialTab="memories" />],
       ["エンディング結果", <EndingResultScreen key="e" areaId="ohzaNoMa" next={{ name: "title" }} />],
     ];
     const texts = new Set<string>();

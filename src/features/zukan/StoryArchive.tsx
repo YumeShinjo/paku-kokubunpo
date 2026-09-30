@@ -35,7 +35,7 @@ export function StoryArchive() {
                 <li key={entry.id}>
                   <button
                     type="button"
-                    onClick={() => goTo({ name: "story", eventId: entry.id, next: { name: "zukan" } })}
+                    onClick={() => goTo({ name: "story", eventId: entry.id, next: { name: "zukan", tab: "memories" } })}
                   >
                     {entry.label}
                   </button>

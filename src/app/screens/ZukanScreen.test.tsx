@@ -48,7 +48,7 @@ describe("ことだまの書: 初回の使い方ガイド", () => {
   });
 });
 
-describe("ことだまの書: 苦手かもしれない単元の注意喚起と、正答率の位置", () => {
+describe("ことだまの書: 苦手かもしれない単元の注意喚起と、正答率の位置(せいとうりつタブ)", () => {
   it("正答率が低い単元があると、いちばん上に「にがてかも?」が出て、その単元の練習に入れる", async () => {
     const { useStatsStore } = await import("@/app/store/statsStore");
     useTutorialStore.getState().markSeen("zukan");
@@ -66,11 +66,10 @@ describe("ことだまの書: 苦手かもしれない単元の注意喚起と�
     expect(callout!.textContent).toContain("にがてかも");
     const headings = [...el.querySelectorAll("h3")];
     const accuracy = headings.find((h) => h.textContent?.includes("正答率"))!;
-    const pages = headings.find((h) => h.textContent?.includes("ずかん"))!;
     const before = (a: Element, b: Element) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-    // 注意喚起 → 正答率 → 図鑑のページ の順(正答率は、下の方ではなく上にある)
+    // 注意喚起 → 正答率 の順(正答率は、最初のタブ「せいとうりつ」の中にある。図鑑のページは別のタブ)
     expect(before(callout!, accuracy)).toBe(true);
-    expect(before(accuracy, pages)).toBe(true);
+    expect(el.querySelector(".zukan-pages")).toBeNull();
     act(() => callout!.querySelector<HTMLButtonElement>("button")!.click());
     expect(useNavigationStore.getState().screen).toMatchObject({ name: "freePractice", unitId: "hinshi-bunrui" });
     act(() => r.unmount());

@@ -85,6 +85,8 @@ export const IMAGE = {
   lastBossPurified: "boss/lastboss-purified",
   /** 背景。エリアidごと + タイトル */
   background: (areaIdOrTitle: string) => `bg/${areaIdOrTitle}`,
+  /** 「言の葉の森」の背景。縦長(572×1024)。登録だけで、使う画面はまだない(置くだけで findImage で引ける) */
+  kotonohaForestBackground: "bg/kotonoha_forest",
   /** タイトルロゴ */
   titleLogo: "ui/title-logo",
   /** 最初の画面(タッチしてはじめる)の素材。src/assets/images/title/ に置く */

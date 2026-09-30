@@ -1496,9 +1496,83 @@ html[data-text-size="large"] .story-textbox {
   vertical-align: middle;
 }
 
+/* ---- ことだまの書: タブ ---- */
+.zukan-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.zukan-tabs {
+  position: relative;
+}
+
+/* 横にスクロールできるとき、はみ出している側に、背景色へ溶ける影を出す */
+.zukan-tabs::before,
+.zukan-tabs::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 1.6rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.zukan-tabs::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg), rgba(251, 244, 228, 0));
+}
+
+.zukan-tabs::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg), rgba(251, 244, 228, 0));
+}
+
+.zukan-tabs[data-fade-start="true"]::before,
+.zukan-tabs[data-fade-end="true"]::after {
+  opacity: 1;
+}
+
+.zukan-tablist {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.1rem 0.3rem;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.zukan-tablist::-webkit-scrollbar {
+  display: none;
+}
+
+/* ホーム画面のボタンに合わせた、ミント系の丸いタブ(高さ2.75rem=44px以上)。選んでいるタブは、ミントを濃くして、下に線 */
+.zukan-tab {
+  flex: 1 0 auto;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  scroll-snap-align: center;
+  color: var(--color-on-primary);
+  background: rgba(255, 255, 255, 0.82);
+  border: 2px solid rgba(168, 224, 200, 0.9);
+  box-shadow: 0 2px 4px rgba(75, 58, 46, 0.08);
+}
+
+.zukan-tab[aria-selected="true"] {
+  background: linear-gradient(to bottom, #b9ead5, var(--color-primary));
+  border-color: var(--color-primary-strong);
+  box-shadow: inset 0 -4px 0 var(--color-primary-strong), 0 2px 4px rgba(75, 58, 46, 0.12);
+}
+
 /* ---- ことだまの書のページ ---- */
 .zukan-pages h3,
-.screen-zukan > h3 {
+.zukan-panel > h3 {
   margin: 0.5rem 0 0.25rem;
 }
 

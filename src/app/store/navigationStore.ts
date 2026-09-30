@@ -10,7 +10,8 @@ export type Screen =
   | { name: "stageSelect"; areaId: string }
   | { name: "stage"; areaId: string; stageId: string }
   | { name: "story"; eventId: string; next: Screen }
-  | { name: "zukan" }
+  /** ことだまの書。tab は、開くタブのid(features/zukan/zukanTabs.ts)。省略すると「せいとうりつ」 */
+  | { name: "zukan"; tab?: string }
   | { name: "freePractice"; unitId: string }
   /** 苦手問題(星のついた問題)だけを集めた練習 */
   | { name: "reviewPractice" }

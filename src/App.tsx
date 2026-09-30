@@ -97,7 +97,7 @@ function renderScreen(screen: Screen) {
     case "story":
       return <StoryScreen key={screen.eventId} eventId={screen.eventId} next={screen.next} />;
     case "zukan":
-      return <ZukanScreen />;
+      return <ZukanScreen initialTab={screen.tab} />;
     case "freePractice":
       return <FreePracticeScreen key={screen.unitId} unitId={screen.unitId} />;
     case "reviewPractice":
