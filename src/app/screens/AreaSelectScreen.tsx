@@ -1,7 +1,6 @@
 import { Check, Footprints, Lock } from "lucide-react";
 import { playableAreas } from "@/data/areas";
 import { HungryBadge } from "@/components/HungryBadge";
-import { GrowthAccessory } from "@/components/GrowthAccessory";
 import { findImage, IMAGE } from "@/assets/registry";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { getQuestionsForArea } from "@/data/questionLoader";
@@ -17,7 +16,7 @@ import type { CSSProperties } from "react";
 
 /**
  * エリア選択画面。出題データが組み込み済みのエリアを、カードで表示する。
- * カード: 左に番号のバッジ、名前と単元、右に成長アクセサリー(エリアクリアで色がつく)、下に細い進捗バー(そのエリアの正解数/問題数)。
+ * カード: 左に番号のバッジ、名前と単元、右上に状態のチップ、下に細い進捗バー(そのエリアの正解数/問題数)。
  * 状態は、クリア済み / 挑戦中 / ロック中(鍵のアイコンと落ち着いた色)で見分ける。背景は、そのエリアの(荒れていない)背景を薄く敷く。
  */
 export function AreaSelectScreen() {
@@ -61,36 +60,36 @@ export function AreaSelectScreen() {
               <span className="area-num" aria-hidden="true">
                 {area.order === 0 ? "序" : area.order}
               </span>
-              <span className="area-main">
-                <strong>
-                  <Rb t={areaNameText(area)} />
-                </strong>
-                <span className="area-unit">
-                  <Rb t={unitLabelText(area)} />
+              <strong className="area-name">
+                <Rb t={areaNameText(area)} />
+              </strong>
+              <span className="area-unit">
+                <Rb t={unitLabelText(area)} />
+              </span>
+              {/* 状態のチップ(右上)。ロック中は、開く条件を、名前の下に1行で添える */}
+              {state === "cleared" && (
+                <span className="area-chip stage-cleared-mark">
+                  <Check aria-hidden="true" size={14} />
+                  クリア済み
                 </span>
-              </span>
-              {/* 序章には成長アクセサリーはない(ことばの市場=1 〜 王座の間=7) */}
-              {area.order > 0 && <GrowthAccessory stage={area.order} owned={cleared} />}
-              <span className="area-status">
-                {state === "cleared" && (
-                  <span className="area-chip stage-cleared-mark">
-                    <Check aria-hidden="true" size={14} />
-                    クリア済み
-                  </span>
-                )}
-                {state === "current" && (
-                  <span className="area-chip area-chip-current">
-                    <Footprints aria-hidden="true" size={14} />
-                    <Rb t="挑戦[ちょうせん]中" />
-                  </span>
-                )}
-                {!unlocked && previous && (
-                  <span className="area-locked">
-                    <Lock aria-hidden="true" size={13} />
-                    <Rb t={`${areaNameText(previous)}${previous.subBoss ? "の小ボスを浄化[じょうか]" : "をクリア"}すると開[ひら]くよ`} />
-                  </span>
-                )}
-              </span>
+              )}
+              {state === "current" && (
+                <span className="area-chip area-chip-current">
+                  <Footprints aria-hidden="true" size={14} />
+                  <Rb t="挑戦[ちょうせん]中" />
+                </span>
+              )}
+              {state === "locked" && (
+                <span className="area-chip area-chip-locked">
+                  <Lock aria-hidden="true" size={13} />
+                  ロック中
+                </span>
+              )}
+              {!unlocked && previous && (
+                <span className="area-locked">
+                  <Rb t={`${areaNameText(previous)}${previous.subBoss ? "の小ボスを浄化[じょうか]" : "をクリア"}すると開[ひら]くよ`} />
+                </span>
+              )}
               <span className="area-progress">
                 <span
                   className="area-bar"

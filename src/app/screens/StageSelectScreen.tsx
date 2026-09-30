@@ -1,8 +1,8 @@
-import { Check, Crown, Lock, Play } from "lucide-react";
+import { Check, Crown, Lock, Play, User } from "lucide-react";
 import { areas } from "@/data/areas";
 import { findImage, IMAGE } from "@/assets/registry";
 import { ScreenBackground } from "@/components/ScreenBackground";
-import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
+import { areaBackgroundName, areaPurifyGateStageId, isLastBossRevealed } from "@/data/bosses";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { getStage, getStagesForArea, stageQuestionCount } from "@/data/stages";
 import type { Stage } from "@/data/schema";
@@ -20,6 +20,7 @@ import { BackButton } from "@/components/BackButton";
 /**
  * ステージ選択画面。エリア内のステージ(通常+ボス)を、縦の道にならぶノードで表示する(3章)。
  *  - クリア済み=チェック / 次に遊べる=強調 / ロック中=鍵 / 小ボス(ラスボス)=立ち絵の丸(なければ王冠)
+ *  - ラスボスは、宰相を倒したあとの会話(真相究明)を見終わるまで、名前も立ち絵も出さない(「？？？」と、紫の靄のシルエット。ネタバレ対策)
  *  - 解放条件は、これまでと同じ(data/stages.ts の requires と、エリアの開放)。見た目だけを変えている
  */
 export function StageSelectScreen({ areaId }: { areaId: string }) {
@@ -33,6 +34,7 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
 
   const area = areas.find((a) => a.id === areaId);
   const stages = getStagesForArea(areaId);
+  const lastBossRevealed = isLastBossRevealed(areaId, hasSeen, isStageCleared);
 
   /** 解放条件のステージ名(例: 「小ボス: 宰相・ニジュヴェール」)。ロック中のヒント表示に使う */
   const requirementLabel = (stageId: string) => {
@@ -67,7 +69,9 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
           const cleared = isStageCleared(stage.id);
           const isBoss = stage.type !== "normal";
           const isNext = stage.id === nextStageId;
-          const state = cleared ? "cleared" : !unlocked ? "locked" : isNext ? "next" : "open";
+          // ラスボスは、正体が分かる会話を見るまで、伏せる(「？？？」)
+          const concealed = stage.type === "lastBoss" && !lastBossRevealed;
+          const state = concealed ? "hidden" : cleared ? "cleared" : !unlocked ? "locked" : isNext ? "next" : "open";
           if (!isBoss) normalNumber += 1;
           const label = bossLabel(stage.type);
           // 途中まで遊んだステージは、続きから遊べる(はじめからに戻すこともできる)
@@ -83,18 +87,20 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                 }
               >
                 <strong>
-                  <Rb t={label ? `${label}: ${stageTitleText(stage)}` : stageTitleText(stage)} />
+                  {concealed ? "？？？" : <Rb t={label ? `${label}: ${stageTitleText(stage)}` : stageTitleText(stage)} />}
                 </strong>
-                <span className="stage-meta">
-                  <span className="stage-count">{stageQuestionCount(stage)}問</span>
-                  {cleared && (
-                    <span className="stage-cleared-mark">
-                      <Check aria-hidden="true" size={14} />
-                      クリア済み
-                    </span>
-                  )}
-                  {isNext && <span className="stage-next-chip">つぎは ここ</span>}
-                </span>
+                {!concealed && (
+                  <span className="stage-meta">
+                    <span className="stage-count">{stageQuestionCount(stage)}問</span>
+                    {cleared && (
+                      <span className="stage-cleared-mark">
+                        <Check aria-hidden="true" size={14} />
+                        クリア済み
+                      </span>
+                    )}
+                    {isNext && <span className="stage-next-chip">つぎは ここ</span>}
+                  </span>
+                )}
                 {resumable && (
                   <span className="stage-resume">
                     <Play aria-hidden="true" size={12} fill="currentColor" />
@@ -103,7 +109,7 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                 )}
                 {!unlocked && (
                   <span className="stage-locked">
-                    <Lock aria-hidden="true" size={13} />
+                    {!concealed && <Lock aria-hidden="true" size={13} />}
                     {stage.type === "subBoss" ? (
                       // 小ボスは、そのエリアの通常ステージをすべてクリアしてから
                       <Rb t="通常ステージをすべてクリアすると挑戦[ちょうせん]できるよ" />
@@ -135,11 +141,22 @@ function StageNode({
   areaId,
 }: {
   stage: Stage;
-  state: "cleared" | "locked" | "next" | "open";
+  state: "cleared" | "locked" | "next" | "open" | "hidden";
   number: number;
   areaId: string;
 }) {
   const isBoss = stage.type !== "normal";
+  // 伏せているラスボス: 立ち絵は出さず、紫の靄(CSS)のなかの人影と「？」だけ
+  if (state === "hidden") {
+    return (
+      <span className="stage-node" aria-hidden="true">
+        <span className="stage-node-face stage-node-mist">
+          <User size={22} fill="currentColor" strokeWidth={1.5} />
+        </span>
+        <span className="stage-node-badge">？</span>
+      </span>
+    );
+  }
   const portrait = isBoss ? findImage(bossPortraitName(stage, areaId, state === "cleared")) : undefined;
   return (
     <span className="stage-node" aria-hidden="true">

@@ -68,3 +68,18 @@ export function areaBackgroundName(areaId: string, gateCleared: boolean, eventId
   const corrupted = !gateCleared || (eventId !== undefined && isBeforeAreaPurification(eventId, areaId));
   return corrupted ? `${areaId}-corrupted` : areaId;
 }
+
+/**
+ * ラスボス(王座の間の王様)の存在を、ステージ選択などで見せてよいか(ネタバレ対策)。
+ * 宰相(小ボス)を倒したあとの会話(撃破後 → 真相究明)で、はじめて「王座にいたのは王様だった」と分かる。
+ * なので、その会話の最後(真相究明 = truth)を見終わるまでは、ラスボスの名前や立ち絵を出さない。
+ * 会話を見終わった印(hasSeen)は、スキップでも付く。すでにラスボスを倒している(古い保存データを含む)ときは、いつでも出してよい。
+ * 解放条件(宰相を倒すとラスボスに挑める)は、ここでは変えない。見せ方だけを決める。
+ */
+export function isLastBossRevealed(
+  areaId: string,
+  hasSeen: (storyId: string) => boolean,
+  isStageCleared: (stageId: string) => boolean,
+): boolean {
+  return hasSeen(truthStoryId(areaId)) || isStageCleared(`${areaId}-lastboss`);
+}

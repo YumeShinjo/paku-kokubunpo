@@ -3468,14 +3468,15 @@ input[type="range"]:focus-visible {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-areas:
-    "num main acc"
-    "num status status"
+    "num name chip"
+    "num unit unit"
+    "num hint hint"
     "prog prog prog";
   align-items: center;
   column-gap: 0.65rem;
   row-gap: 0;
   width: 100%;
-  padding: 0.4rem 0.75rem 0.45rem;
+  padding: 0.55rem 0.8rem 0.6rem;
   text-align: left;
   color: var(--color-text);
   border: 2px solid var(--area-accent, var(--color-primary-strong));
@@ -3530,34 +3531,23 @@ input[type="range"]:focus-visible {
   box-shadow: none;
 }
 
-.area-main {
-  grid-area: main;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.area-name {
+  grid-area: name;
   min-width: 0;
-}
-
-.area-main strong {
   font-size: 1.05rem;
 }
 
 .area-unit {
+  grid-area: unit;
   font-size: 0.8rem;
   font-weight: normal;
   color: var(--color-text-muted);
 }
 
-.area-status {
-  grid-area: status;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.1rem 0.5rem;
-  min-width: 0;
-}
-
 .area-chip {
+  grid-area: chip;
+  align-self: start;
+  margin-top: 0.15rem;
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
@@ -3588,41 +3578,10 @@ input[type="range"]:focus-visible {
 }
 
 .area-locked {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.25rem;
-  font-size: 0.72rem;
+  grid-area: hint;
+  font-size: 0.75rem;
   font-weight: normal;
   color: var(--color-text-muted);
-}
-
-.area-locked svg {
-  flex: none;
-  margin-top: 0.4rem;
-}
-
-/* 成長アクセサリー: 円の中に、アクセサリーの絵だけを切り出して見せる。手に入れていなければシルエット */
-.growth-accessory {
-  grid-area: acc;
-  align-self: start;
-  position: relative;
-  display: block;
-  width: 2.5rem;
-  height: 2.5rem;
-  overflow: hidden;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(75, 58, 46, 0.18);
-}
-
-.growth-accessory img {
-  position: absolute;
-  max-width: none;
-  height: auto;
-}
-
-.growth-accessory.is-silhouette img {
-  filter: brightness(0) opacity(0.36);
 }
 
 .area-progress {
@@ -3630,7 +3589,7 @@ input[type="range"]:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.1rem;
+  margin-top: 0.3rem;
 }
 
 .area-bar {
@@ -3871,6 +3830,52 @@ input[type="range"]:focus-visible {
 .step-locked .stage-node-badge {
   background: #cfc6b4;
   color: #fff;
+}
+
+/* 伏せているラスボス: 落ち着いた(ロック中に近い)色のカードと、紫の靄のなかの人影のノード。鍵は使わず「？」 */
+.stage-step.step-hidden > button:first-child {
+  color: #5b4a6e;
+  background: rgba(233, 226, 242, 0.93);
+  border-color: rgba(122, 96, 160, 0.4);
+  border-left-color: rgba(122, 96, 160, 0.55);
+  box-shadow: none;
+}
+
+.stage-step.step-hidden > button:first-child:disabled {
+  opacity: 1;
+}
+
+/* 「？？？」だけのときも、ノード(3rem)と高さがそろうようにする */
+.stage-step.step-hidden > button:first-child {
+  min-height: 3.6rem;
+  justify-content: center;
+}
+
+.step-hidden .stage-node {
+  overflow: visible;
+  border-color: rgba(122, 96, 160, 0.6);
+  background: #d9cfe8;
+  box-shadow: 0 0 0.8rem 0.3rem rgba(112, 78, 160, 0.45);
+  color: #3a2a52;
+}
+
+/* 靄: 中心は濃い紫、外へ向かってぼける。人影(User のアイコン)は、ほとんど黒に近い紫で、輪郭だけ見える */
+.stage-node-mist {
+  background: radial-gradient(circle at 50% 45%, rgba(58, 36, 92, 0.96) 0 35%, rgba(104, 72, 150, 0.85) 65%, rgba(150, 120, 196, 0.45) 100%);
+  filter: blur(0.4px);
+}
+
+.stage-node-mist svg {
+  color: rgba(24, 12, 40, 0.92);
+}
+
+.step-hidden .stage-node-badge {
+  background: #efe9f7;
+  border-color: rgba(122, 96, 160, 0.6);
+  color: #4a3a64;
+  font-size: 0.7rem;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .stage-step .stage-restart {

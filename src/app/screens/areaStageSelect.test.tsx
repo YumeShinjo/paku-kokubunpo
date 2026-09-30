@@ -4,7 +4,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useMasteryStore } from "@/app/store/masteryStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
+import { useStoryStore } from "@/app/store/storyStore";
 import { playableAreas } from "@/data/areas";
+import { truthStoryId } from "@/features/story/storyIds";
 import { getQuestionsForArea } from "@/data/questionLoader";
 import { getStagesForArea } from "@/data/stages";
 import { AreaSelectScreen } from "./AreaSelectScreen";
@@ -23,6 +25,7 @@ describe("エリア選択・ステージ選択の見た目(状態の表示)", ()
   beforeEach(() => {
     useProgressStore.setState({ clearedStageIds: [], totalScore: 0 });
     useMasteryStore.setState({ correctQuestionIds: [], lastSyncedCount: 0 });
+    useStoryStore.setState({ seenStoryIds: [], choices: {} });
     useNavigationStore.setState({ screen: { name: "areaSelect" } });
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -53,7 +56,8 @@ describe("エリア選択・ステージ選択の見た目(状態の表示)", ()
       expect(cards[0].textContent).toContain("挑戦");
       for (const c of cards.slice(1)) {
         expect(c.className).toContain("area-locked");
-        expect(c.querySelector(".area-locked svg")).not.toBeNull();
+        expect(c.querySelector(".area-chip-locked svg")).not.toBeNull();
+        expect(c.querySelector(".area-locked")).not.toBeNull(); // 開く条件
         expect(c.textContent).not.toContain("🔒");
       }
       useProgressStore.setState({ clearedStageIds: clearAll("prologue") });
@@ -122,6 +126,67 @@ describe("エリア選択・ステージ選択の見た目(状態の表示)", ()
       expect(boss.className).toContain("step-boss");
       expect(qa<HTMLButtonElement>(".stage-step > button:first-child").every((b) => !b.disabled)).toBe(true);
     });
+
+    describe("王座の間のラスボス(ネタバレ対策)", () => {
+      const before = playableAreas.filter((a) => a.id !== "ohzaNoMa").flatMap((a) => clearAll(a.id));
+      const withoutSubBoss = before.filter((id) => id !== "ohzaNoMa-subboss");
+      const lastNode = () => qa(".stage-step").slice(-1)[0];
+      const spoilers = ["ラスボス", "王様", "おうさま", "ヴェルバルト", "王(", "乱れに飲まれた"];
+
+      const expectNoSpoiler = () => {
+        const node = lastNode();
+        expect(node.className).toContain("step-hidden");
+        expect(node.querySelector("strong")?.textContent).toBe("？？？");
+        for (const word of spoilers) expect(container.textContent, word).not.toContain(word);
+        expect(node.querySelector("img")).toBeNull(); // 立ち絵は出さない
+        expect(node.querySelector(".stage-node-badge")?.textContent).toBe("？");
+        expect(node.querySelector(".lucide-lock")).toBeNull(); // 鍵は使わない
+        expect(node.querySelector(".stage-count")).toBeNull();
+      };
+
+      it("宰相を倒す前: 最後のノードは「？？？」。立ち絵も、ラスボス・王様の文字も出ない。押せない(これまでと同じ)", () => {
+        useProgressStore.setState({ clearedStageIds: withoutSubBoss });
+        render(<StageSelectScreen areaId="ohzaNoMa" />);
+        expectNoSpoiler();
+        expect(lastNode().querySelector<HTMLButtonElement>("button")!.disabled).toBe(true);
+        // 小ボスのラベルは、これまでどおり
+        expect(container.textContent).toContain("小ボス");
+      });
+
+      it("宰相を倒した直後でも、そのあとの会話(真相究明)を見終わるまでは、伏せたまま", () => {
+        useProgressStore.setState({ clearedStageIds: before.concat("ohzaNoMa-subboss") });
+        useStoryStore.setState({ seenStoryIds: ["ohzaNoMa-subboss-clear"] });
+        render(<StageSelectScreen areaId="ohzaNoMa" />);
+        expectNoSpoiler();
+      });
+
+      it("真相究明の会話を見終わると、「ラスボス: 王様」のラベルになり、押せる", () => {
+        useProgressStore.setState({ clearedStageIds: before.concat("ohzaNoMa-subboss") });
+        useStoryStore.setState({ seenStoryIds: ["ohzaNoMa-subboss-clear", truthStoryId("ohzaNoMa")] });
+        render(<StageSelectScreen areaId="ohzaNoMa" />);
+        const node = lastNode();
+        expect(node.className).not.toContain("step-hidden");
+        expect(node.querySelector("strong")?.textContent).toContain("ラスボス");
+        expect(node.querySelector("strong")?.textContent).toContain("王様");
+        expect(node.querySelector<HTMLButtonElement>("button")!.disabled).toBe(false);
+        expect(node.querySelector(".stage-count")).not.toBeNull();
+      });
+
+      it("すでにラスボスを倒している保存データでは、いつでもラベルが出る", () => {
+        useProgressStore.setState({ clearedStageIds: before.concat("ohzaNoMa-subboss", "ohzaNoMa-lastboss") });
+        render(<StageSelectScreen areaId="ohzaNoMa" />);
+        expect(lastNode().className).toContain("step-cleared");
+        expect(lastNode().textContent).toContain("ラスボス");
+      });
+
+      it("ほかのエリアの小ボスは、これまでどおり「小ボス: ○○」と出る(伏せるのはラスボスだけ)", () => {
+        useProgressStore.setState({ clearedStageIds: clearAll("prologue") });
+        render(<StageSelectScreen areaId="kotobaNoIchiba" />);
+        expect(lastNode().querySelector("strong")?.textContent).toContain("小ボス");
+        expect(lastNode().className).not.toContain("step-hidden");
+      });
+    });
+
 
     it("ロック中のステージのボタンは押せない(解放条件は変えていない)", () => {
       useProgressStore.setState({ clearedStageIds: clearAll("prologue") });
