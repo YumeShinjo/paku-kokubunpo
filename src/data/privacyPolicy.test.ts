@@ -68,9 +68,73 @@ describe("プライバシーポリシーの表示データ", () => {
       { type: "p", lines: ["段落1", "段落2"] },
       { type: "hr" },
       { type: "h2", text: "第1条" },
-      { type: "ul", items: ["a", "b"] },
+      { type: "ul", items: [{ text: "a", children: [] }, { text: "b", children: [] }] },
     ]);
     expect(groupPolicy(blocks).map((s) => s.kind)).toEqual(["title", "article"]);
+  });
+
+  it("字下げした「- 」は、直前の項目の下位の項目になる。親のない字下げや、どれにも当たらない行でも、止まらない", () => {
+    expect(parsePolicy("- 親1\n  - 子1\n  - 子2\n- 親2")).toEqual([
+      {
+        type: "ul",
+        items: [
+          { text: "親1", children: ["子1", "子2"] },
+          { text: "親2", children: [] },
+        ],
+      },
+    ]);
+    expect(parsePolicy("  - 親のない字下げ")).toEqual([{ type: "ul", items: [{ text: "親のない字下げ", children: [] }] }]);
+    expect(parsePolicy("1. 番号\n  - 子")).toEqual([{ type: "ol", items: [{ text: "番号", children: ["子"] }] }]);
+    expect(parsePolicy("|")).toHaveLength(1);
+  });
+});
+
+describe("第2条の追記(端末に保存する情報・端末の機能の利用)", () => {
+  const article2 = () => privacyPolicySections.find((s) => s.heading?.startsWith("第2条"))!;
+  const listItems = (heading: string) => {
+    const blocks = article2().blocks;
+    const start = blocks.findIndex((b) => b.type === "h3" && b.text.startsWith(heading));
+    const list = blocks.slice(start).find((b) => b.type === "ul");
+    return list && list.type === "ul" ? list.items : [];
+  };
+
+  it("端末に保存する情報の一覧: 正誤の記録を加え、匿名認証の情報・キャッシュ・退避コピーの3項目が末尾に足されている", () => {
+    const texts = listItems("1. 利用者の端末に保存する情報").map((i) => i.text);
+    expect(texts).toContain("出題履歴、単元ごとの直近の正誤の記録、苦手問題(復習対象として記録された問題)の情報");
+    expect(texts.slice(-4)).toEqual([
+      "お知らせの閲覧状況",
+      "匿名認証の情報(匿名IDおよび認証情報。ブラウザのIndexedDBに保存されます)",
+      "オフラインで利用するための、アプリ本体(プログラム、画像、音声)のキャッシュ(個人を識別できる情報は含みません)",
+      "保存内容が破損した場合に備えた、保存データの退避コピー(「データを初期化」で削除されます)",
+    ]);
+  });
+
+  it("一覧の直前の文は、匿名認証の情報だけ第2項(3)のとおりと断り、サーバーへ送信されない情報を、第2項(1)(2)を除いて書いている", () => {
+    const blocks = article2().blocks;
+    const start = blocks.findIndex((b) => b.type === "h3" && b.text.startsWith("1. 利用者の端末に保存する情報"));
+    const lead = blocks[start + 1];
+    expect(lead.type === "p" ? lead.lines.join("") : "").toBe(
+      "次の情報は、利用者が使用するブラウザ(端末)内に保存されます。このうち、匿名認証の情報は、第2項(3)のとおり、Firebase Authenticationにより発行されるものです。その他の情報は、運営者のサーバーには送信されません。ただし、第2項(1)および(2)に定める情報は除きます。",
+    );
+  });
+
+  it("「3. 端末の機能の利用」の項がある: カメラとクリップボード(入れ子の項目)と、引き継ぎコードの注意", () => {
+    const items = listItems("3. 端末の機能の利用");
+    expect(items).toHaveLength(2);
+    expect(items[0].text).toBe("本アプリは、データの引き継ぎ機能において、次のとおり、端末の機能を利用します。");
+    expect(items[0].children).toEqual([
+      "QRコードの読み取りのために、端末のカメラを利用します。カメラの映像は、端末内で処理され、保存も送信もされません。",
+      "引き継ぎコードの発行時に、端末のクリップボードに、コードを書き込みます。",
+    ]);
+    expect(items[1].text).toBe(
+      "引き継ぎコードには、進み具合に関する情報が含まれます。ニックネームおよび匿名IDは、含まれません。引き継ぎコードは、他人に見せないでください。",
+    );
+  });
+
+  it("追記した項は、第2条の中(第3条の前)にあり、運営者向けメモには入っていない", () => {
+    const headings = article2().blocks.filter((b) => b.type === "h3").map((b) => (b.type === "h3" ? b.text : ""));
+    expect(headings).toEqual(["1. 利用者の端末に保存する情報", "2. サーバーに保存する情報", "3. 端末の機能の利用"]);
+    expect(publicPolicy).not.toContain("運営者向けメモ");
   });
 });
 

@@ -29,21 +29,25 @@ function Block({ block, ruby }: { block: PolicyBlock; ruby: boolean }) {
         </p>
       );
     case "ul":
+    case "ol": {
+      const List = block.type;
       return (
-        <ul>
+        <List>
           {block.items.map((item) => (
-            <li key={item}>{inline(item, ruby)}</li>
+            <li key={item.text}>
+              {inline(item.text, ruby)}
+              {item.children.length > 0 && (
+                <ul>
+                  {item.children.map((child) => (
+                    <li key={child}>{inline(child, ruby)}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
           ))}
-        </ul>
+        </List>
       );
-    case "ol":
-      return (
-        <ol>
-          {block.items.map((item) => (
-            <li key={item}>{inline(item, ruby)}</li>
-          ))}
-        </ol>
-      );
+    }
     case "table":
       return (
         <div className="policy-table-wrap">

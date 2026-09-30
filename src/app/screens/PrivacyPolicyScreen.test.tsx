@@ -67,6 +67,28 @@ describe("プライバシーポリシーの画面", () => {
     for (const el of body) expect(rubyOf(el), el.textContent ?? "").toEqual([]);
   });
 
+  it("第2条の追記(端末の機能の利用)が画面に出る: 入れ子の項目は、項目の中の下位の一覧として出る", () => {
+    mount(<PrivacyPolicyScreen next={{ name: "title" }} />);
+    const article2 = [...container.querySelectorAll(".policy-article")].find((a) => a.querySelector("h3")?.textContent?.startsWith("第2条"))!;
+    const plain = (el: Element) => {
+      const clone = el.cloneNode(true) as Element;
+      clone.querySelectorAll("rt, rp").forEach((n) => n.remove());
+      return clone.textContent ?? "";
+    };
+    expect(plain(article2)).toContain("匿名認証の情報(匿名IDおよび認証情報。ブラウザのIndexedDBに保存されます)");
+    const heading3 = [...article2.querySelectorAll("h4")].find((h) => plain(h).startsWith("3. 端末の機能の利用"));
+    expect(heading3).not.toBeUndefined();
+    const nested = article2.querySelector("li > ul");
+    expect(nested).not.toBeNull();
+    expect([...nested!.querySelectorAll(":scope > li")].map((li) => plain(li))).toEqual([
+      "QRコードの読み取りのために、端末のカメラを利用します。カメラの映像は、端末内で処理され、保存も送信もされません。",
+      "引き継ぎコードの発行時に、端末のクリップボードに、コードを書き込みます。",
+    ]);
+    // 見出しにはふりがなが付く(既存のとおり)。本文には付かない
+    expect(rubyOf(heading3 ?? null)).toContain("たんまつ");
+    expect(rubyOf(nested)).toEqual([]);
+  });
+
   it("「もどる」で、渡された画面へ戻る", () => {
     mount(<PrivacyPolicyScreen next={{ name: "settings" }} />);
     act(() => container.querySelector<HTMLButtonElement>(".back-button")!.click());

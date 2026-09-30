@@ -4,12 +4,18 @@ import policyMarkdown from "../../docs/PRIVACY_POLICY.md?public";
 /**
  * プライバシーポリシーの表示用データ。文章は docs/PRIVACY_POLICY.md をビルド時に読み込む(二重管理しない)。
  * ファイルの末尾の「運営者向けメモ」の節は、公開前に削除するためのものなので、画面には出さない(ファイルはそのまま残す)。
- * 対応する書き方は、このポリシーで使っているものだけ: 見出し(# ## ###)・段落・箇条書き(- / 1.)・表・区切り線(---)・太字(**)。
+ * 対応する書き方は、このポリシーで使っているものだけ: 見出し(# ## ###)・段落・箇条書き(- / 1.。字下げした - で1段の入れ子)・表・区切り線(---)・太字(**)。
  */
+/** 箇条書きの1項目。字下げした「- 」の行は、直前の項目の下位の項目(children)になる(1段だけ) */
+export interface PolicyListItem {
+  text: string;
+  children: string[];
+}
+
 export type PolicyBlock =
   | { type: "h1" | "h2" | "h3"; text: string }
   | { type: "p"; lines: string[] }
-  | { type: "ul" | "ol"; items: string[] }
+  | { type: "ul" | "ol"; items: PolicyListItem[] }
   | { type: "table"; header: string[]; rows: string[][] }
   | { type: "hr" };
 
@@ -48,16 +54,25 @@ export function parsePolicy(markdown: string): PolicyBlock[] {
       while (i < lines.length && lines[i].trim().startsWith("|")) rows.push(splitRow(lines[i++]));
       const isSeparator = (row: string[]) => row.every((cell) => /^:?-{2,}:?$/.test(cell));
       blocks.push({ type: "table", header: rows[0], rows: rows.slice(1).filter((row) => !isSeparator(row)) });
-    } else if (/^-\s/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^-\s/.test(lines[i])) items.push(lines[i++].replace(/^-\s+/, "").trim());
-      blocks.push({ type: "ul", items });
-    } else if (/^\d+\.\s/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^\d+\.\s/.test(lines[i])) items.push(lines[i++].replace(/^\d+\.\s+/, "").trim());
-      blocks.push({ type: "ol", items });
+    } else if (/^\s*-\s/.test(line) || /^\d+\.\s/.test(line)) {
+      const ordered = /^\d+\.\s/.test(line);
+      const top = ordered ? /^\d+\.\s/ : /^-\s/;
+      const items: PolicyListItem[] = [];
+      while (i < lines.length) {
+        const current = lines[i];
+        if (top.test(current) || (items.length === 0 && /^\s*-\s/.test(current))) {
+          items.push({ text: current.replace(ordered ? /^\d+\.\s+/ : /^\s*-\s+/, "").trim(), children: [] });
+        } else if (items.length > 0 && /^\s+-\s/.test(current)) {
+          items[items.length - 1].children.push(current.replace(/^\s+-\s+/, "").trim());
+        } else {
+          break;
+        }
+        i++;
+      }
+      blocks.push({ type: ordered ? "ol" : "ul", items });
     } else {
-      const paragraph: string[] = [];
+      // 必ず1行は進める(どの書き方にも当たらない行でも、止まらないように)
+      const paragraph: string[] = [lines[i++].trim()];
       while (i < lines.length && lines[i].trim() !== "" && !/^(#{1,3}\s|-{3,}$|\||-\s|\d+\.\s)/.test(lines[i].trim())) {
         paragraph.push(lines[i++].trim());
       }
