@@ -6,6 +6,7 @@ import { ScreenBackground } from "@/components/ScreenBackground";
 import { findImage, findTitleLogo, IMAGE } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
+import { ForestEntry } from "@/features/kotonoha/ForestEntry";
 import { MasteryProgress } from "@/components/MasteryProgress";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { titleExpression } from "@/features/mascot/mood";
@@ -80,6 +81,8 @@ export function TitleScreen() {
         <Footprints aria-hidden="true" size={26} />
         <span>はじめる</span>
       </button>
+      {/* 言の葉の森(ことわざ・故事成語のミニゲーム)への入口。序章をクリアするまでは、鍵つきで遊べる条件を出す */}
+      <ForestEntry />
       {/* サブ機能は、ひと回り小さく、2×2のグリッドにまとめる。左に、色つきの丸いバッジ(アイコンの土台) */}
       <div className="title-sub-buttons">
         <button

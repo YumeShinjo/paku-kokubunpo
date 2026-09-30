@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { KotonohaScope } from "@/features/kotonoha/selectRound";
 
 /**
  * 画面遷移用ストア。ステージ進行がエリア→ステージへの一直線フロー(3章)のため、
@@ -12,6 +13,9 @@ export type Screen =
   | { name: "story"; eventId: string; next: Screen }
   /** ことだまの書。tab は、開くタブのid(features/zukan/zukanTabs.ts)。省略すると「せいとうりつ」 */
   | { name: "zukan"; tab?: string }
+  /** 言の葉の森(ことわざ・故事成語のミニゲーム)の入口 / 出題(1ラウンド10問)。scope は出題の範囲 */
+  | { name: "kotonoha" }
+  | { name: "kotonohaPlay"; scope: KotonohaScope }
   | { name: "freePractice"; unitId: string }
   /** 苦手問題(星のついた問題)だけを集めた練習 */
   | { name: "reviewPractice" }

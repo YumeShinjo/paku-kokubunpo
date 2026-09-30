@@ -41,6 +41,7 @@ describe("素材の受け皿(registry)", () => {
     expect(IMAGE.background("kotobaNoIchiba")).toBe("bg/kotobaNoIchiba");
     expect(IMAGE.background("title")).toBe("bg/title");
     expect(IMAGE.kotonohaForestBackground).toBe("bg/kotonoha_forest");
+    expect(IMAGE.kotonohaYurai).toBe("kotonoha/yurai");
     expect(IMAGE.titleBadge("castle")).toBe("ui/badge-castle");
     expect(seAssetName("correct")).toBe("se/correct");
   });

@@ -87,6 +87,8 @@ export const IMAGE = {
   background: (areaIdOrTitle: string) => `bg/${areaIdOrTitle}`,
   /** 「言の葉の森」の背景。縦長(572×1024)。登録だけで、使う画面はまだない(置くだけで findImage で引ける) */
   kotonohaForestBackground: "bg/kotonoha_forest",
+  /** 旅人ユライの立ち絵(言の葉の森)。512×512・右向き。置くだけで自動で読み込まれる。なければ仮表示の人影 */
+  kotonohaYurai: "kotonoha/yurai",
   /** タイトルロゴ */
   titleLogo: "ui/title-logo",
   /** 最初の画面(タッチしてはじめる)の素材。src/assets/images/title/ に置く */

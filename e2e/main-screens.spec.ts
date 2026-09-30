@@ -133,3 +133,55 @@ test.describe("ランキング", () => {
     await expect(page).toHaveScreenshot("ranking-not-configured.png");
   });
 });
+
+test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", () => {
+  test("序章をクリアするまでは、ホームの入口は鍵つきで、押しても入れない", async ({ page }) => {
+    await startApp(page);
+    const card = page.locator(".title-forest");
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute("aria-disabled", "true");
+    await expect(card).toContainText("ことばの分かれ道をクリアすると遊べるよ");
+    await card.click({ force: true }); // 押せない(aria-disabled)ので、待たずに押して、入れないことを確かめる
+    await expect(page.locator(".screen-kotonoha")).toHaveCount(0);
+    await expect(page.locator(".title-primary")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("解放後: ホーム → 入口 → 1問答える → 解説 → 結果 → 戻る", async ({ page }) => {
+    await seedProgress(page, clearedStagesThrough(["prologue"]));
+    await startApp(page);
+    const card = page.locator(".title-forest");
+    await expect(card).toContainText("0 / 80");
+    await card.click();
+    await expect(page.locator(".kotonoha-scope-list button")).toHaveCount(3);
+    await expectNoHorizontalOverflow(page);
+
+    await page.locator(".kotonoha-scope-list button").first().click();
+    await expect(page.locator(".kotonoha-progress")).toContainText("1 / 10");
+    await expect(page.locator(".kotonoha-blank")).toHaveCount(1);
+    await expectNoHorizontalOverflow(page);
+    const choice = page.locator(".kotonoha-choices button").first();
+    expect((await choice.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await choice.click();
+    await expect(page.locator(".kotonoha-explain")).toBeVisible();
+    await expect(page.locator(".yurai-bubble .yurai-text")).not.toBeEmpty();
+    await expectNoHorizontalOverflow(page);
+
+    for (let i = 1; i < 10; i++) {
+      await page.locator(".kotonoha-next").click();
+      await page.locator(".kotonoha-choices button").first().click();
+      await expect(page.locator(".kotonoha-explain")).toBeVisible();
+    }
+    await page.locator(".kotonoha-next").click();
+    await expect(page.locator(".kotonoha-result")).toBeVisible();
+    await expect(page.locator(".kotonoha-score")).toContainText("/ 10");
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole("button", { name: "もどる", exact: true }).last().click();
+    await expect(page.locator(".kotonoha-scope-list")).toBeVisible();
+    await page.locator(".back-button").click();
+    await expect(page.locator(".title-primary")).toBeVisible();
+    // 本編の「ことばの正解」は、増えていない
+    await expect(page.locator(".mastery-text")).toContainText("0 /");
+  });
+});

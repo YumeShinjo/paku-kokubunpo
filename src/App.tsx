@@ -10,6 +10,8 @@ import { StageScreen } from "@/app/screens/StageScreen";
 import { StoryScreen } from "@/app/screens/StoryScreen";
 import { SettingsScreen } from "@/app/screens/SettingsScreen";
 import { ZukanScreen } from "@/app/screens/ZukanScreen";
+import { KotonohaScreen } from "@/app/screens/KotonohaScreen";
+import { KotonohaPlayScreen } from "@/app/screens/KotonohaPlayScreen";
 import { FreePracticeScreen } from "@/app/screens/FreePracticeScreen";
 import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
@@ -33,6 +35,17 @@ export default function App() {
 
   // 場面(画面)に合わせてBGMを切り替える。素材が置かれていなければ無音のまま。
   useBgm();
+
+  // 画面が変わったら、いちばん上から見せる(縦に長いホーム画面などで下までスクロールしていても、
+  // 次の画面が、途中のスクロール位置のまま開かないようにする)
+  const screenName = screen.name;
+  useEffect(() => {
+    try {
+      window.scrollTo(0, 0);
+    } catch {
+      /* スクロールできない環境(テストなど)では何もしない */
+    }
+  }, [screenName]);
 
   // アクセシビリティ: 文字の大きさ(せってい)。<html> の data 属性に反映し、rem 基準のフォントサイズ全体を拡大・縮小する。
   useEffect(() => {
@@ -98,6 +111,10 @@ function renderScreen(screen: Screen) {
       return <StoryScreen key={screen.eventId} eventId={screen.eventId} next={screen.next} />;
     case "zukan":
       return <ZukanScreen initialTab={screen.tab} />;
+    case "kotonoha":
+      return <KotonohaScreen />;
+    case "kotonohaPlay":
+      return <KotonohaPlayScreen scope={screen.scope} />;
     case "freePractice":
       return <FreePracticeScreen key={screen.unitId} unitId={screen.unitId} />;
     case "reviewPractice":

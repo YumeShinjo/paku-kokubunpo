@@ -13,6 +13,7 @@ const GAME_KEYS = [
   "paku-kokubunpo:session",
   "paku-kokubunpo:ranking",
   "paku-kokubunpo:profile",
+  "paku-kokubunpo:kotonoha", // 言の葉の森(集めた葉・まちがえた問題)
 ];
 
 describe("データの初期化", () => {

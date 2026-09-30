@@ -29,6 +29,11 @@ export const HARD_WORDS: ReadonlySet<string> = new Set([
   "順位表",
   "初期化",
   "経験値",
+  // 言の葉の森(ことわざ・故事成語のミニゲーム)
+  "言",
+  "葉",
+  "森",
+  "故事成語",
   // プライバシーポリシー(data/privacyRuby.ts)
   "匿名",
   "本名",
