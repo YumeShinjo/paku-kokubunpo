@@ -151,19 +151,6 @@ ruby rt {
   font-weight: bold;
 }
 
-.stage-list button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  width: 100%;
-  text-align: left;
-}
-
-.stage-list button.stage-subboss {
-  background: var(--color-boss);
-}
-
 .sorting-items,
 .assembly-cards {
   display: flex;
@@ -313,6 +300,11 @@ button.incorrect {
   /* 高さを固定する(台詞が短くても長くても、大きさも、送りの合図の位置も変わらない)。長い台詞は、この中でだけスクロールする */
   height: 12rem;
   overflow-y: auto;
+}
+
+/* 文字サイズ「大」では、台詞が5〜6行になる場面がある。スクロールなしで収まる高さにする(標準の大きさでは最大4行で、12remに収まる) */
+html[data-text-size="large"] .story-textbox {
+  height: 16.5rem;
 }
 
 .story-speaker {
@@ -817,7 +809,7 @@ button.incorrect {
 /* ---- 称号・エンディング結果・クレジット ---- */
 .title-badge {
   display: inline-block;
-  padding: 0.15rem 0.8rem;
+  padding: 0.1rem 0.7rem;
   border-radius: 999px;
   background: var(--color-gold-soft);
   border: 1px solid var(--color-gold-line);
@@ -1054,10 +1046,6 @@ button.incorrect {
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(168, 224, 200, 0.75);
   box-shadow: 0 2px 8px rgba(75, 58, 46, 0.09);
-}
-
-.title-card .title-badge {
-  padding: 0.1rem 0.7rem;
 }
 
 .title-card .title-owned {
@@ -1661,18 +1649,10 @@ button.incorrect {
   border: 1px solid var(--color-text-muted);
 }
 
-/* ---- エリアごとのアクセントカラー(マップ・ステージ選択・出題画面) ---- */
-.area-list button {
-  border-left: 10px solid var(--area-accent, var(--color-primary-strong));
-}
-
 .screen-stage-select h2 {
+  margin: 0;
   padding-bottom: 0.25rem;
   border-bottom: 4px solid var(--area-accent, var(--color-primary));
-}
-
-.stage-list button:not(.stage-subboss) {
-  border-left: 10px solid var(--area-accent, var(--color-primary-strong));
 }
 
 /* ---- ランキング上位・称号(淡いゴールド) ---- */
@@ -1681,21 +1661,6 @@ button.incorrect {
   color: var(--color-gold-text);
   border-radius: 999px;
   line-height: 1.8rem;
-}
-
-/* エリア選択: 名前と単元名を2行にして、全幅にそろえる */
-.area-list button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-  width: 100%;
-  text-align: left;
-}
-
-.area-list button span {
-  font-size: 0.8rem;
-  font-weight: normal;
 }
 
 /* ---- 解答後の選択肢(押せないが、正誤がはっきり読める) ---- */
@@ -2838,17 +2803,6 @@ button.incorrect {
   font-size: 1.1rem;
 }
 
-/* エリア選択: まだ入れないエリア */
-.area-list button:disabled {
-  opacity: 0.55;
-}
-
-.area-locked {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
 /* ---- タイトル画面: 「はじめる」を主役に、サブ機能は小さく2×2 ---- */
 .title-primary {
   display: flex;
@@ -3469,3 +3423,477 @@ input[type="range"]:focus-visible {
     font-size: 1.25rem;
   }
 }
+
+/* ---- エリア選択: カード(背景・番号・状態・成長アクセサリー・進捗バー) ---- */
+.screen-area-select {
+  gap: 0.6rem;
+}
+
+.screen-area-select h2 {
+  margin: 0;
+}
+
+/* コトのバッジは、出ているときだけ場所をとる(タイトルとカードの間の空きを詰める) */
+.screen-area-select .hungry-badge-slot {
+  min-height: 0;
+}
+
+.screen-area-select .hungry-badge-slot:empty {
+  display: none;
+}
+
+/*
+ * 右下の固定の音量ボタンの下には、カードの文字が来ないよう、画面の下端に、背景色へ溶ける帯(やわらかい下向きのぼかし)を敷く。
+ * スクロールで流れてきたカードは、帯のところで薄れ、音量ボタンは、きれいな地の上に乗る。一番下まで進めば、余白(画面の下の余白)で、帯より上に全部出る。
+ */
+.screen-area-select::after,
+.screen-stage-select::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  height: calc(4.6rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(251, 244, 228, 0), rgba(251, 244, 228, 0.94) 55%);
+  pointer-events: none;
+}
+
+.area-list {
+  margin: 0;
+  gap: 0.45rem;
+}
+
+.area-card button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "num main acc"
+    "num status status"
+    "prog prog prog";
+  align-items: center;
+  column-gap: 0.65rem;
+  row-gap: 0;
+  width: 100%;
+  padding: 0.4rem 0.75rem 0.45rem;
+  text-align: left;
+  color: var(--color-text);
+  border: 2px solid var(--area-accent, var(--color-primary-strong));
+  border-left-width: 8px;
+  background-color: var(--color-surface);
+  /* そのエリアの(荒れていない)背景を、薄く敷く。上に重ねるクリーム色で、文字の読みやすさを保つ */
+  background-image: linear-gradient(rgba(255, 253, 247, 0.82), rgba(255, 253, 247, 0.82)), var(--area-bg, none);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.12);
+}
+
+.area-card button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+/* 挑戦中: 縁を太く・影を強めて、いま遊べるエリアだと分かるようにする */
+.area-current button {
+  border-width: 3px;
+  border-left-width: 8px;
+  box-shadow: 0 3px 10px rgba(75, 58, 46, 0.2);
+}
+
+/* ロック中: 落ち着いた色(灰がかったクリーム色で背景を覆い、文字もやわらげる) */
+.area-card.area-locked button:disabled {
+  color: var(--color-text-muted);
+  border-color: rgba(126, 107, 93, 0.35);
+  border-left-color: rgba(126, 107, 93, 0.45);
+  background-image: linear-gradient(rgba(238, 233, 222, 0.93), rgba(238, 233, 222, 0.93)), var(--area-bg, none);
+  box-shadow: none;
+}
+
+.area-num {
+  grid-area: num;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: var(--area-accent, var(--color-primary));
+  border: 2px solid #fff;
+  color: var(--color-on-primary);
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(75, 58, 46, 0.25);
+}
+
+.area-card.area-locked .area-num {
+  background: #ddd5c6;
+  color: var(--color-text-muted);
+  box-shadow: none;
+}
+
+.area-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.area-main strong {
+  font-size: 1.05rem;
+}
+
+.area-unit {
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: var(--color-text-muted);
+}
+
+.area-status {
+  grid-area: status;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem 0.5rem;
+  min-width: 0;
+}
+
+.area-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: var(--ruby-line-height);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(75, 58, 46, 0.2);
+}
+
+.area-card .stage-cleared-mark {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-line);
+  color: var(--color-gold-text);
+}
+
+.area-chip-current {
+  background: var(--color-primary);
+  border-color: var(--color-primary-strong);
+  color: var(--color-on-primary);
+}
+
+.area-chip-locked {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
+}
+
+.area-locked {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: normal;
+  color: var(--color-text-muted);
+}
+
+.area-locked svg {
+  flex: none;
+  margin-top: 0.4rem;
+}
+
+/* 成長アクセサリー: 円の中に、アクセサリーの絵だけを切り出して見せる。手に入れていなければシルエット */
+.growth-accessory {
+  grid-area: acc;
+  align-self: start;
+  position: relative;
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(75, 58, 46, 0.18);
+}
+
+.growth-accessory img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+
+.growth-accessory.is-silhouette img {
+  filter: brightness(0) opacity(0.36);
+}
+
+.area-progress {
+  grid-area: prog;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.area-bar {
+  flex: 1;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgba(75, 58, 46, 0.14);
+  overflow: hidden;
+}
+
+.area-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-primary-strong);
+}
+
+.area-card.area-locked .area-bar-fill {
+  background: rgba(126, 107, 93, 0.5);
+}
+
+.area-count {
+  font-size: 0.72rem;
+  font-weight: normal;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- ステージ選択: 縦の道にノードが並ぶ ---- */
+.stage-path {
+  margin: 0;
+  gap: 0.6rem;
+}
+
+.stage-step {
+  position: relative;
+  padding-left: 3.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* ノードをつなぐ縦の線。クリア済みのステージから先へは、色のついた線 */
+.stage-step::before {
+  content: "";
+  position: absolute;
+  left: 1.4rem;
+  top: 0;
+  bottom: -0.6rem;
+  width: 4px;
+  margin-left: -2px;
+  background: rgba(75, 58, 46, 0.18);
+  border-radius: 2px;
+}
+
+.stage-step.step-cleared::before {
+  background: var(--color-primary-strong);
+}
+
+.stage-step:first-child::before {
+  top: 1.75rem;
+}
+
+.stage-step:last-child::before {
+  bottom: auto;
+  height: 1.75rem;
+}
+
+.stage-step:only-child::before {
+  display: none;
+}
+
+.stage-path .stage-step > button:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  text-align: left;
+  color: var(--color-text);
+  background: rgba(255, 253, 247, 0.92);
+  border: 2px solid rgba(75, 58, 46, 0.14);
+  border-left: 6px solid var(--area-accent, var(--color-primary-strong));
+  box-shadow: 0 2px 5px rgba(75, 58, 46, 0.1);
+}
+
+.stage-step.step-cleared > button:first-child {
+  background: rgba(236, 251, 244, 0.94);
+}
+
+/* 次に遊べるステージ: ミントで塗り、縁と外側の輪で強調する */
+.stage-step.step-next > button:first-child {
+  background: var(--color-primary);
+  border-color: var(--color-primary-strong);
+  border-left-color: var(--area-accent, var(--color-primary-strong));
+  box-shadow: 0 0 0 3px rgba(168, 224, 200, 0.55), 0 4px 10px rgba(75, 58, 46, 0.18);
+}
+
+.stage-step.step-boss > button:first-child {
+  background: rgba(248, 232, 242, 0.95);
+  border-color: var(--color-gold-line);
+}
+
+.stage-step.step-boss.step-next > button:first-child {
+  background: var(--color-boss);
+}
+
+.stage-step.step-locked > button:first-child:disabled {
+  opacity: 1;
+  color: var(--color-text-muted);
+  background: rgba(238, 233, 222, 0.92);
+  border-color: rgba(126, 107, 93, 0.3);
+  border-left-color: rgba(126, 107, 93, 0.4);
+  box-shadow: none;
+}
+
+.stage-path .stage-locked {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.stage-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem 0.6rem;
+}
+
+.stage-count {
+  font-size: 0.85rem;
+}
+
+.stage-next-chip {
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background: #fff;
+  border: 1px solid var(--color-primary-strong);
+  color: var(--color-primary-text);
+}
+
+.stage-node {
+  position: absolute;
+  left: 0.1rem;
+  top: 0.45rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--color-primary-strong);
+  color: var(--color-on-primary);
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(75, 58, 46, 0.25);
+}
+
+.step-cleared .stage-node {
+  background: var(--color-primary-strong);
+  border-color: #fff;
+  color: #fff;
+}
+
+.step-next .stage-node {
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(168, 224, 200, 0.6), 0 2px 6px rgba(75, 58, 46, 0.3);
+  font-size: 1.15rem;
+}
+
+.step-locked .stage-node {
+  background: #ece6d8;
+  border-color: #cfc6b4;
+  color: #9a8b7d;
+  box-shadow: none;
+}
+
+.step-boss .stage-node {
+  left: -0.1rem;
+  top: 0.3rem;
+  width: 3rem;
+  height: 3rem;
+  border-color: var(--color-gold-line);
+  background: var(--color-gold-soft);
+}
+
+.step-boss.step-locked .stage-node {
+  border-color: #cfc6b4;
+}
+
+.stage-node-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* ボスの立ち絵は全身なので、顔のあたりを大きく切り出す */
+.stage-node-face img {
+  position: absolute;
+  width: 200%;
+  max-width: none;
+  left: -50%;
+  top: -18%;
+}
+
+.step-locked .stage-node-face img {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.55;
+}
+
+.stage-node-badge {
+  position: absolute;
+  right: -0.3rem;
+  bottom: -0.25rem;
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: 2px solid #fff;
+  color: var(--color-gold-text);
+}
+
+.step-cleared .stage-node-badge {
+  background: var(--color-primary-strong);
+  color: #fff;
+}
+
+.step-locked .stage-node-badge {
+  background: #cfc6b4;
+  color: #fff;
+}
+
+.stage-step .stage-restart {
+  align-self: flex-start;
+}
+
+/*
+ * ふりがな(rt)を含む文章の行の高さ。
+ * ふりがなが行を押し広げると、ふりがなのある行だけ行間が広がって、そろわない。
+ * そこで、ふりがなを含むブロックは、行の高さを固定値(--ruby-line-height)にする。
+ * この高さなら、ふりがな(文字の0.6倍)が、行の上の余白の中に収まり、行を押し広げず、上の行の文字にも重ならない。
+ * (ふりがなの有無で、行の間隔は変わらない。直接の親に .ruby-text があるブロックと、strong などで包んだブロックが対象)
+ */
+:root {
+  --ruby-line-height: 1.9;
+}
+
+:has(> .ruby-text),
+:has(> :is(strong, b, em, small, a) > .ruby-text) {
+  line-height: var(--ruby-line-height);
+}
+
+ruby rt {
+  line-height: 1;
+}
+

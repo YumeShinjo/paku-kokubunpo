@@ -69,7 +69,7 @@ export function TitleScreen() {
         <div className="title-card">
           {title && (
             <p className="title-owned">
-              <TitleBadge title={title} icon="crown" />
+              <TitleBadge title={title} />
             </p>
           )}
           <MasteryProgress className="title-mastery" />
