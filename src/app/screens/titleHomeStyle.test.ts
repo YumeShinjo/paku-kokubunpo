@@ -87,15 +87,20 @@ describe("ホーム画面のスタイル", () => {
     expect(screen).toMatch(/--home-base-gap: [\d.]+rem;/);
     expect(screen).toMatch(/--primary-depth: [\d.]+rem;/);
     expect(screen).toContain("gap: var(--home-base-gap);");
-    // 見た目の間隔 = 12px(0.75rem)
-    expect(Number(screen.match(/--home-gap: ([\d.]+)rem;/)![1])).toBe(0.75);
+    // 見える縁から見える縁までの間隔 = 10px(0.625rem)
+    expect(Number(screen.match(/--home-gap: ([\d.]+)rem;/)![1])).toBe(0.625);
     // 「はじめる」の厚み(--primary-depth)は、box-shadow の濃い帯と同じ変数
     expect(rule(".title-primary")).toContain("0 var(--primary-depth, 0.3rem) 0 #4fae8a");
     expect(Number(screen.match(/--primary-depth: ([\d.]+)rem;/)![1])).toBe(0.3);
     // 言の葉の森: 間隔 + 厚みの分。2つのボタン: 間隔。フッター: 間隔(文字の上の余白の分を引く)
     expect(rule(".title-forest")).toContain("margin-top: calc(var(--home-gap) - var(--home-base-gap) + var(--primary-depth));");
     expect(rule(".title-sub-buttons")).toContain("margin-top: calc(var(--home-gap) - var(--home-base-gap));");
-    expect(rule(".title-footer")).toContain("margin-block: calc(var(--home-gap) - var(--home-base-gap) - 0.725rem)");
+    expect(rule(".title-primary")).toContain("margin-top: calc(var(--home-gap) - var(--home-base-gap));"); // 称号カード → はじめる
+    expect(rule(".title-sub-buttons")).toContain("gap: var(--home-gap);"); // 2つのボタンの横の間隔も同じ
+    // フッターだけ、少し広い(+0.3rem ≒ +5px)。下の縁(--sub-edge)と、文字の上の余白の分を引く
+    expect(screen).toContain("--home-gap-footer: calc(var(--home-gap) + 0.3rem);");
+    expect(screen).toContain("--sub-edge: 2px;");
+    expect(rule(".title-footer")).toContain("margin-block: calc(var(--home-gap-footer) - var(--home-base-gap) - var(--sub-edge) - var(--footer-ink-offset))");
   });
 
   it("言の葉の森のカード: 上下の内側の余白が同じくらい(ふりがなの上端から上まで ≒ 説明の下端から下まで)。ふりがなを含む行は、固定の行の高さ(1.9)。説明との間に余白がある", () => {

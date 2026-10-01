@@ -936,14 +936,24 @@ html[data-text-size="large"] .story-textbox {
 .screen-title {
   position: relative;
   /*
-   * 縦に並ぶ下の要素(はじめる / 言の葉の森 / ことだまの書・ランキング / フッター)の、見た目の間隔は、この1つの値にそろえる。
-   *  - --home-gap: 見た目の間隔
-   *  - --home-base-gap: 並べている行の、すきま(gap)。実際の間隔は、この値に、各要素の上の余白(margin-top)を足して、--home-gap にする
-   *  - --primary-depth: 「はじめる」の厚み(下の濃い帯)。帯は、ボタンの高さの外に出ているので、その分だけ、下の余白を余分にとる
+   * 縦に並ぶ要素(称号カード / はじめる / 言の葉の森 / ことだまの書・ランキング)の、「画面に見える縁から、次の要素の見える縁まで」の間隔は、
+   * この1つの値にそろえる(CSSの margin や gap の値ではなく、見える縁で測ってそろえる)。
+   *  - 「はじめる」の見える縁は、立体の厚み(下の濃い帯)の下端まで。やわらかい影(ぼかし)は、含めない
+   *  - ことだまの書・ランキングの見える縁は、下の2pxの縁(--sub-edge の帯)まで
+   *  - 2つのボタンの、横の間隔も、同じ値
+   *  - 2つのボタンとフッターの文字の間だけは、少し広い(--home-gap-footer)
+   * 設計:
+   *  - --home-base-gap: 並べている行のすきま(gap)。実際の間隔は、この値に、各要素の上の余白(margin-top)を足して、--home-gap にする
+   *  - --primary-depth: 「はじめる」の厚み。帯は、ボタンの高さの外に出ているので、言の葉の森の上の余白で、その分を足す
+   *  - --sub-edge: 2つのボタンの、下の縁の太さ(box-shadow の 0 2px 0)
+   *  - --footer-ink-offset: フッターのボタンの上端から、文字の上端(見える縁)まで
    */
-  --home-gap: 0.75rem;
+  --home-gap: 0.625rem;
+  --home-gap-footer: calc(var(--home-gap) + 0.3rem);
   --home-base-gap: 0.3rem;
   --primary-depth: 0.3rem;
+  --sub-edge: 2px;
+  --footer-ink-offset: 0.65rem;
   gap: var(--home-base-gap);
   /* 上のボタン(戻る・せってい・音量。高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる。せっていの歯車は、その真上)が、掛からない余白(文字サイズ「大」でも) */
   padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 2.65rem);
@@ -1059,7 +1069,7 @@ html[data-text-size="large"] .story-textbox {
 /* バッジ(お腹をすかせている)があって、背の低め(高さ780px以下)の画面では、コトを、ほんの少しだけ小さくする(前より縦が長くならないように) */
 @media (max-height: 780px) {
   .screen-title:has(.hungry-badge) .title-koto .mascot-large {
-    --mascot-size: 10.8rem;
+    --mascot-size: 10.6rem;
   }
 }
 
@@ -2376,10 +2386,10 @@ html[data-text-size="large"] .zukan-tablist[data-count="6"] {
   align-items: center;
   justify-content: center;
   /*
-   * ボタンの高さ(2.5rem)のうち、文字の上の余白(約0.725rem)は、前の要素との間隔の中に重ねる。
-   * 見た目の間隔(2つのボタンの下から、フッターの文字の上端まで)が、ほかと同じ --home-gap になるように。
+   * ボタンの高さ(2.5rem)のうち、文字の上の余白(--footer-ink-offset)は、前の要素との間隔の中に重ねる。
+   * 見える間隔(2つのボタンの下の縁から、フッターの文字の上端まで)が、--home-gap-footer(--home-gap より少し広い)になるように。
    */
-  margin-block: calc(var(--home-gap) - var(--home-base-gap) - 0.725rem) -0.55rem;
+  margin-block: calc(var(--home-gap-footer) - var(--home-base-gap) - var(--sub-edge) - var(--footer-ink-offset)) -0.55rem;
   color: #6f5a5a;
   font-size: 0.7rem;
 }
@@ -2953,6 +2963,8 @@ html[data-text-size="large"] .zukan-tablist[data-count="6"] {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
+  /* 称号カードの見える下の縁から、「はじめる」の上の縁まで = --home-gap */
+  margin-top: calc(var(--home-gap) - var(--home-base-gap));
   min-height: 5.2rem;
   font-size: 1.5rem;
   letter-spacing: 0.06em;
@@ -2981,7 +2993,8 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
 .title-sub-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  /* 横の間隔も、縦と同じ --home-gap */
+  gap: var(--home-gap);
   margin-top: calc(var(--home-gap) - var(--home-base-gap));
 }
 
