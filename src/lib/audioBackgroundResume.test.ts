@@ -204,5 +204,166 @@ describe("バックグラウンドから戻ったときのBGM(iOSのピッチ異
     useSettingsStore.getState().setBgmVolume(0.3); // 同じ値(変更なし)
     expect(writes()).toBe(0);
   });
-});
 
+  describe("裏に回って戻る(イベントが重なっても、再生・ゲイン・resume は1回だけ)", () => {
+    /** BGM用の要素(createMediaElementSource に渡されたもの)と、各メソッドの呼び出し回数 */
+    function setup() {
+      let element: HTMLAudioElement | undefined;
+      const createSource = vi.spyOn(FakeAudioContext.prototype, "createMediaElementSource").mockImplementation(function (
+        this: FakeAudioContext,
+        el: unknown,
+      ) {
+        element = el as HTMLAudioElement;
+        return new FakeNode();
+      } as never);
+      // 本物のブラウザと同じく、play() のあとは paused が false、pause() のあとは true になるようにする
+      const setPaused = (el: HTMLMediaElement, value: boolean) => Object.defineProperty(el, "paused", { configurable: true, get: () => value });
+      const play = vi.spyOn(window.HTMLMediaElement.prototype, "play").mockImplementation(function (this: HTMLMediaElement) {
+        setPaused(this, false);
+        return Promise.resolve();
+      });
+      const pause = vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(function (this: HTMLMediaElement) {
+        setPaused(this, true);
+      });
+      return { createSource, play, pause, el: () => element! };
+    }
+    const firePageEvents = (...names: string[]) => names.forEach((n) => window.dispatchEvent(new Event(n)));
+
+    it("裏に回ったときは、止める(pause)のは1回だけ。visibilitychange と pagehide が続けて来ても、2回目は何もしない", () => {
+      const { pause } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-once.mp3");
+      const ctx = FakeAudioContext.instances[0];
+      const suspend = vi.spyOn(ctx, "suspend");
+      pause.mockClear();
+
+      setVisibility("hidden");
+      firePageEvents("pagehide");
+      setVisibility("hidden");
+      expect(pause).toHaveBeenCalledTimes(1);
+      expect(suspend).toHaveBeenCalledTimes(1);
+    });
+
+    it("戻ったとき、visibilitychange・pageshow が何回来ても、再開は1回だけ(再生・resume・ゲインの音量リセットが、増えない)", () => {
+      vi.useFakeTimers();
+      const { play } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-return.mp3");
+      const ctx = FakeAudioContext.instances[0];
+      const resume = vi.spyOn(ctx, "resume");
+      const gain = currentGain();
+
+      setVisibility("hidden");
+      play.mockClear();
+      resume.mockClear();
+      gain.gain.setValueAtTime.mockClear();
+      gain.gain.cancelScheduledValues.mockClear();
+
+      setVisibility("visible");
+      firePageEvents("pageshow", "pageshow");
+      setVisibility("visible");
+      expect(resume).toHaveBeenCalledTimes(1); // 止まっていたので、1回だけ
+      expect(play).toHaveBeenCalledTimes(1);
+      expect(gain.gain.setValueAtTime).toHaveBeenCalledTimes(1);
+      expect(gain.gain.cancelScheduledValues).toHaveBeenCalledTimes(1); // 新しくかける前に、前の予約を取り消してある
+
+      vi.advanceTimersByTime(RESUME_SETTLE_MS + 100);
+      expect(gain.gain.setTargetAtTime).toHaveBeenCalledTimes(1); // フェードインも1回
+      vi.advanceTimersByTime(10000);
+      expect(gain.gain.setTargetAtTime).toHaveBeenCalledTimes(1);
+      expect(play).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
+    it("AudioContext がまだ動いていないあいだは、<audio> を再生しない。動き出したあとに、1回だけ再生する", () => {
+      const { play } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-wait.mp3");
+      const ctx = FakeAudioContext.instances[0];
+      // resume() の完了を、あとから手で進める(iOSで、タップまで resume が終わらないときの再現)
+      let finish: () => void = () => {};
+      vi.spyOn(ctx, "resume").mockImplementation(() => {
+        return new Promise<void>((resolve) => {
+          finish = () => {
+            ctx.state = "running";
+            (ctx as unknown as { fire: (t: string) => void }).fire("statechange");
+            resolve();
+          };
+        });
+      });
+
+      setVisibility("hidden");
+      play.mockClear();
+      setVisibility("visible");
+      expect(ctx.state).toBe("suspended");
+      expect(play).not.toHaveBeenCalled(); // 動いていないうちは、鳴らさない
+      document.dispatchEvent(new Event("click")); // 画面のタップ(wake)でも、動いていなければ、鳴らさない
+      playBgm("/assets/audio/bgm-wait-2.mp3"); // 待っているあいだに場面が変わっても、鳴らさない
+      expect(play).not.toHaveBeenCalled();
+
+      finish();
+      expect(play).toHaveBeenCalledTimes(1); // 動き出したあとに、1回だけ
+    });
+
+    it("戻ったとき、同じ曲を最初から入れ替える(曲のURLを付け直す)。導入曲の途中なら導入曲、そうでなければくり返しの曲", () => {
+      const { el } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-loop.mp3", "/assets/audio/bgm-intro.mp3");
+      expect(el().src).toContain("bgm-intro.mp3");
+      el().src = "about:blank"; // 状態が崩れた、と見立てる
+      setVisibility("hidden");
+      setVisibility("visible");
+      expect(el().src).toContain("bgm-intro.mp3"); // 導入曲の途中だった
+      el().dispatchEvent(new Event("ended")); // 導入曲が終わって、くり返しの曲へ
+      expect(el().src).toContain("bgm-loop.mp3");
+      el().src = "about:blank";
+      setVisibility("hidden");
+      setVisibility("visible");
+      expect(el().src).toContain("bgm-loop.mp3");
+    });
+
+    it("createMediaElementSource は、BGMの要素に1回だけ(再生・画面の切り替え・裏から戻るで、何度呼ばれても、増えない)", () => {
+      const { createSource } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-src-a.mp3");
+      playBgm("/assets/audio/bgm-src-b.mp3");
+      setVisibility("hidden");
+      setVisibility("visible");
+      unlockPlayback();
+      expect(createSource).toHaveBeenCalledTimes(1);
+    });
+
+    it("createMediaElementSource が例外になっても、握りつぶして繰り返し呼ばない(試すのは1回だけ)", () => {
+      const createSource = vi.spyOn(FakeAudioContext.prototype, "createMediaElementSource").mockImplementation(() => {
+        throw new Error("InvalidStateError");
+      });
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-throw-a.mp3");
+      playBgm("/assets/audio/bgm-throw-b.mp3");
+      expect(createSource).toHaveBeenCalledTimes(1);
+    });
+
+    it("AudioContext は、1つだけ使い回す(裏に回って戻っても、新しく作らない)", () => {
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-ctx.mp3");
+      setVisibility("hidden");
+      setVisibility("visible");
+      setVisibility("hidden");
+      setVisibility("visible");
+      expect(FakeAudioContext.instances).toHaveLength(1);
+    });
+
+    it("ミュート中に裏から戻っても何も鳴らさず、ミュートを解除したときだけ鳴る(これまでの動き)", () => {
+      const { play } = setup();
+      unlockPlayback();
+      playBgm("/assets/audio/bgm-mute-return.mp3");
+      useSettingsStore.getState().setMuted(true);
+      setVisibility("hidden");
+      play.mockClear();
+      setVisibility("visible");
+      expect(play).not.toHaveBeenCalled();
+      useSettingsStore.getState().setMuted(false);
+      expect(play).toHaveBeenCalledTimes(1);
+    });
+  });
+});

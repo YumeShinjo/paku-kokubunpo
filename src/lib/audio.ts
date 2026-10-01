@@ -64,7 +64,10 @@ function getAudioContext(): AudioContext | null {
     }
     // 動き出した(running になった)ときに、鳴らそうとして待たされていたBGMを始める
     audioContext.addEventListener?.("statechange", () => {
-      if (audioContext?.state === "running") ensureBgmPlaying();
+      if (audioContext?.state === "running") {
+        runPendingStart();
+        ensureBgmPlaying();
+      }
     });
   }
   return audioContext;
@@ -216,11 +219,17 @@ function getBgmElement(): HTMLAudioElement {
   return bgmElement;
 }
 
-/** BGM要素を GainNode 経由にする(1要素につき1回だけできる)。できなければ要素の volume で代用する */
+/**
+ * BGM要素を GainNode 経由にする(1要素につき1回だけできる)。できなければ要素の volume で代用する。
+ * createMediaElementSource は、同じ要素に2回目を呼ぶと例外になる(その要素の音は、最初のノードにつながったまま)。
+ * 例外を握りつぶして、繰り返し呼ばないよう、試したかどうか(bgmSourceTried)を覚えておく。
+ */
+let bgmSourceTried = false;
 function attachBgmGain(): void {
-  if (bgmGain) return;
+  if (bgmGain || bgmSourceTried) return;
   const ctx = getAudioContext();
   if (!ctx) return;
+  bgmSourceTried = true;
   try {
     const source = ctx.createMediaElementSource(getBgmElement());
     const gain = ctx.createGain();
@@ -274,7 +283,37 @@ function resumeAudioContext(): void {
 let resumeSettleTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * バックグラウンドから戻ったときだけ使う、再開のしかた(9章)。
+ * 裏に回って止めたあと、戻ったときに、1回だけ始める再開の処理(AudioContext が動き出してから呼ばれる)。
+ * AudioContext が止まったまま <audio> を先に再生すると、音の受け皿が動いていないあいだ、<audio> の音が流れ続けて、
+ * 動き出したときに音がずれる(プツプツとしたノイズの原因になりうる)ので、必ず、動き出したあとに再生する。
+ */
+let pendingStart: (() => void) | null = null;
+
+function runPendingStart(): void {
+  const start = pendingStart;
+  pendingStart = null;
+  start?.();
+}
+
+/** 裏に回って止めた状態か(visibilitychange・pagehide・pageshow のどれが何回来ても、止める・再開するのは1回だけにするための目印) */
+let backgroundHalted = false;
+
+/**
+ * 同じ曲を、最初から入れ替える(いまの曲のURLを、付け直す)。裏に回って戻ったあとの、<audio> と音の受け皿との間の状態を、
+ * 場面が変わって曲を替えるときと同じ、まっさらな状態にする。導入曲を鳴らしている途中なら導入曲、そうでなければ、くり返しの曲。
+ */
+function reloadBgmElement(): void {
+  const audio = bgmElement;
+  const url = introEndedHandler ? bgmIntroSrc : bgmSrc;
+  if (!audio || !url) return;
+  audio.src = url;
+}
+
+/**
+ * バックグラウンドから戻ったときだけ使う、再開のしかた(9章)。ここ1か所に集めてあり、止まっていた(backgroundHalted)ときに、1回だけ動く。
+ *  1. 音量を0にして(前の音量の予約は取り消す)、曲を最初から入れ替える
+ *  2. AudioContext が止まっていれば(suspended / interrupted)、resume() を1回呼ぶ。すでに動いていれば呼ばない
+ *  3. AudioContext が動き出したあとで、<audio> を再生し、短い無音のあと、滑らかに元の音量へ戻す
  * 単純に resumeAudioContext() するだけだと、iOSでは、直前まで止まっていた AudioContext が
  * ハードウェアのクロックに合うまでの一瞬、BGMのピッチが変わって聞こえることがある(上のBGM_SAMPLE_RATEのコメント)。
  * これを完全に避ける手段(AudioContextの作り直し)は、いま使っている <audio> 要素が、一度でも
@@ -289,21 +328,51 @@ function resumeFromBackground(): void {
     clearTimeout(resumeSettleTimer);
     resumeSettleTimer = null;
   }
+  pendingStart = null;
   const ctx = audioContext;
-  if (!ctx || ctx.state === "running") {
-    ensureBgmPlaying();
-    return;
-  }
-  if (bgmGain) {
-    bgmGain.gain.value = 0;
+  if (bgmGain && ctx) {
+    // 前に予約された音量の変化(フェードなど)を取り消してから、0にする(予約が重なって残らないように)
+    const param = bgmGain.gain;
+    param.cancelScheduledValues(ctx.currentTime);
+    param.setValueAtTime(0, ctx.currentTime);
     bgmTargetLevel = -1; // 手で 0 にしたので、このあとの applyBgmLevel(フェードイン)は、必ず書き込む
   } else if (bgmElement) bgmElement.volume = 0;
-  void ctx.resume().catch(() => {});
-  ensureBgmPlaying();
-  resumeSettleTimer = setTimeout(() => {
-    resumeSettleTimer = null;
-    applyBgmLevel(RESUME_FADE_SEC);
-  }, RESUME_SETTLE_MS);
+  reloadBgmElement();
+
+  const start = () => {
+    ensureBgmPlaying();
+    if (resumeSettleTimer) clearTimeout(resumeSettleTimer);
+    resumeSettleTimer = setTimeout(() => {
+      resumeSettleTimer = null;
+      applyBgmLevel(RESUME_FADE_SEC);
+    }, RESUME_SETTLE_MS);
+  };
+  if (!ctx || ctx.state === "running") {
+    start();
+    return;
+  }
+  pendingStart = start; // 動き出したとき(statechange、または resume の完了)に、1回だけ始める
+  void ctx
+    .resume()
+    .then(() => {
+      if (ctx.state === "running") runPendingStart();
+    })
+    .catch(() => {});
+}
+
+/** 裏に回った(アプリを閉じた・画面ロック)。止めていなければ、止める(すでに止めていれば何もしない) */
+function onPageHidden(): void {
+  if (!useSettingsStore.getState().audioUnlocked || backgroundHalted) return;
+  backgroundHalted = true;
+  pendingStart = null;
+  haltPlayback();
+}
+
+/** 戻ってきた。裏に回って止めていたときだけ、1回だけ再開する(visibilitychange・pageshow が続けて来ても、2回目は何もしない) */
+function onPageVisible(): void {
+  if (!useSettingsStore.getState().audioUnlocked || !backgroundHalted || isPageHidden()) return;
+  backgroundHalted = false;
+  resumeFromBackground();
 }
 
 /**
@@ -362,6 +431,8 @@ function isPageHidden(): boolean {
 
 /** BGM要素を再生する。見えていないあいだ・ミュート中は何もしない(戻ってきた/解除したとき ensureBgmPlaying が始める) */
 function playBgmElement(audio: HTMLAudioElement): void {
+  // 裏から戻って、AudioContext が動き出すのを待っているあいだは、再生しない(動き出したとき、いまの曲を、1回だけ始める)
+  if (pendingStart) return;
   if (!isPageHidden() && !isBgmSilenced()) safePlay(audio);
 }
 
@@ -370,7 +441,10 @@ function playBgmElement(audio: HTMLAudioElement): void {
  * AudioContext が動き出したとき・アプリに戻ったとき)。ミュート中は再生しない(止めたまま)。
  */
 function ensureBgmPlaying(): void {
-  if (bgmElement && bgmSrc && bgmElement.paused) playBgmElement(bgmElement);
+  if (!bgmElement || !bgmSrc || !bgmElement.paused || backgroundHalted) return;
+  // 音の受け皿(AudioContext)が止まっているあいだは、<audio> を再生しない(動き出したとき statechange が、ここを呼び直す)
+  if (bgmGain && audioContext && audioContext.state !== "running") return;
+  playBgmElement(bgmElement);
 }
 
 /** タップの中で、BGM要素を無音で一度再生しておく(unlockPlayback から呼ぶ) */
@@ -384,6 +458,8 @@ function primeBgmElement(): void {
 
 /** 導入曲が終わったらループ曲へ移るための待ち受け(曲が切り替わるとき・止めるときに外す) */
 let introEndedHandler: (() => void) | null = null;
+/** いま指定されている導入曲のURL(裏に回って戻ったとき、導入曲の途中なら、導入曲から入れ替える) */
+let bgmIntroSrc: string | null = null;
 
 function clearIntroHandler(): void {
   if (bgmElement && introEndedHandler) bgmElement.removeEventListener("ended", introEndedHandler);
@@ -404,6 +480,7 @@ export function playBgm(src: string, introSrc?: string): void {
   resumeAudioContext();
   clearIntroHandler();
   applyBgmLevel();
+  bgmIntroSrc = introSrc ?? null;
   if (introSrc) {
     audio.src = introSrc;
     audio.loop = false;
@@ -487,14 +564,12 @@ useSettingsStore.subscribe((state, prev) => {
 // アプリがバックグラウンドに回ったら(ホーム画面に戻った・画面ロック)BGMを止め、戻ってきたら続きから鳴らす。
 // ミュート中は、止めたままにする(解除すれば、続きから鳴る)。
 if (typeof document !== "undefined") {
-  document.addEventListener("visibilitychange", () => {
-    if (!useSettingsStore.getState().audioUnlocked) return;
-    if (isPageHidden()) {
-      haltPlayback();
-      return;
-    }
-    resumeFromBackground();
-  });
+  // 3つのイベント(visibilitychange・pagehide・pageshow)は、どれも同じ2つの関数を呼ぶ。どちらも、すでにその状態なら何もしない
+  document.addEventListener("visibilitychange", () => (isPageHidden() ? onPageHidden() : onPageVisible()));
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", onPageHidden);
+  window.addEventListener("pageshow", onPageVisible);
 }
 
 // 解禁のあと、止まってしまった音(iOSの "interrupted"・読み込み直しのあとなど)を、画面をタップするたびに動かし直す。
@@ -526,7 +601,13 @@ export function shutdownAudio(): void {
   bgmElement = null;
   bgmSrc = null;
   bgmGain = null;
+  bgmSourceTried = false;
   bgmTargetLevel = -1;
+  bgmIntroSrc = null;
+  backgroundHalted = false;
+  pendingStart = null;
+  if (resumeSettleTimer) clearTimeout(resumeSettleTimer);
+  resumeSettleTimer = null;
   seBuffers.clear();
   sePreloadStarted = false;
   const ctx = audioContext;
