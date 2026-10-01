@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Leaf, Lock } from "lucide-react";
+import { BookOpen, Leaf, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -96,12 +96,6 @@ export function KotonohaScreen() {
           ) : (
             <>
               {entry !== "entry_first" && <SceneBubbles sceneId={entry} />}
-              <p className="kotonoha-leaf-count" aria-label={`集めた葉 ${countIn("all")} / ${all.length}`}>
-                <Leaf aria-hidden="true" size={18} className="inline-icon" />
-                <span>
-                  {countIn("all")} / {all.length}
-                </span>
-              </p>
               <ul className="kotonoha-scope-list">
                 {SCOPES.map((scope) => {
                   const total = questionsInScope(all, scope).length;
@@ -119,6 +113,21 @@ export function KotonohaScreen() {
                   );
                 })}
               </ul>
+              {/* 図鑑の「ことのは」へ。集めた葉の数も、ここに出す(葉が0枚でも、押せる)。初回の台詞が終わってから出る */}
+              <button
+                type="button"
+                className="kotonoha-zukan-link"
+                onClick={() => goTo({ name: "zukan", tab: "kotonoha", backTo: "kotonoha" })}
+              >
+                <BookOpen aria-hidden="true" size={18} />
+                <span>ずかんを みる</span>
+                <span className="kotonoha-leaf-count" aria-label={`集めた葉 ${countIn("all")} / ${all.length}`}>
+                  <Leaf aria-hidden="true" size={16} />
+                  <span>
+                    {countIn("all")} / {all.length}
+                  </span>
+                </span>
+              </button>
             </>
           )}
         </>

@@ -9,13 +9,22 @@ import { BackButton } from "@/components/BackButton";
 /**
  * ことだまの書(図鑑)。長くなるので、タブで分ける(定義は features/zukan/zukanTabs.ts):
  *  - せいとうりつ: 単元ごとの正答率(行をタップで、その単元の自由練習へ)
- *  - ことばの ずかん: 用語のまとめページ(バトル中の「ずかん」と同じ内容)
+ *  - ぶんぽう(ぶんぽうの ずかん): 文法のことばのまとめページ(バトル中の「ずかん」と同じ内容)
  *  - おもいで: 称号、エンディングの見返し、見終わったストーリーの見返し
  * 開いたときは「せいとうりつ」。選んだタブは、この画面を離れるまで覚えている(端末には保存しない)。
  * 見返しなどから戻るときは、画面の切り替え先に tab を渡して、同じタブを開く。
  * tabs は、テスト用に差し替えられる(中身のないタブが出ないことの確認など)。
  */
-export function ZukanScreen({ initialTab, tabs: allTabs }: { initialTab?: string; tabs?: readonly ZukanTab[] }) {
+export function ZukanScreen({
+  initialTab,
+  backTo,
+  tabs: allTabs,
+}: {
+  initialTab?: string;
+  /** 「もどる」の戻り先。省略すると、ホーム画面 */
+  backTo?: "kotonoha";
+  tabs?: readonly ZukanTab[];
+}) {
   const goTo = useNavigationStore((s) => s.goTo);
   const guideSeen = useTutorialStore((s) => s.seenGuides.includes("zukan"));
   const markGuideSeen = useTutorialStore((s) => s.markSeen);
@@ -38,7 +47,7 @@ export function ZukanScreen({ initialTab, tabs: allTabs }: { initialTab?: string
 
   return (
     <div className="screen screen-zukan">
-      <BackButton onClick={() => goTo({ name: "title" })} />
+      <BackButton onClick={() => goTo(backTo === "kotonoha" ? { name: "kotonoha" } : { name: "title" })} />
       <h2>
         ことだまの書
       </h2>

@@ -1,3 +1,4 @@
+import { zukanReturnScreen } from "@/features/zukan/zukanReturn";
 import { TitleBadge } from "@/components/TitleBadge";
 import { Rb } from "@/components/Rb";
 import { StoryArchive } from "@/features/zukan/StoryArchive";
@@ -33,7 +34,7 @@ export function MemoriesTab() {
         <div className="zukan-replay">
           <button
             type="button"
-            onClick={() => goTo(buildEndingReplayScreen("ohzaNoMa", { name: "zukan", tab: "memories" }))}
+            onClick={() => goTo(buildEndingReplayScreen("ohzaNoMa", zukanReturnScreen("memories")))}
           >
             エンディングを もういちど 見る
           </button>

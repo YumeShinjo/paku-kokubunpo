@@ -69,12 +69,21 @@ export function KotonohaTab() {
   const count = [...kotowazaQuestions, ...kojiQuestions].filter((q) => collected.has(q.id)).length;
   return (
     <div className="kotonoha-tab">
+      {/* ことわざ(50)と故事成語(30)をあわせた図鑑。集めた葉は「n / 80」 */}
+      <h3 className="kotonoha-tab-title">
+        <Rb t="ことわざ・故事成語[こじせいご] ずかん" />
+      </h3>
       <p className="kotonoha-leaf-count" aria-label={`集めた葉 ${count} / ${total}`}>
         <Leaf aria-hidden="true" size={18} className="inline-icon" />
         <span>
           {count} / {total}
         </span>
       </p>
+      {count === 0 && (
+        <p className="kotonoha-tab-empty">
+          <Rb t="まだ 葉[は]を あつめていないよ。言[こと]の葉[は]の森[もり]で あそんで、あつめよう。" />
+        </p>
+      )}
       <LeafSection title="ことわざ" questions={kotowazaQuestions} collected={collected} />
       <LeafSection title="故事成語[こじせいご]" questions={kojiQuestions} collected={collected} />
     </div>

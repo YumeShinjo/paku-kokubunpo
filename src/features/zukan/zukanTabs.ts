@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import { zukanPages } from "@/data/zukanPages";
 import { AccuracyTab } from "@/features/zukan/AccuracyTab";
 import { MemoriesTab } from "@/features/zukan/MemoriesTab";
-import { ZukanPages } from "@/features/zukan/ZukanPages";
+import { GRAMMAR_ZUKAN_NAME, ZukanPages } from "@/features/zukan/ZukanPages";
 import { NakamaTab } from "@/features/zukan/NakamaTab";
 import { KotonohaTab } from "@/features/zukan/KotonohaTab";
 import { isKotonohaUnlockedNow } from "@/features/kotonoha/unlock";
@@ -28,14 +28,15 @@ export interface ZukanTab {
 
 export const ZUKAN_TABS: readonly ZukanTab[] = [
   { id: "accuracy", label: "せいとうりつ", shortLabel: "せいとう", Panel: AccuracyTab },
-  { id: "pages", label: "ことばの ずかん", shortLabel: "ことば", Panel: ZukanPages, hasContent: () => zukanPages.length > 0 },
+  // 文法のことば(品詞・活用など)の説明。「ことば」だと、ことわざ・なかまと混ざるので、「ぶんぽう」にしている
+  { id: "pages", label: GRAMMAR_ZUKAN_NAME, shortLabel: "ぶんぽう", Panel: ZukanPages, hasContent: () => zukanPages.length > 0 },
   // 出会ったなかま(コト・小ボス・王様・ユライ)の立ち絵とメモ。いつも中身がある(コトは最初から)
   { id: "nakama", label: "なかまの ずかん", shortLabel: "なかま", Panel: NakamaTab },
   // 言の葉の森で集めた葉の一覧。序章をクリアして、言の葉の森が遊べるようになるまでは、タブを出さない
   {
     id: "kotonoha",
     label: "ことわざ・故事成語ずかん",
-    shortLabel: "ことわざ",
+    shortLabel: "ことのは",
     Panel: KotonohaTab,
     hasContent: isKotonohaUnlockedNow,
   },

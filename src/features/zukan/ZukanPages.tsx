@@ -8,6 +8,9 @@ import { PosChip } from "@/components/PosChip";
 import { partsOfSpeech } from "@/data/partOfSpeech";
 import { Rb } from "@/components/Rb";
 
+/** このページの名前。ことだまの書の「ぶんぽう」タブと、出題画面の「ずかん」から開く画面で、同じ名前を使う */
+export const GRAMMAR_ZUKAN_NAME = "ぶんぽうの ずかん";
+
 const t = (text: string) => <Ruby text={rb(autoRuby(text))} />;
 
 /** 例文の1語。品詞がわかっている語には、品詞の色と品詞名をそえる(色だけに頼らない) */
@@ -29,9 +32,9 @@ function Word({ word }: { word: ExampleWord }) {
 export function ZukanPages() {
   return (
     <section className="zukan-pages">
-      <h3>
-        ことばの ずかん
-      </h3>
+      <h3>{GRAMMAR_ZUKAN_NAME}</h3>
+      {/* 何のページかが、すぐ分かる1行(文法のことばを説明するページ) */}
+      <p className="zukan-pages-guide">ぶんぽうの ことばを しらべよう</p>
       <p className="zukan-pages-lead">
         <Rb t="わからなくなったら、いつでも見[み]られるよ。(バトル中[ちゅう]も「" /><BookOpen className="inline-icon" aria-hidden="true" size="1.05em" /><Rb t="ずかん」から開[ひら]けるよ)" />
       </p>

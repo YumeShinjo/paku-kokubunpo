@@ -4390,6 +4390,35 @@ html[data-text-size="large"] .kotonoha-result {
   font-variant-numeric: tabular-nums;
 }
 
+/* 言の葉の森の入口から、図鑑の「ことのは」へ。高さ44px以上。範囲のボタンの下に、ひかえめに置く */
+.kotonoha-zukan-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  padding-bottom: max(0.2rem, env(safe-area-inset-bottom));
+  font-size: 1rem;
+  background: rgba(255, 253, 247, 0.95);
+  border: 2px solid #b9e3a0;
+  color: var(--color-on-primary);
+  box-shadow: 0 2px 4px rgba(75, 58, 46, 0.1);
+}
+
+.kotonoha-zukan-link .kotonoha-leaf-count {
+  margin-left: 0.2rem;
+  padding: 0 0.6rem;
+  font-size: 0.9rem;
+  background: var(--color-tint);
+}
+
+.kotonoha-zukan-link svg {
+  flex: none;
+}
+
 .kotonoha-leaf-count svg {
   color: #5fa055;
 }
@@ -4690,12 +4719,18 @@ html[data-text-size="large"] .kotonoha-explain {
 
 .scene-bubble-name {
   flex: none;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: rgba(217, 191, 159, 0.28);
+  border: 1px solid #d9bf9f;
   font-size: 0.72rem;
   font-weight: bold;
   color: #8a6a45;
 }
 
 .scene-bubble.is-koto .scene-bubble-name {
+  background: var(--color-tint);
+  border-color: rgba(168, 224, 200, 0.95);
   color: var(--color-primary-text);
 }
 
@@ -4835,6 +4870,43 @@ html[data-text-size="large"] .kotonoha-explain {
 
 .leaf-detail p {
   margin: 0;
+}
+
+/* ユライの一言: 名前は小さなチップにして、台詞とは別の要素にする(名前と台詞が、続いた文に見えないように) */
+.leaf-detail .leaf-yurai {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.leaf-yurai-name {
+  flex: none;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: rgba(217, 191, 159, 0.28);
+  border: 1px solid #d9bf9f;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #8a6a45;
+}
+
+.kotonoha-tab-title {
+  margin: 0;
+}
+
+.kotonoha-tab-empty {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background: var(--color-tint);
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.zukan-pages-guide {
+  margin: 0;
+  font-weight: bold;
+  color: var(--color-primary-text);
 }
 
 /* まだ集めていない葉: 薄い色のシルエットと「？」。答えが分かる文字は出さない */

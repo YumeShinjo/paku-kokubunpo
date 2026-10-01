@@ -11,8 +11,11 @@ export type Screen =
   | { name: "stageSelect"; areaId: string }
   | { name: "stage"; areaId: string; stageId: string }
   | { name: "story"; eventId: string; next: Screen }
-  /** ことだまの書。tab は、開くタブのid(features/zukan/zukanTabs.ts)。省略すると「せいとうりつ」 */
-  | { name: "zukan"; tab?: string }
+  /**
+   * ことだまの書。tab は、開くタブのid(features/zukan/zukanTabs.ts)。省略すると「せいとう」。
+   * backTo は、「もどる」の戻り先(遷移元に合わせる)。省略すると、ホーム画面。いまは、言の葉の森の入口から開いたとき("kotonoha")だけ
+   */
+  | { name: "zukan"; tab?: string; backTo?: "kotonoha" }
   /** 言の葉の森(ことわざ・故事成語のミニゲーム)の入口 / 出題(1ラウンド10問)。scope は出題の範囲 */
   | { name: "kotonoha" }
   | { name: "kotonohaPlay"; scope: KotonohaScope }

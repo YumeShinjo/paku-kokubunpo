@@ -14,7 +14,7 @@ import { MascotFace } from "@/features/mascot/Mascot";
 import { recordReviewResult, type ReviewOutcome } from "./review";
 import type { QuizProgress } from "./session";
 import { StageVisual } from "@/components/ScreenBackground";
-import { ZukanPages } from "@/features/zukan/ZukanPages";
+import { GRAMMAR_ZUKAN_NAME, ZukanPages } from "@/features/zukan/ZukanPages";
 import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
@@ -463,7 +463,7 @@ export function QuizPlayer({
       )}
 
       {zukanOpen && (
-        <div className="zukan-modal" role="dialog" aria-label="ことばのずかん">
+        <div className="zukan-modal" role="dialog" aria-label={GRAMMAR_ZUKAN_NAME}>
           <div className="zukan-modal-inner">
             <button type="button" className="zukan-modal-close" onClick={() => setZukanOpen(false)}>
               <CloseIcon aria-hidden="true" size={16} />

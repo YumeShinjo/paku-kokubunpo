@@ -110,7 +110,7 @@ function renderScreen(screen: Screen) {
     case "story":
       return <StoryScreen key={screen.eventId} eventId={screen.eventId} next={screen.next} />;
     case "zukan":
-      return <ZukanScreen initialTab={screen.tab} />;
+      return <ZukanScreen initialTab={screen.tab} backTo={screen.backTo} />;
     case "kotonoha":
       return <KotonohaScreen />;
     case "kotonohaPlay":

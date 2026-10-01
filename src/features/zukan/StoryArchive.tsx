@@ -1,3 +1,4 @@
+import { zukanReturnScreen } from "@/features/zukan/zukanReturn";
 import { ScrollText } from "lucide-react";
 import { buildStoryArchive, countReplayableStories } from "@/features/story/storyArchive";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -39,7 +40,7 @@ export function StoryArchive() {
                 <li key={entry.id}>
                   <button
                     type="button"
-                    onClick={() => goTo({ name: "story", eventId: entry.id, next: { name: "zukan", tab: "memories" } })}
+                    onClick={() => goTo({ name: "story", eventId: entry.id, next: zukanReturnScreen("memories") })}
                   >
                     {entry.label}
                   </button>
