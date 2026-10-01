@@ -68,3 +68,20 @@ export async function seedProgress(page: Page, clearedStageIds: string[], totalS
     [clearedStageIds, totalScore] as const,
   );
 }
+
+/**
+ * 出題画面の上の背景の帯(.stage-visual の背景画像)の読み込みを待つ。1枚の cover の大きな画像なので、
+ * 読み込みが終わる前にスクリーンショットを撮ると、帯が空(背景色だけ)で撮れてしまう。
+ */
+export async function waitForStageVisual(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const el = document.querySelector(".stage-visual");
+    if (!el) return true;
+    const url = getComputedStyle(el).backgroundImage.match(/url\("?([^")]+)"?\)/)?.[1];
+    if (!url) return true; // 画像が置かれていない(単色・仮の帯)
+    const img = new Image();
+    img.src = url;
+    return img.complete && img.naturalWidth > 0;
+  });
+  await page.waitForTimeout(100);
+}

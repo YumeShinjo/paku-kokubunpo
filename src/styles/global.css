@@ -3176,41 +3176,15 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
   height: var(--stage-visual-height);
   border-radius: 14px 14px 0 0;
   background-color: var(--color-bar-track);
-  overflow: hidden;
-}
-
-/*
- * 通常ステージの帯の背景は、2枚の層。
- *  - art: 画像全体を、中央に1枚だけ置く(contain。帯の高さに関わらず、画像全体が必ず収まる)。両端は、すっと消す
- *  - fill: 同じ画像を、帯いっぱいに拡大して(cover)ぼかした層。art の両側(横に広いとき)を、継ぎ目なく埋める
- * (以前は contain のまま、繰り返しの指定がなく、画像が左右に並んで、PCなど横に広い画面で、縦のつなぎ目が見えていた)
- */
-.stage-visual-fill,
-.stage-visual-art {
-  position: absolute;
-  background-repeat: no-repeat;
-  pointer-events: none;
-}
-
-.stage-visual-fill {
-  inset: -0.8rem;
+  /*
+   * 1枚の cover(繰り返さない)。帯は横に長く、画像より縦が足りないので、上下が切れる。見せたい高さは、
+   * エリアごとに StageVisual が background-position で指定する(data/stageVisualFocus.ts)。
+   * (contain にして繰り返しの指定を忘れると、画像が左右に並んで、つなぎ目が出る。ぼかしで両側を埋める方式も、不自然だった)
+   */
   background-size: cover;
-  background-position: center;
-  filter: blur(0.7rem);
-}
-
-/* 画像(1024×572)の大きさぴったりの枠を中央に置いて、その両端を、すっと消す(帯が狭いときは、帯の幅まで) */
-.stage-visual-art {
-  top: 0;
-  left: 50%;
-  height: 100%;
-  width: min(100%, calc(var(--stage-visual-height) * 1.79));
-  transform: translateX(-50%);
-  background-size: contain;
-  background-position: center;
   background-repeat: no-repeat;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  background-position: center 50%;
+  overflow: hidden;
 }
 
 /* 帯の下端は、画面の背景色へ溶け込むようにフェードさせる */
@@ -4257,8 +4231,19 @@ html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
   padding: 0 0.25rem;
 }
 
-.kotonoha-scene .mascot-normal {
-  --mascot-size: min(10rem, 38vw);
+/*
+ * コトは、ユライと同じ大きさの枠に入れて、足元を原点に縮める(倍率・足元のずらしは、data/kotonohaScale.ts。KotonohaScene が変数で渡す)。
+ * 足元の高さは動かないので、ユライと足元がそろう。行の高さの余白で、枠が伸びないよう、line-height は 0。
+ */
+.kotonoha-scene .mascot {
+  --mascot-size: var(--yurai-size);
+  line-height: 0;
+  transform-origin: 50% var(--koto-feet-origin, 92%);
+  transform: translateY(var(--koto-feet-shift, 0%)) scale(var(--koto-scale, 1));
+}
+
+.kotonoha-scene .mascot-layers {
+  display: block;
 }
 
 .kotonoha-scene.has-bubble .yurai-bubble::before {
@@ -4275,11 +4260,7 @@ html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
   --yurai-size: min(6.5rem, 26vw);
 }
 
-.kotonoha-scene.is-compact .mascot-normal {
-  --mascot-size: min(6rem, 24vw);
-}
-
-/* 答えたあと: ユライの隣に吹き出し。コトは、さらに小さく */
+/* 答えたあと: ユライの隣に吹き出し */
 .kotonoha-scene.has-bubble {
   align-items: center;
   gap: 0.4rem;
@@ -4287,10 +4268,6 @@ html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
 
 .kotonoha-scene.has-bubble {
   --yurai-size: min(5.5rem, 23vw);
-}
-
-.kotonoha-scene.has-bubble .mascot-normal {
-  --mascot-size: min(4.8rem, 20vw);
 }
 
 .kotonoha-scene.has-bubble .yurai-bubble {

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { clearedStagesThrough, dismissEngineGuide, dismissStageIntro, seedProgress, skipStories, startApp } from "./helpers";
+import { clearedStagesThrough, dismissEngineGuide, dismissStageIntro, seedProgress, skipStories, startApp, waitForStageVisual } from "./helpers";
 
 /**
  * 主要画面のE2E・ビジュアル回帰テスト(タイトル・出題画面・正誤ポップアップ・ボス戦・ランキング・せってい)。
@@ -62,6 +62,7 @@ test.describe("出題画面と正誤ポップアップ(通常ステージ)", () 
 
     await expect(page.locator(".engine")).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    await waitForStageVisual(page);
     await expect(page).toHaveScreenshot("quiz-question.png");
 
     // 選択式・仕分けのどちらでも、最初に見つかったボタンで答える(正誤どちらでもポップアップの見た目は確認できる)
@@ -77,6 +78,7 @@ test.describe("出題画面と正誤ポップアップ(通常ステージ)", () 
     await expect(page.locator(".feedback-overlay")).toBeVisible();
     await expect(page.locator('.feedback-overlay [role="dialog"]')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    await waitForStageVisual(page);
     await expect(page).toHaveScreenshot("quiz-feedback-popup.png");
   });
 });
@@ -98,6 +100,7 @@ test.describe("ボス戦", () => {
     const encounterStart = page.getByRole("button", { name: "たたかう" });
     await expect(encounterStart).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    await waitForStageVisual(page);
     await expect(page).toHaveScreenshot("boss-encounter.png");
     await encounterStart.click();
     await dismissStageIntro(page); // 「たたかう!」(出題形式ではなく対決の説明)
@@ -106,6 +109,7 @@ test.describe("ボス戦", () => {
     await expect(page.locator(".hp-gauge")).toBeVisible();
     await expect(page.locator(".player-lives")).toHaveAttribute("aria-label", "ライフ 5 / 5");
     await expectNoHorizontalOverflow(page);
+    await waitForStageVisual(page);
     await expect(page).toHaveScreenshot("boss-battle.png");
   });
 });

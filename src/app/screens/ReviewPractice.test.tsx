@@ -93,10 +93,10 @@ describe("出題画面上部のレイアウト(CSS)", () => {
     expect(rule(".feedback-overlay .feedback.feedback-compact")).toMatch(/width: min\(100%, [\d.]+rem\);/);
   });
 
-  it("通常ステージの背景バーは、画像全体が収まるように表示し(cover で切れない)、下端に背景色へのフェードがある(モチーフの重ね表示はない)", () => {
-    // 画像全体は、中央の1枚の層(.stage-visual-art。contain・繰り返さない)に置く。両側は、同じ画像をぼかした層(.stage-visual-fill)
-    const art = css.slice(css.lastIndexOf(".stage-visual-art {"));
-    expect(art.slice(0, art.indexOf("}"))).toContain("background-size: contain;");
+  it("通常ステージの背景バーは、1枚の cover で(繰り返さない)、下端に背景色へのフェードがある(モチーフの重ね表示はない)", () => {
+    // 1枚の cover で、繰り返さない(上下が切れる分は、エリアごとの縦の位置 stageVisualFocus で、見せたい高さにする)
+    expect(rule(".stage-visual")).toContain("background-size: cover;");
+    expect(rule(".stage-visual")).toContain("background-repeat: no-repeat;");
     expect(rule(".stage-visual::after")).toContain("var(--color-bg)");
     expect(css).not.toContain("stage-visual-motif");
   });

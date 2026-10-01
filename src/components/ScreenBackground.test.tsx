@@ -9,6 +9,8 @@ vi.mock("@/assets/registry", async (importOriginal) => {
 });
 
 import { StageVisual } from "./ScreenBackground";
+import { areas } from "@/data/areas";
+import { DEFAULT_STAGE_VISUAL_FOCUS, STAGE_VISUAL_FOCUS, stageVisualFocus } from "@/data/stageVisualFocus";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -22,42 +24,64 @@ function render(el: React.ReactElement) {
   return { container, done: () => (act(() => root.unmount()), container.remove()) };
 }
 
-describe("背景の帯(StageVisual): 画像を繰り返し並べない(PCなど横に広い画面で、つなぎ目が出ないように)", () => {
-  it("通常ステージの帯: 画像全体を1枚だけ置く層(art)と、同じ画像を拡大してぼかした層(fill)の2層。帯自身には、背景画像を付けない", () => {
-    const { container, done } = render(<StageVisual name="prologue" />);
+const rule = (selector: string) => {
+  const start = css.indexOf(`\n${selector} {`);
+  return start < 0 ? "" : css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
+};
+
+describe("背景の帯(StageVisual): 1枚の cover。繰り返さない・ぼかしで埋めない", () => {
+  it("通常ステージの帯: 背景画像を1枚だけ付ける。縦の位置は、エリアごとの値(既定は50%)。余計な層(ぼかし・中央の1枚)は、ない", () => {
+    const { container, done } = render(<StageVisual name="kotobaNoIchiba" />);
     const visual = container.querySelector<HTMLElement>(".stage-visual")!;
-    expect(visual.style.backgroundImage).toBe("");
-    expect(visual.querySelector(".stage-visual-art")).not.toBeNull();
-    expect(visual.querySelector(".stage-visual-fill")).not.toBeNull();
+    expect(visual.style.backgroundImage).toContain("bg/kotobaNoIchiba");
+    expect(visual.style.backgroundPosition).toBe(`center ${DEFAULT_STAGE_VISUAL_FOCUS}`);
+    expect(visual.children).toHaveLength(0);
     done();
   });
 
-  it("ボス戦の帯(tall): これまでどおり、1枚の cover", () => {
+  it("エリアごとの縦の位置が、帯に反映される(序章・荒れた背景も)", () => {
+    const { container, done } = render(<StageVisual name="prologue" />);
+    expect(container.querySelector<HTMLElement>(".stage-visual")!.style.backgroundPosition).toBe(`center ${STAGE_VISUAL_FOCUS.prologue}`);
+    done();
+    const corrupted = render(<StageVisual name="ohzaNoMa-corrupted" />);
+    expect(corrupted.container.querySelector<HTMLElement>(".stage-visual")!.style.backgroundPosition).toBe(`center ${STAGE_VISUAL_FOCUS.ohzaNoMa}`);
+    corrupted.done();
+  });
+
+  it("ボス戦の帯(tall): これまでどおり、CSSの cover・上寄せ(縦の位置は指定しない)", () => {
     const { container, done } = render(<StageVisual name="prologue" tall />);
     const visual = container.querySelector<HTMLElement>(".stage-visual")!;
     expect(visual.style.backgroundImage).toContain("bg/prologue");
-    expect(visual.querySelector(".stage-visual-art")).toBeNull();
+    expect(visual.style.backgroundPosition).toBe("");
     done();
   });
 
-  const rule = (selector: string) => {
-    const start = css.indexOf(`\n${selector} {`);
-    return start < 0 ? "" : css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
-  };
+  it("縦の位置(焦点): 既定値があり、すべて0〜100%。登録されているのは、実在するエリアだけ", () => {
+    const pct = (v: string) => Number(v.replace("%", ""));
+    expect(pct(DEFAULT_STAGE_VISUAL_FOCUS)).toBeGreaterThanOrEqual(0);
+    expect(pct(DEFAULT_STAGE_VISUAL_FOCUS)).toBeLessThanOrEqual(100);
+    for (const [key, value] of Object.entries(STAGE_VISUAL_FOCUS)) {
+      expect(pct(value), key).toBeGreaterThanOrEqual(0);
+      expect(pct(value), key).toBeLessThanOrEqual(100);
+      expect(areas.some((a) => a.id === key.replace(/-corrupted$/, "")), key).toBe(true);
+    }
+    expect(stageVisualFocus("sugatakaeNoKajiba")).toBe(DEFAULT_STAGE_VISUAL_FOCUS);
+    expect(stageVisualFocus("sugatakaeNoKajiba-corrupted")).toBe(DEFAULT_STAGE_VISUAL_FOCUS);
+  });
 
-  it("CSS: 帯の2層とボス戦の帯は、繰り返さない(no-repeat)", () => {
-    const art = css.slice(css.lastIndexOf("\n.stage-visual-art {"));
-    expect(art.slice(0, art.indexOf("}"))).toContain("background-size: contain;");
-    expect(rule(".stage-visual-fill")).toContain("background-size: cover;");
-    expect(css).toMatch(/\.stage-visual-fill,\s*\.stage-visual-art \{[^}]*background-repeat: no-repeat;/);
+  it("CSS: 帯は cover・繰り返さない。contain は使わない(帯の足りない分を、繰り返しで埋めてしまうため)。ボス戦の帯も同じ", () => {
+    const visual = rule(".stage-visual");
+    expect(visual).toContain("background-size: cover;");
+    expect(visual).toContain("background-repeat: no-repeat;");
+    expect(rule(".stage-visual-tall")).toContain("background-size: cover;");
     expect(rule(".stage-visual-tall")).toContain("background-repeat: no-repeat;");
-    // 帯自身に、contain(足りない分を繰り返しで埋めてしまう指定)を戻さない
-    expect(rule(".stage-visual")).not.toContain("background-size");
+    expect(css).not.toContain("stage-visual-fill");
+    expect(css).not.toContain("stage-visual-art");
   });
 
   it("CSS全体: 背景を contain にする規則は、必ず、繰り返さない指定(no-repeat)と一緒に書く", () => {
-    const rules = css.split("}").filter((r) => /background-size:\s*contain/.test(r));
-    expect(rules.length).toBeGreaterThan(0);
-    for (const r of rules) expect(r, r.trim().split("{")[0]).toMatch(/background-repeat:\s*no-repeat/);
+    for (const r of css.split("}").filter((x) => /background-size:\s*contain/.test(x))) {
+      expect(r, r.trim().split("{")[0]).toMatch(/background-repeat:\s*no-repeat/);
+    }
   });
 });

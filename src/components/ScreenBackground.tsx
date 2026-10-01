@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { findImage, IMAGE } from "@/assets/registry";
+import { stageVisualFocus } from "@/data/stageVisualFocus";
 
 /**
  * 画面の背景(エリアidまたは "title")。素材が置かれていなければ何も出さない(単色のまま)。
@@ -33,20 +34,16 @@ export function StageVisual({
   children?: ReactNode;
 }) {
   const url = findImage(IMAGE.background(name));
-  // 通常ステージの帯: 画像全体を、中央に1枚だけ置く(contain)。帯が横に広いときの両側は、同じ画像を拡大してぼかした層で埋める
-  // (画像を繰り返し並べない。並べると、PCなど横に広い画面で、つなぎ目の縦線が出る)。ボス戦(tall)は、1枚の cover
-  const layered = Boolean(url) && !tall;
+  // 通常ステージの帯も、ボス戦(tall)と同じ、1枚の cover(繰り返さない)。上下が切れる分は、エリアごとの縦の位置(stageVisualFocus)で、
+  // 見せたいところ(建物・空・道)が入るようにする
+  const style = url
+    ? { backgroundImage: `url(${url})`, ...(tall ? {} : { backgroundPosition: `center ${stageVisualFocus(name)}` }) }
+    : undefined;
   return (
     <div
       className={["stage-visual", tall ? "stage-visual-tall" : "", url ? "" : "stage-visual-placeholder"].filter(Boolean).join(" ")}
-      style={url && !layered ? { backgroundImage: `url(${url})` } : undefined}
+      style={style}
     >
-      {layered && (
-        <>
-          <span className="stage-visual-fill" style={{ backgroundImage: `url(${url})` }} aria-hidden="true" />
-          <span className="stage-visual-art" style={{ backgroundImage: `url(${url})` }} aria-hidden="true" />
-        </>
-      )}
       {children}
     </div>
   );
