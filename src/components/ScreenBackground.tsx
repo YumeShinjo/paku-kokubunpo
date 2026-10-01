@@ -33,11 +33,20 @@ export function StageVisual({
   children?: ReactNode;
 }) {
   const url = findImage(IMAGE.background(name));
+  // 通常ステージの帯: 画像全体を、中央に1枚だけ置く(contain)。帯が横に広いときの両側は、同じ画像を拡大してぼかした層で埋める
+  // (画像を繰り返し並べない。並べると、PCなど横に広い画面で、つなぎ目の縦線が出る)。ボス戦(tall)は、1枚の cover
+  const layered = Boolean(url) && !tall;
   return (
     <div
       className={["stage-visual", tall ? "stage-visual-tall" : "", url ? "" : "stage-visual-placeholder"].filter(Boolean).join(" ")}
-      style={url ? { backgroundImage: `url(${url})` } : undefined}
+      style={url && !layered ? { backgroundImage: `url(${url})` } : undefined}
     >
+      {layered && (
+        <>
+          <span className="stage-visual-fill" style={{ backgroundImage: `url(${url})` }} aria-hidden="true" />
+          <span className="stage-visual-art" style={{ backgroundImage: `url(${url})` }} aria-hidden="true" />
+        </>
+      )}
       {children}
     </div>
   );

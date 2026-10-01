@@ -3176,12 +3176,41 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
   height: var(--stage-visual-height);
   border-radius: 14px 14px 0 0;
   background-color: var(--color-bar-track);
-  /* cover だと、この帯の高さが画像の縦横比に足りず、上のほう(空)しか見えなかった。
-     contain にして、帯の高さに関わらず画像全体が必ず収まるようにする(足りない分は
-     背景色の余白になる。中央寄せなので、余白は上下または左右に均等に出る)。 */
+  overflow: hidden;
+}
+
+/*
+ * 通常ステージの帯の背景は、2枚の層。
+ *  - art: 画像全体を、中央に1枚だけ置く(contain。帯の高さに関わらず、画像全体が必ず収まる)。両端は、すっと消す
+ *  - fill: 同じ画像を、帯いっぱいに拡大して(cover)ぼかした層。art の両側(横に広いとき)を、継ぎ目なく埋める
+ * (以前は contain のまま、繰り返しの指定がなく、画像が左右に並んで、PCなど横に広い画面で、縦のつなぎ目が見えていた)
+ */
+.stage-visual-fill,
+.stage-visual-art {
+  position: absolute;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.stage-visual-fill {
+  inset: -0.8rem;
+  background-size: cover;
+  background-position: center;
+  filter: blur(0.7rem);
+}
+
+/* 画像(1024×572)の大きさぴったりの枠を中央に置いて、その両端を、すっと消す(帯が狭いときは、帯の幅まで) */
+.stage-visual-art {
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: min(100%, calc(var(--stage-visual-height) * 1.79));
+  transform: translateX(-50%);
   background-size: contain;
   background-position: center;
-  overflow: hidden;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
 }
 
 /* 帯の下端は、画面の背景色へ溶け込むようにフェードさせる */
@@ -3199,8 +3228,9 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
 .stage-visual-tall {
   border-radius: 14px;
   height: var(--stage-visual-tall-height);
-  /* ボス戦は枠が大きく、ボスの立ち絵を画面いっぱいに重ねるため、こちらは今まで通り cover のまま */
+  /* ボス戦は枠が大きく、ボスの立ち絵を画面いっぱいに重ねるため、こちらは今まで通り cover のまま(1枚。繰り返さない) */
   background-size: cover;
+  background-repeat: no-repeat;
   background-position: center top;
   display: flex;
   align-items: flex-end;
@@ -4169,6 +4199,16 @@ input[type="range"]:focus-visible {
 
 .screen-kotonoha .back-button {
   top: max(0.4rem, env(safe-area-inset-top));
+}
+
+/* 文字サイズ「大」でも、「もどる」は折り返さない。何問目かの横の、範囲の札(すべて・ことわざ…)は、はぶく */
+.screen-kotonoha .back-button {
+  flex: none;
+  white-space: nowrap;
+}
+
+html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
+  display: none;
 }
 
 /* 上のバー: 左に「もどる」、右に何問目か。右の端には、音量ボタン(右上)があるので、その分をあける */
