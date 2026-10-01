@@ -1,17 +1,43 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Leaf, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { hasEnteredForest, useKotonohaStore } from "@/app/store/kotonohaStore";
 import { getAllIdiomQuestions } from "@/data/kotowaza";
 import { KotonohaBackground } from "@/features/kotonoha/KotonohaBackground";
 import { KotonohaScene } from "@/features/kotonoha/KotonohaScene";
 import { SCOPE_LABELS, questionsInScope, type KotonohaScope } from "@/features/kotonoha/selectRound";
 import { KOTONOHA_LOCKED_MESSAGE, useKotonohaUnlocked } from "@/features/kotonoha/unlock";
-import { YuraiBubble } from "@/features/kotonoha/Yurai";
+import { SceneBubble, SceneBubbles } from "@/features/kotonoha/SceneBubbles";
+import { pickEntryRepeat, YURAI_SCENES, type SceneId } from "@/data/yuraiScenes";
 
 const SCOPES: KotonohaScope[] = ["all", "kotowaza", "koji"];
+
+/**
+ * 初めて入ったとき(entry_first): ユライ → コト → ユライ → コトの4行を、タップで1行ずつ進める。「スキップ」で、すぐ終える。
+ * 「つぎへ」「スキップ」は、どちらも高さ44px以上。
+ */
+function EntryFirst({ onDone }: { onDone: () => void }) {
+  const lines = YURAI_SCENES.entry_first;
+  const [index, setIndex] = useState(0);
+  const last = index + 1 >= lines.length;
+  return (
+    <div className="scene-dialogue" data-scene="entry_first">
+      <div className="scene-tap-area" onClick={() => (last ? onDone() : setIndex(index + 1))}>
+        <SceneBubble key={index} line={lines[index]} />
+      </div>
+      <div className="scene-actions">
+        <button type="button" className="scene-next" onClick={() => (last ? onDone() : setIndex(index + 1))}>
+          {last ? "おわり" : "つぎへ"}
+        </button>
+        <button type="button" className="scene-skip" onClick={onDone}>
+          スキップ
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /**
  * 言の葉の森の入口の画面。本編とは別枠のミニゲーム(ことわざ・故事成語の穴埋め)。
@@ -22,14 +48,25 @@ export function KotonohaScreen() {
   const unlocked = useKotonohaUnlocked();
   const collectedIds = useKotonohaStore((s) => s.collectedIds);
   const markEntered = useKotonohaStore((s) => s.markEntered);
+  const setLastEntryScene = useKotonohaStore((s) => s.setLastEntryScene);
+  // 初回(入場の記録がない)か、2回目以降か。画面を開いた時点の状態で決める(このあと、入場が記録される)。
+  // 2回目以降は、3つの台詞からランダム。直前に出したものは避ける
+  const [entry] = useState<SceneId>(() => {
+    const state = useKotonohaStore.getState();
+    return hasEnteredForest(state) ? pickEntryRepeat(state.lastEntryScene) : "entry_first";
+  });
+  const [firstDone, setFirstDone] = useState(false);
   const all = getAllIdiomQuestions();
   const collected = new Set(collectedIds);
   const countIn = (scope: KotonohaScope) => questionsInScope(all, scope).filter((q) => collected.has(q.id)).length;
 
   // 遊べる状態で、森に入場したことを記録する(図鑑「なかまの ずかん」で、ユライが解放される)
   useEffect(() => {
-    if (unlocked) markEntered();
-  }, [unlocked, markEntered]);
+    if (!unlocked) return;
+    markEntered();
+    if (entry !== "entry_first") setLastEntryScene(entry);
+  }, [unlocked, markEntered, setLastEntryScene, entry]);
+  const showingFirst = entry === "entry_first" && !firstDone;
 
   return (
     <div className="screen screen-kotonoha">
@@ -46,32 +83,36 @@ export function KotonohaScreen() {
       ) : (
         <>
           <KotonohaScene />
-          <YuraiBubble>
-            <Rb t="ことわざや 故事成語[こじせいご]を、あそびながら おぼえていこう。" />
-          </YuraiBubble>
-          <p className="kotonoha-leaf-count" aria-label={`集めた葉 ${countIn("all")} / ${all.length}`}>
-            <Leaf aria-hidden="true" size={18} className="inline-icon" />
-            <span>
-              {countIn("all")} / {all.length}
-            </span>
-          </p>
-          <ul className="kotonoha-scope-list">
-            {SCOPES.map((scope) => {
-              const total = questionsInScope(all, scope).length;
-              return (
-                <li key={scope}>
-                  <button type="button" onClick={() => goTo({ name: "kotonohaPlay", scope })}>
-                    <span className="kotonoha-scope-label">
-                      <Rb t={SCOPE_LABELS[scope]} />
-                    </span>
-                    <span className="kotonoha-scope-count">
-                      {countIn(scope)} / {total}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {showingFirst ? (
+            <EntryFirst onDone={() => setFirstDone(true)} />
+          ) : (
+            <>
+              {entry !== "entry_first" && <SceneBubbles sceneId={entry} />}
+              <p className="kotonoha-leaf-count" aria-label={`集めた葉 ${countIn("all")} / ${all.length}`}>
+                <Leaf aria-hidden="true" size={18} className="inline-icon" />
+                <span>
+                  {countIn("all")} / {all.length}
+                </span>
+              </p>
+              <ul className="kotonoha-scope-list">
+                {SCOPES.map((scope) => {
+                  const total = questionsInScope(all, scope).length;
+                  return (
+                    <li key={scope}>
+                      <button type="button" onClick={() => goTo({ name: "kotonohaPlay", scope })}>
+                        <span className="kotonoha-scope-label">
+                          <Rb t={SCOPE_LABELS[scope]} />
+                        </span>
+                        <span className="kotonoha-scope-count">
+                          {countIn(scope)} / {total}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </>
       )}
     </div>

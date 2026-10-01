@@ -4263,6 +4263,34 @@ html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
   --yurai-size: min(6.5rem, 26vw);
 }
 
+/* 背の低い画面(高さ700px以下)では、入口・ラウンド開始の場面も、小さめにして、台詞とボタンをスクロールなしで見せる */
+@media (max-height: 700px) {
+  .kotonoha-scene:not(.has-bubble) {
+    --yurai-size: min(6.5rem, 26vw);
+  }
+
+  .kotonoha-scope-list button {
+    min-height: 2.9rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+}
+
+/* 文字サイズ「大」: 同じく、場面を小さめにして、台詞とボタンが、スクロールなしで入るようにする */
+html[data-text-size="large"] .kotonoha-scene:not(.has-bubble) {
+  --yurai-size: min(5.5rem, 24vw);
+}
+
+html[data-text-size="large"] .kotonoha-scope-list button {
+  min-height: 3rem;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+
+html[data-text-size="large"] .kotonoha-result {
+  gap: 0.3rem;
+}
+
 /* 答えたあと: ユライの隣に吹き出し */
 .kotonoha-scene.has-bubble {
   align-items: center;
@@ -4624,6 +4652,142 @@ html[data-text-size="large"] .kotonoha-explain {
 
 .kotonoha-result-buttons button {
   min-height: 2.75rem;
+}
+
+/* ---- 言の葉の森: ユライとコトの場面台詞(入口・ラウンド開始・結果・コンプリート) ---- */
+.scene-bubbles,
+.scene-dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* 吹き出し1つ: 名前と台詞を、1つの行に。ユライは左、コトは右に寄せる */
+.scene-bubble {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  max-width: 94%;
+  padding: 0.3rem 0.75rem 0.35rem;
+  border-radius: 16px;
+  background: rgba(255, 253, 247, 0.95);
+  border: 2px solid #d9bf9f;
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.1);
+  font-size: 0.92rem;
+  text-align: left;
+  animation: scene-bubble-in 0.2s ease-out;
+}
+
+.scene-bubble.is-yurai {
+  align-self: flex-start;
+}
+
+.scene-bubble.is-koto {
+  align-self: flex-end;
+  border-color: rgba(168, 224, 200, 0.95);
+}
+
+.scene-bubble-name {
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #8a6a45;
+}
+
+.scene-bubble.is-koto .scene-bubble-name {
+  color: var(--color-primary-text);
+}
+
+.scene-bubble-text {
+  min-width: 0;
+  line-height: 1.7;
+}
+
+@keyframes scene-bubble-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-bubble {
+    animation: none;
+  }
+}
+
+/* 初回の入口: 吹き出しの場所そのものも、タップで進む。ボタンは、高さ44px以上 */
+.scene-tap-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 3.4rem;
+  cursor: pointer;
+}
+
+.scene-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.scene-next,
+.scene-skip {
+  min-height: 2.75rem;
+}
+
+.scene-next {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 1.05rem;
+  border: 2px solid var(--color-primary-strong);
+  box-shadow: 0 3px 0 rgba(95, 184, 150, 0.7);
+}
+
+.scene-skip {
+  flex: none;
+  min-width: 6rem;
+}
+
+/* 結果画面の中の場面台詞(得点帯別・新しい葉)。それぞれ別の枠 */
+.kotonoha-result .scene-bubbles {
+  width: 100%;
+}
+
+.kotonoha-result .kotonoha-leaf-new-scene {
+  padding-top: 0.15rem;
+}
+
+/* コンプリートの台詞(はじめて埋まったとき、各1回): 結果画面の上に出す。「もどる」(30)・音量ボタン(50)より手前 */
+.kotonoha-complete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom))
+    max(0.75rem, env(safe-area-inset-left));
+  background: rgba(60, 45, 38, 0.45);
+}
+
+.kotonoha-complete {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(100%, 26rem);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 1rem 0.9rem 0.9rem;
+  border-radius: 16px;
+  background: var(--color-surface, #fffdf6);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
 }
 
 /* ---- ことだまの書: ことわざ・故事成語ずかん(集めた葉の一覧) ---- */

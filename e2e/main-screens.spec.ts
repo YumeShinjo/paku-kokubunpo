@@ -162,10 +162,21 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     const card = page.locator(".title-forest");
     await expect(card).toContainText("0 / 80");
     await card.click();
+    // 初めて入ったときは、ユライとコトの台詞(entry_first)。「スキップ」で、範囲の選択へ
+    await expect(page.locator('[data-scene="entry_first"] .scene-bubble')).toHaveCount(1);
+    await expect(page.locator(".kotonoha-scope-list")).toHaveCount(0);
+    expect((await page.locator(".scene-skip").boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
+    await page.locator(".scene-skip").click();
     await expect(page.locator(".kotonoha-scope-list button")).toHaveCount(3);
     await expectNoHorizontalOverflow(page);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
 
     await page.locator(".kotonoha-scope-list button").first().click();
+    // ラウンド開始の一言。タップですぐ出題へ(放っておいても、1.5秒ほどで進む)
+    await expect(page.locator('[data-scene="round_start_all"] .scene-bubble')).toHaveCount(2);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
+    await page.locator(".scene-next").click();
     await expect(page.locator(".kotonoha-progress")).toContainText("1 / 10");
     await expect(page.locator(".kotonoha-blank")).toHaveCount(1);
     await expectNoHorizontalOverflow(page);
@@ -198,6 +209,9 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     await expect(page.locator(".kotonoha-result")).toBeVisible();
     await expect(page.locator(".kotonoha-score")).toContainText("/ 10");
     await expectNoHorizontalOverflow(page);
+    // 結果: 得点帯別の一言(ユライとコト)。縦にはみ出さない
+    await expect(page.locator(".kotonoha-result-scene .scene-bubble")).toHaveCount(2);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
 
     await page.getByRole("button", { name: "もどる", exact: true }).last().click();
     await expect(page.locator(".kotonoha-scope-list")).toBeVisible();

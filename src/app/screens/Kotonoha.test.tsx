@@ -27,11 +27,16 @@ describe("言の葉の森(画面)", () => {
   const q = <T extends Element>(selector: string) => container.querySelector<T>(selector);
   const qa = <T extends Element>(selector: string) => [...container.querySelectorAll<T>(selector)];
   const click = (el: Element | null) => act(() => (el as HTMLElement).click());
+  /** 出題の画面を開いて、ラウンド開始の一言(intro)を、タップで飛ばす */
+  const play = (scope: "all" | "kotowaza" | "koji", key?: string) => {
+    render(<KotonohaPlayScreen scope={scope} key={key} />);
+    click(q(".scene-next"));
+  };
 
   beforeEach(() => {
     localStorage.clear();
     useProgressStore.setState({ clearedStageIds: prologue() });
-    useKotonohaStore.setState({ collectedIds: [], missedIds: [] });
+    useKotonohaStore.setState({ collectedIds: [], missedIds: [], enteredForest: true, shownCompletions: [], lastEntryScene: undefined });
     useMasteryStore.setState({ correctQuestionIds: [], lastSyncedCount: 0 });
     useReviewStore.setState({ starredQuestionIds: [] });
     useStoryStore.setState({ choices: {}, seenStoryIds: [] });
@@ -97,7 +102,8 @@ describe("言の葉の森(画面)", () => {
       expect(buttons).toHaveLength(3);
       expect(buttons.map((b) => b.querySelector(".kotonoha-scope-count")!.textContent)).toEqual(["1 / 80", "1 / 50", "0 / 30"]);
       expect(q(".kotonoha-leaf-count")!.textContent).toBe("1 / 80");
-      expect(q(".yurai-bubble .yurai-name")!.textContent).toBe("ユライ");
+      expect(q(".scene-bubble.is-yurai .scene-bubble-name")!.textContent).toBe("ユライ");
+      expect(q(".scene-bubble.is-koto .scene-bubble-name")!.textContent).toBe("コト");
       expect(q(".yurai")).not.toBeNull(); // ユライ(画像がなければ、仮表示の人影)
       click(buttons[1]);
       expect(useNavigationStore.getState().screen).toEqual({ name: "kotonohaPlay", scope: "kotowaza" });
@@ -118,7 +124,7 @@ describe("言の葉の森(画面)", () => {
     const answerFirst = () => click(q(".kotonoha-choices button"));
 
     it("10問。答えると解説(ひとこと・完全な形・意味・ユライの一言)が出て、「つぎへ」で次の問題。最後は結果", () => {
-      render(<KotonohaPlayScreen scope="all" />);
+      play("all");
       for (let i = 1; i <= 10; i++) {
         expect(q(".kotonoha-progress")!.textContent).toContain(`${i} / 10`);
         expect(q(".kotonoha-sentence .kotonoha-blank")).not.toBeNull(); // 空欄がある
@@ -167,7 +173,7 @@ describe("言の葉の森(画面)", () => {
       // 故事成語は由来が必ずある。ことわざ(由来のない問題がある)も含めて、何ラウンドか見る
       for (const scope of ["koji", "kotowaza"] as const) {
         for (let round = 0; round < 2; round++) {
-          render(<KotonohaPlayScreen scope={scope} key={`${scope}${round}`} />);
+          play(scope, `${scope}${round}`);
           for (let i = 0; i < 10; i++) {
             answerFirst();
             const details = q<HTMLDetailsElement>(".kotonoha-origin-details");
@@ -189,7 +195,7 @@ describe("言の葉の森(画面)", () => {
     });
 
     it("正解の選択肢を押すと葉が集まり、まちがえると、まちがえた問題に記録される。本編の記録は変わらない", () => {
-      render(<KotonohaPlayScreen scope="koji" />);
+      play("koji");
       const store = useKotonohaStore.getState;
       click(q(".kotonoha-choices button"));
       const pickedCorrect = q(".kotonoha-verdict")!.textContent === "せいかい!";
@@ -202,7 +208,7 @@ describe("言の葉の森(画面)", () => {
     });
 
     it("範囲: 故事成語を選ぶと、故事成語の問題だけが出る", () => {
-      render(<KotonohaPlayScreen scope="koji" />);
+      play("koji");
       for (let i = 0; i < 10; i++) {
         expect(q(".kotonoha-scope-tag")!.textContent).toContain("故事成語");
         answerFirst();
@@ -214,7 +220,7 @@ describe("言の葉の森(画面)", () => {
     });
 
     it("「もういちど」で同じ範囲の新しいラウンド、「もどる」で入口の画面へ", () => {
-      render(<KotonohaPlayScreen scope="kotowaza" />);
+      play("kotowaza");
       for (let i = 0; i < 10; i++) {
         answerFirst();
         click(q(".kotonoha-next"));
@@ -257,11 +263,11 @@ ${selector} {`);
       expect(Number(rule(".kotonoha-next").match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
     });
 
-    it("ネタバレ語が、画面の文言に出ない(ラスボス・王様・ヴェルバルト・コレット)", () => {
-      const words = ["ラスボス", "王様", "ヴェルバルト", "コレット"];
+    it("ネタバレ語が、画面の文言に出ない(ラスボス・王様・ヴェルバルト・コレット・王女)", () => {
+      const words = ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"];
       render(<KotonohaScreen />);
       for (const word of words) expect(container.textContent, word).not.toContain(word);
-      render(<KotonohaPlayScreen scope="all" key="play" />);
+      play("all", "play");
       for (let i = 0; i < 10; i++) {
         for (const word of words) expect(container.textContent, word).not.toContain(word);
         answerFirst();
