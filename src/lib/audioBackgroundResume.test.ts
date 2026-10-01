@@ -178,4 +178,31 @@ describe("バックグラウンドから戻ったときのBGM(iOSのピッチ異
     setVisibility("visible");
     expect(ctx.state).toBe("suspended"); // ミュート中は動かさない
   });
+
+  it("音量の書き換え(ゲイン)は、目標が変わったときだけ。画面が変わる(曲は同じ)・文字の大きさなど音に関係ない設定の変更では、書き込まない", () => {
+    unlockPlayback();
+    playBgm("/assets/audio/bgm-gain.mp3");
+    const gain = currentGain();
+    gain.gain.setValueAtTime.mockClear();
+    gain.gain.cancelScheduledValues.mockClear();
+    gain.gain.setTargetAtTime.mockClear();
+    const writes = () =>
+      gain.gain.setValueAtTime.mock.calls.length + gain.gain.cancelScheduledValues.mock.calls.length + gain.gain.setTargetAtTime.mock.calls.length;
+
+    playBgm("/assets/audio/bgm-gain.mp3"); // 同じ曲(画面が変わっても、曲が同じ)
+    useSettingsStore.getState().setTextSize("large");
+    useSettingsStore.getState().setSeVolume(0.5);
+    useSettingsStore.getState().setTextSize("standard");
+    expect(writes()).toBe(0);
+
+    useSettingsStore.getState().setBgmVolume(0.3); // BGMの音量が変わったときは、書き込む
+    expect(writes()).toBeGreaterThan(0);
+    expect(gain.gain.value).toBeCloseTo(0.3 * 0.4, 5);
+    gain.gain.setTargetAtTime.mockClear();
+    gain.gain.setValueAtTime.mockClear();
+    gain.gain.cancelScheduledValues.mockClear();
+    useSettingsStore.getState().setBgmVolume(0.3); // 同じ値(変更なし)
+    expect(writes()).toBe(0);
+  });
 });
+

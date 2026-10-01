@@ -63,6 +63,7 @@
 | マスコット コト 成長アクセサリー7段階(差分) | `mascot/accessory-1.webp` 〜 `accessory-7.webp` | 生成AI(Geminiによる画像編集。元絵は上記) | 同上 |
 | エリア背景8種(通常・荒れた姿) | `bg/<エリアid>.webp`(8枚。序章含む)、`bg/<エリアid>-corrupted.webp`(7枚。序章を除く) | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」、画像編集に Gemini) | 同上 |
 | タイトルロゴ | `ui/title-logo.svg` | 「制作者による制作(SVG)」「オリジナル制作(制作者提供)」(2026-09-26 に、こちらで仮に記入した) | **実際の制作者・制作方法(手描き・ツール・AI か)に合っているか。合っていなければ書き換える** |
+| エリア選択のカード背景(エリア背景を縮めたもの) | `bg-card/<エリアid>.webp`(8枚。`bg/<エリアid>.webp` を 512×286 に縮小) | 上の「エリア背景8種」の縮小版(新しい素材ではない) | 同上 |
 | 旅人ユライ(言の葉の森の案内役。立ち絵) | `kotonoha/yurai.webp` | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)。背景除去・サイズ調整(512×512、高さ438px、上余白37px)は制作者が実施 | **要確認**(2026-10-01 に追加。ベースモデル・LoRA の利用条件の確認が済むまで。上の「生成AIの規約」) |
 | 「言の葉の森」の背景(登録のみ。まだ使う画面はない) | `bg/kotonoha_forest.webp` | 生成AI(Geminiによる画像生成) | **要確認**(2026-10-01 に追加。上の「生成AIの規約」のうち、Gemini の項) |
 | 最初の画面(タッチして はじめる)の背景 | `title/title_bg.webp` | 生成AI(Geminiによる画像生成) | 上の「生成AIの規約」のうち、Gemini の項(2026-09-30 に、制作方法を記入) |

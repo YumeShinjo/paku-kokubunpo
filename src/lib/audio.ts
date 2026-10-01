@@ -226,6 +226,7 @@ function attachBgmGain(): void {
     const gain = ctx.createGain();
     source.connect(gain).connect(ctx.destination);
     bgmGain = gain;
+    bgmTargetLevel = -1;
     getBgmElement().volume = 1;
     applyBgmLevel();
   } catch {
@@ -239,10 +240,19 @@ function bgmLevel(): number {
   return muted ? 0 : bgmVolume * BGM_BASE_GAIN * duckFactor;
 }
 
-/** いまの音量をBGMへ反映する。seconds は、その秒数かけて滑らかに変える(0なら即時) */
+/**
+ * 最後にゲインへ予約した音量(目標)。同じ値を何度も書き込まないための記録(-1 は、まだ・分からない)。
+ * ゲインの書き換え(cancelScheduledValues + setValueAtTime)は、音を処理している側(オーディオスレッド)と
+ * 受け渡しをするので、値が変わらないのに繰り返すと、端末によっては、音のとぎれの原因になりうる。
+ */
+let bgmTargetLevel = -1;
+
+/** いまの音量をBGMへ反映する。seconds は、その秒数かけて滑らかに変える(0なら即時)。目標が前回と同じなら、何もしない */
 function applyBgmLevel(seconds = 0): void {
   const level = bgmLevel();
   if (bgmGain && audioContext) {
+    if (level === bgmTargetLevel) return;
+    bgmTargetLevel = level;
     const param = bgmGain.gain;
     const now = audioContext.currentTime;
     param.cancelScheduledValues(now);
@@ -284,8 +294,10 @@ function resumeFromBackground(): void {
     ensureBgmPlaying();
     return;
   }
-  if (bgmGain) bgmGain.gain.value = 0;
-  else if (bgmElement) bgmElement.volume = 0;
+  if (bgmGain) {
+    bgmGain.gain.value = 0;
+    bgmTargetLevel = -1; // 手で 0 にしたので、このあとの applyBgmLevel(フェードイン)は、必ず書き込む
+  } else if (bgmElement) bgmElement.volume = 0;
   void ctx.resume().catch(() => {});
   ensureBgmPlaying();
   resumeSettleTimer = setTimeout(() => {
@@ -452,8 +464,11 @@ export function seDurationMs(kind: SeKind): number {
 // 音量スライダー・ミュート(7章)の変更を、再生中のBGMへ即時反映する。
 // ミュートにしたときは、再生を実際に止める。ミュートを解除したときは、止まっていた AudioContext と BGM も動かし直す(解除のタップの中なので、iOSでも再開できる)。
 useSettingsStore.subscribe((state, prev) => {
-  applyBgmLevel(0.02);
-  updateAudioSession();
+  // 音に関わる設定(BGMの音量・ミュート)が変わったときだけ、音量を書き直す(文字の大きさなど、ほかの設定の変更では触らない)
+  if (state.bgmVolume !== prev.bgmVolume || state.muted !== prev.muted) {
+    applyBgmLevel(0.02);
+    updateAudioSession();
+  }
   if (!prev.muted && state.muted) {
     haltPlayback(); // ミュート=音量0ではなく、実際に一時停止する
   } else if (prev.muted && !state.muted) {
@@ -511,6 +526,7 @@ export function shutdownAudio(): void {
   bgmElement = null;
   bgmSrc = null;
   bgmGain = null;
+  bgmTargetLevel = -1;
   seBuffers.clear();
   sePreloadStarted = false;
   const ctx = audioContext;

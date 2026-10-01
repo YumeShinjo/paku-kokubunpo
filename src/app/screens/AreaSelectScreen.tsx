@@ -52,7 +52,7 @@ export function AreaSelectScreen() {
           const questions = getQuestionsForArea(area.id);
           const correct = questions.filter((q) => correctSet.has(q.id)).length;
           const percent = questions.length > 0 ? (correct / questions.length) * 100 : 0;
-          const bgUrl = findImage(IMAGE.background(area.id));
+          const bgUrl = findImage(IMAGE.areaCardBackground(area.id)) ?? findImage(IMAGE.background(area.id));
           const cardStyle = bgUrl ? ({ ["--area-bg" as string]: `url(${bgUrl})` } as CSSProperties) : undefined;
           return (
           <li key={area.id} style={areaAccentStyle(area.id)} className={`area-card area-${state}`}>

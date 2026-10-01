@@ -85,6 +85,12 @@ export const IMAGE = {
   lastBossPurified: "boss/lastboss-purified",
   /** 背景。エリアidごと + タイトル */
   background: (areaIdOrTitle: string) => `bg/${areaIdOrTitle}`,
+  /**
+   * エリア選択のカードに薄く敷く、小さな背景(512×286)。bg/<エリアid> を縮めたもの。
+   * カードは上に不透明度82%のクリーム色を重ねるので、細かい絵は見えない。8枚の大きな背景(1024×572)を一度に読み込んで
+   * 描かないよう、この小さい版を使う(なければ、bg/<エリアid> をそのまま使う)。
+   */
+  areaCardBackground: (areaId: string) => `bg-card/${areaId}`,
   /** 「言の葉の森」の背景。縦長(572×1024)。登録だけで、使う画面はまだない(置くだけで findImage で引ける) */
   kotonohaForestBackground: "bg/kotonoha_forest",
   /** 旅人ユライの立ち絵(言の葉の森)。512×512・右向き。置くだけで自動で読み込まれる。なければ仮表示の人影 */
