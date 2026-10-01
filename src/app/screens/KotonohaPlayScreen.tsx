@@ -20,7 +20,7 @@ import {
 import { completionsToShow } from "@/app/store/kotonohaStore";
 import { YuraiBubble } from "@/features/kotonoha/Yurai";
 import type { MascotExpression } from "@/assets/registry";
-import { playSe } from "@/lib/audio";
+import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 
 type Phase = "intro" | "question" | "explain" | "result";
 
@@ -79,7 +79,9 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
   function next() {
     if (index + 1 >= round.length) {
       setPhase("result");
-      playSe("clear");
+      // ラウンドの終わりの音。BGMは、自由練習・苦手練習と同じく、鳴っている間だけ下げる
+      playSe("roundEnd");
+      duckBgm(seDurationMs("roundEnd"));
     } else {
       setIndex(index + 1);
       setPickedId(undefined);

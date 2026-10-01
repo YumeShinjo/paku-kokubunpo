@@ -38,10 +38,10 @@ export function sceneForScreen(screen: Screen): BgmScene {
       return "ending";
     case "areaSelect":
     case "stageSelect":
-    case "kotonoha": // 言の葉の森には、専用の曲はまだない。既存の曲(探索・出題)に合わせる
       return "explore";
+    case "kotonoha": // 言の葉の森(入口・出題・解説・結果)は、専用の曲。図鑑(ことだまの書)は、これまでどおり title
     case "kotonohaPlay":
-      return "stage";
+      return "kotonoha";
     case "freePractice":
     case "reviewPractice":
       return "stage";

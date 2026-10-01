@@ -36,12 +36,14 @@
 | 星降る丘 LoopA / LoopB | BGM | zippy | 配布元の利用規約に従う(利用条件は要確認) | 真相究明(truth。A→B→Bのループ) |
 | The Forgotten Girl 1Loop | BGM | zippy | 配布元の利用規約に従う(利用条件は要確認) | エンディング(ending) |
 | ゆっくりしよ～まったりかわいいチルポップリラックス～ | BGM | にゃるぱかBGM工房 | 配布元の利用規約に従う(利用条件は要確認) | 会話シーン(王座の間以外の導入・小ボス撃破後・エリアクリア)(talk) |
-| 正解4 | SE | Springin | 配布元の利用規約に従う(利用条件は要確認) | 正解音(correct) |
+| 千年の内緒話 / A secret whispered for a millennium(入手元: https://youtu.be/CGjkJKXqgHY) | BGM | YouTube / Hareno | 入手元のページの利用条件を、制作者が2026-10-02に確認(クレジット表記: 載せる方針。教育での配信: 可。ゲームへの利用: 可。改変: 可) | 言の葉の森の入口・出題・解説・結果(kotonoha)。加工: 元の48kHzのWAVを、44.1kHz・ステレオ・128kbpsのmp3に変換(約2分48秒。最後の約3秒でフェードアウトして終わる曲。ループは再生側で曲全体をくり返す) |
+| 正解4 | SE | Springin' Sound Stock | 配布元の利用規約に従う(利用条件は要確認) | 正解音(correct) |
 | se_cancel15 | SE | 効果音工房 | 配布元の利用規約に従う(利用条件は要確認) | 不正解音(incorrect) |
 | ボタン音17 | SE | On-Jin ～音人～ | 配布元の利用規約に従う(利用条件は要確認) | ボタンタップ音(tap) |
-| jingle_23 | SE | Springin | 配布元の利用規約に従う(利用条件は要確認) | ステージクリア音(clear) |
+| jingle_23 | SE | Springin' Sound Stock | 配布元の利用規約に従う(利用条件は要確認) | ステージクリア音(clear) |
+| ジングル21(元のファイル名 jingle_21.mp3。入手元: https://www.springin.org/sound-stock/subcategory/jingle/ 規約: https://www.springin.org/sound-stock/guideline/) | SE | Springin' Sound Stock | 入手元のページの利用条件を、制作者が2026-10-02に確認(クレジット表記: 載せる方針。教育での配信: 可。ゲームへの利用: 可。改変: 可)。Springin'の規約: 素材ファイルは目立たない配置で使う(ビルド後のファイル名はハッシュ付き)。加工した音声そのものを素材として配布・販売しない(該当しない)。クレジット表記の書式は、規約の例に合わせて「効果音: Springin' Sound Stock」 | 自由練習・苦手練習・言の葉の森のラウンドの終わりの音(roundEnd)。加工: 元の48kHz・192kbpsのmp3を、44.1kHz・128kbpsに変換し、後半の無音を切って、0.4秒のフェードを足した(4.5秒) |
 | holy1 | SE | ポケットサウンド | 配布元の利用規約に従う(利用条件は要確認) | マスコット成長音(growth) |
-| 衝撃 | SE | Springin | 配布元の利用規約に従う(利用条件は要確認) | 小ボス撃破音(subBossClear) |
+| 衝撃 | SE | Springin' Sound Stock | 配布元の利用規約に従う(利用条件は要確認) | 小ボス撃破音(subBossClear) |
 | hit02 | SE | くらげ工匠 | 配布元の利用規約に従う(利用条件は要確認) | ラスボス撃破音(lastBossClear) |
 | VSQ_JINGLE_0067_Otoboke_01 | SE | VSQ plus+ | 配布元の利用規約に従う(利用条件は要確認) | 図鑑ページ解放音(pageUnlock) |
 | one23 | SE | くらげ工匠 | 配布元の利用規約に従う(利用条件は要確認) | 克服ボーナス音(bonus) |

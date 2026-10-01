@@ -51,6 +51,7 @@
 | `lastBoss` | ラスボス戦 | subBoss → stage → explore → title |
 | `truth` | 真相究明のストーリー | explore → title |
 | `ending` | エンディング(ラスボス撃破後〜クレジット) | explore → title |
+| `kotonoha` | 言の葉の森(入口・出題・解説・結果)。図鑑(ことだまの書)は、`title` のまま | explore → title |
 
 - **導入曲つきの場面**: `<場面>-intro`(例: `explore-intro`)も置くと、それを1回鳴らしてから `<場面>` をくり返す(導入→ループの2曲構成)。
   いまは `explore`(始まりの村 A→B)と `truth`(星降る丘 A→B)が導入つき。
@@ -60,7 +61,7 @@
 
 ## 効果音 `src/assets/audio/se/`
 
-`tap` `correct` `incorrect` `clear`(通常ステージ) `subBossClear`(小ボス撃破) `lastBossClear`(ラスボス撃破) `growth`(エリアクリアでマスコットが成長) `pageUnlock`(図鑑ページが開いたとき) `bonus`(克服ボーナスでアクセサリーが増えたとき)(ファイル名は `src/lib/audio.ts` の `SeKind` と同じ)。
+`tap` `correct` `incorrect` `clear`(通常ステージ) `subBossClear`(小ボス撃破) `lastBossClear`(ラスボス撃破) `roundEnd`(自由練習・苦手練習・言の葉の森のラウンドの終わり) `growth`(エリアクリアでマスコットが成長) `pageUnlock`(図鑑ページが開いたとき) `bonus`(克服ボーナスでアクセサリーが増えたとき)(ファイル名は `src/lib/audio.ts` の `SeKind` と同じ)。
 置いた種類だけ本物の音になり、残りは仮のビープ音のまま。短い音(〜2秒)にすること。
 
 ## ここに置かないもの(別の場所)

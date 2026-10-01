@@ -135,6 +135,7 @@ export const BGM_SCENES = [
   "lastBoss",
   "truth",
   "ending",
+  "kotonoha",
 ] as const;
 export type BgmScene = (typeof BGM_SCENES)[number];
 
@@ -151,6 +152,7 @@ export const BGM_FALLBACK: Record<BgmScene, BgmScene[]> = {
   lastBoss: ["subBoss", "stage", "explore", "title"],
   truth: ["explore", "title"],
   ending: ["explore", "title"],
+  kotonoha: ["explore", "title"],
 };
 
 /**

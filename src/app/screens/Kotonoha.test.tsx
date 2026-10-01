@@ -241,9 +241,10 @@ describe("言の葉の森(画面)", () => {
       expect(useNavigationStore.getState().screen).toEqual({ name: "kotonoha" });
     });
 
-    it("効果音とBGM: 入口は探索の曲、出題中は出題の曲(既存の曲を使う)", () => {
-      expect(sceneForScreen({ name: "kotonoha" })).toBe("explore");
-      expect(sceneForScreen({ name: "kotonohaPlay", scope: "all" })).toBe("stage");
+    it("効果音とBGM: 入口・出題中は、言の葉の森の専用の曲。図鑑は、これまでの曲", () => {
+      expect(sceneForScreen({ name: "kotonoha" })).toBe("kotonoha");
+      expect(sceneForScreen({ name: "kotonohaPlay", scope: "all" })).toBe("kotonoha");
+      expect(sceneForScreen({ name: "zukan", tab: "kotonoha", backTo: "kotonoha" })).toBe("title"); // 図鑑は、変えない
     });
 
     it("CSS: 「つぎへ」は画面の下に固定(下の安全な余白を考える)。上は、ステータスバーの下から始める。音量ボタンは右上", () => {

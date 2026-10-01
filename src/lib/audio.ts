@@ -106,6 +106,8 @@ export type SeKind =
   | "lastBossClear"
   | "tap"
   | "pageUnlock"
+  /** 練習・ラウンドの終わり(自由練習・苦手練習・言の葉の森) */
+  | "roundEnd"
   | "growth"
   | "bonus";
 
@@ -119,6 +121,7 @@ const TONE_PARAMS: Record<
   correct: { freq: 880, duration: 0.15, type: "sine" },
   incorrect: { freq: 220, duration: 0.25, type: "sawtooth" },
   clear: { freq: 660, duration: 0.4, type: "triangle" },
+  roundEnd: { freq: 660, duration: 0.4, type: "triangle" },
   subBossClear: { freq: 440, duration: 0.55, type: "square" },
   pageUnlock: { freq: 990, duration: 0.3, type: "triangle" },
   // マスコットまわり(6・13章)。素材が届くまでは、上がっていく仮の音
@@ -524,7 +527,7 @@ export function duckBgm(ms: number): void {
 }
 
 /** 長めの効果音(演出の音)。これが鳴り終わるまで次の演出の音を待たせる(重ねない)ため、再生中を覚えておく */
-const LONG_SE = new Set<SeKind>(["clear", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]);
+const LONG_SE = new Set<SeKind>(["clear", "roundEnd", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]);
 let seBusyUntil = 0;
 
 /** 演出の効果音が鳴り終わるまでの残り時間(ミリ秒)。鳴っていなければ 0 */

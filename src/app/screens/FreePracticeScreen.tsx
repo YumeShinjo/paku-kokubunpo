@@ -23,8 +23,9 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
 
   useEffect(() => {
     if (!result) return;
-    playSe("clear");
-    duckBgm(seDurationMs("clear"));
+    // 練習の終わりの音(ステージクリア音とは別の、短い終わりのジングル。3か所で兼用)
+    playSe("roundEnd");
+    duckBgm(seDurationMs("roundEnd"));
   }, [result]);
 
   function again() {
