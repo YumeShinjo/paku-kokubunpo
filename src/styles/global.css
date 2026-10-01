@@ -935,8 +935,16 @@ html[data-text-size="large"] .story-textbox {
  */
 .screen-title {
   position: relative;
-  /* 行の間。言の葉の森の入口のカードを足した分、縦が伸びないよう、詰めてある */
-  gap: 0.3rem;
+  /*
+   * 縦に並ぶ下の要素(はじめる / 言の葉の森 / ことだまの書・ランキング / フッター)の、見た目の間隔は、この1つの値にそろえる。
+   *  - --home-gap: 見た目の間隔
+   *  - --home-base-gap: 並べている行の、すきま(gap)。実際の間隔は、この値に、各要素の上の余白(margin-top)を足して、--home-gap にする
+   *  - --primary-depth: 「はじめる」の厚み(下の濃い帯)。帯は、ボタンの高さの外に出ているので、その分だけ、下の余白を余分にとる
+   */
+  --home-gap: 0.75rem;
+  --home-base-gap: 0.3rem;
+  --primary-depth: 0.3rem;
+  gap: var(--home-base-gap);
   /* 上のボタン(戻る・せってい・音量。高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる。せっていの歯車は、その真上)が、掛からない余白(文字サイズ「大」でも) */
   padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 2.65rem);
   padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
@@ -1035,7 +1043,12 @@ html[data-text-size="large"] .story-textbox {
 /* 背の低い画面(375x667 など)では、プライバシーポリシーのリンクが最初の画面から外れないよう、コトの上の余白と行の間を詰める */
 @media (max-height: 700px) {
   .screen-title {
-    gap: 0.22rem;
+    --home-base-gap: 0.22rem;
+  }
+
+  /* 背の低い画面では、コトを少し小さくして、下のボタンまでが、これまでと同じ高さに収まるようにする */
+  .title-koto .mascot-large {
+    --mascot-size: 10.8rem;
   }
 
   .title-koto {
@@ -1046,18 +1059,18 @@ html[data-text-size="large"] .story-textbox {
 /* バッジ(お腹をすかせている)があって、背の低め(高さ780px以下)の画面では、コトを、ほんの少しだけ小さくする(前より縦が長くならないように) */
 @media (max-height: 780px) {
   .screen-title:has(.hungry-badge) .title-koto .mascot-large {
-    --mascot-size: 11.3rem;
+    --mascot-size: 10.8rem;
   }
 }
 
 /* 文字サイズ「大」は、rem が大きく、コトも大きくなって縦に伸びる。「お腹をすかせている」バッジや称号があるときは、さらに伸びる。ここだけ、コトを少し小さくする */
 html[data-text-size="large"] .title-koto .mascot-large {
-  --mascot-size: 10.6rem;
+  --mascot-size: 9.4rem;
 }
 
 html[data-text-size="large"] .screen-title:has(.hungry-badge) .title-koto .mascot-large,
 html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot-large {
-  --mascot-size: 9rem;
+  --mascot-size: 8.2rem;
 }
 
 /* 「お腹をすかせている」バッジが出ているときは、コトの影とバッジの間に、少しすきまをあける */
@@ -1561,86 +1574,48 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
 
 .zukan-tabs {
   position: relative;
+  /* 画面の幅からはみ出さない(中のラベルの長さで、幅が決まらない) */
+  min-width: 0;
 }
 
-/* 横にスクロールできるとき、はみ出している側に、背景色へ溶ける影を出す */
-.zukan-tabs::before,
-.zukan-tabs::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 1;
-  width: 1.6rem;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.zukan-tabs::before {
-  left: 0;
-  background: linear-gradient(to right, var(--color-bg), rgba(251, 244, 228, 0));
-}
-
-.zukan-tabs::after {
-  right: 0;
-  background: linear-gradient(to left, var(--color-bg), rgba(251, 244, 228, 0));
-}
-
-.zukan-tabs[data-fade-start="true"]::before,
-.zukan-tabs[data-fade-end="true"]::after {
-  opacity: 1;
-}
-
+/* 幅が同じ(等分)の、1行のタブ。高さは2.75rem(44px)以上。タブの数は、列の数(TSX が指定する) */
 .zukan-tablist {
-  display: flex;
-  gap: 0.2rem;
-  overflow-x: auto;
-  padding: 0.15rem 0.1rem 0.3rem;
-  scrollbar-width: none;
-  scroll-snap-type: x proximity;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.15rem 0 0.3rem;
 }
 
-.zukan-tablist::-webkit-scrollbar {
-  display: none;
-}
-
-/* ホーム画面のボタンに合わせた、ミント系の丸いタブ(高さ2.75rem=44px以上)。選んでいるタブは、ミントを濃くして、下に線 */
+/* ホーム画面のボタンに合わせた、ミント系のタブ。角丸は控えめ。選んでいるタブは、ミントを濃くして、下に線 */
 .zukan-tab {
   display: flex;
-  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   min-height: 2.75rem;
-  padding: 0.3rem 0.2rem;
-  border-radius: 999px;
+  padding: 0.2rem 0;
+  border-radius: 0.75rem;
   font-size: 0.8rem;
   line-height: 1.3;
-  /* 語の途中では折り返さない(空白や「・」のところだけで折り返して、幅に収める) */
-  word-break: keep-all;
-  overflow-wrap: normal;
+  white-space: nowrap;
   text-align: center;
-  scroll-snap-align: center;
   color: var(--color-on-primary);
   background: rgba(255, 255, 255, 0.82);
   border: 2px solid rgba(168, 224, 200, 0.9);
   box-shadow: 0 2px 4px rgba(75, 58, 46, 0.08);
 }
 
-/* ふりがな付きのラベルでも、タブの行の高さは、ほかのタブと同じ(固定の1.9にしない)。長いラベルは、タブの中で折り返して、幅に収める */
-.zukan-tablist .zukan-tab {
-  line-height: 1.3;
+/* 幅360pxでは、1つ(77px)に「せいとうりつ」の6文字が入る大きさ */
+@media (max-width: 380px) {
+  .zukan-tab {
+    font-size: 0.75rem;
+  }
 }
 
-.zukan-tab .ruby-text {
-  overflow-wrap: normal;
-  word-break: keep-all;
-}
-
-/* 文字サイズ「大」では、タブを縮めず、折り返さず、横にスクロールする */
-html[data-text-size="large"] .zukan-tab {
-  flex: 1 0 auto;
-  white-space: nowrap;
+/* 文字サイズ「大」: タブが4つ以上のときは、2×2のように、2列に並べる(横にスクロールしない。見切れない) */
+html[data-text-size="large"] .zukan-tablist[data-count="4"],
+html[data-text-size="large"] .zukan-tablist[data-count="5"],
+html[data-text-size="large"] .zukan-tablist[data-count="6"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 .zukan-tab[aria-selected="true"] {
@@ -2400,8 +2375,11 @@ html[data-text-size="large"] .zukan-tab {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* ボタンの高さ(約44px)の分の、上下の余白を、前後の余白と重ねて、縦に伸びないようにする */
-  margin-block: -0.5rem -0.55rem;
+  /*
+   * ボタンの高さ(2.5rem)のうち、文字の上の余白(約0.725rem)は、前の要素との間隔の中に重ねる。
+   * 見た目の間隔(2つのボタンの下から、フッターの文字の上端まで)が、ほかと同じ --home-gap になるように。
+   */
+  margin-block: calc(var(--home-gap) - var(--home-base-gap) - 0.725rem) -0.55rem;
   color: #6f5a5a;
   font-size: 0.7rem;
 }
@@ -2986,14 +2964,14 @@ html[data-text-size="large"] .zukan-tab {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
   /* 立体感: 下に濃いミントの縁(厚み)、上辺にうっすら明るいハイライト、やわらかい影 */
   box-shadow:
-    0 0.3rem 0 #4fae8a,
+    0 var(--primary-depth, 0.3rem) 0 #4fae8a,
     0 0.75rem 1rem rgba(79, 174, 138, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* 押している間は、縁(厚み)の分だけ沈む(共通のボタンの縮みより、優先する) */
 button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {
-  transform: translateY(0.3rem);
+  transform: translateY(var(--primary-depth, 0.3rem));
   box-shadow:
     0 0 0 #4fae8a,
     0 0.25rem 0.5rem rgba(79, 174, 138, 0.3),
@@ -3004,6 +2982,7 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
+  margin-top: calc(var(--home-gap) - var(--home-base-gap));
 }
 
 .title-sub-buttons button {
@@ -4093,7 +4072,10 @@ input[type="range"]:focus-visible {
   gap: 0.6rem;
   width: 100%;
   min-height: 2.75rem;
-  padding: 0.05rem 0.75rem;
+  /* 上下の内側の余白は、同じ(ふりがなの上端から上の端まで ＝ 説明の文字の下端から下の端まで) */
+  padding: 0.45rem 0.75rem 0.39rem;
+  /* 「はじめる」の厚み(下の濃い帯)の分だけ、余分にあける。見た目の間隔は、ほかと同じ --home-gap */
+  margin-top: calc(var(--home-gap) - var(--home-base-gap) + var(--primary-depth));
   text-align: left;
   color: var(--color-on-primary);
   border-radius: 14px;
@@ -4123,10 +4105,13 @@ input[type="range"]:focus-visible {
 
 .title-forest .forest-name {
   font-size: 1rem;
-  line-height: 1.35;
+  /* ふりがなを含む行は、固定の1.9(ふりがなは、この行の上の余白の中に収まる) */
+  line-height: var(--ruby-line-height);
 }
 
 .title-forest .forest-sub {
+  /* タイトル行と、「ことわざ・故事成語」の間の余白 */
+  margin-top: 0.1rem;
   font-size: 0.72rem;
   font-weight: normal;
   line-height: 1.3;

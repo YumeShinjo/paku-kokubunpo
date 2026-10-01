@@ -43,9 +43,11 @@ describe("ことだまの書のタブ", () => {
     useStoryStore.setState({ choices: {}, seenStoryIds: [] });
   });
 
-  it("タブは「せいとうりつ」「ことばの ずかん」「おもいで」の3つ。開いたときは「せいとうりつ」", () => {
+  it("タブは「せいとうりつ」「ずかん」「おもいで」の3つ(短い表示ラベル)。開いたときは「せいとうりつ」", () => {
     render(<ZukanScreen />);
-    expect(tabs().map((t) => t.textContent)).toEqual(["せいとうりつ", "ことばの ずかん", "おもいで"]);
+    expect(tabs().map((t) => t.textContent)).toEqual(["せいとうりつ", "ずかん", "おもいで"]);
+    // タブの名前(読み上げ)は、長い正式なラベル
+    expect(tabs().map((t) => t.getAttribute("aria-label"))).toEqual(["せいとうりつ", "ことばの ずかん", "おもいで"]);
     expect(selectedTab().textContent).toBe("せいとうりつ");
     expect(container.querySelector(".zukan-list")).not.toBeNull(); // 正答率の一覧
     expect(container.querySelector(".zukan-pages")).toBeNull();
@@ -60,10 +62,10 @@ describe("ことだまの書のタブ", () => {
     expect(selectedTab().getAttribute("aria-controls")).toBe(panel.id);
   });
 
-  it("「ことばの ずかん」: 既存のずかんのページ(バトル中のずかんと同じ部品)が出る", () => {
+  it("「ずかん」(ことばの ずかん): 既存のずかんのページ(バトル中のずかんと同じ部品)が出る", () => {
     render(<ZukanScreen />);
-    click("ことばの ずかん");
-    expect(selectedTab().textContent).toBe("ことばの ずかん");
+    click("ずかん");
+    expect(selectedTab().textContent).toBe("ずかん");
     expect(container.querySelector(".zukan-pages")).not.toBeNull();
     expect(container.querySelectorAll(".zukan-page").length).toBeGreaterThan(0);
     expect(container.querySelector(".zukan-list")).toBeNull();
@@ -103,14 +105,14 @@ describe("ことだまの書のタブ", () => {
     render(<ZukanScreen key="other" initialTab="no-such-tab" />);
     expect(selectedTab().textContent).toBe("せいとうりつ");
     render(<ZukanScreen key="pages" initialTab="pages" />);
-    expect(selectedTab().textContent).toBe("ことばの ずかん");
+    expect(selectedTab().textContent).toBe("ずかん");
   });
 
   it("タブを切り替えると、スクロール位置は先頭にもどる(同じタブを押したときは、そのまま)", () => {
     render(<ZukanScreen />);
     click("せいとうりつ");
     expect(scrollTo).not.toHaveBeenCalled();
-    click("ことばの ずかん");
+    click("ずかん");
     expect(scrollTo).toHaveBeenCalledWith(0, 0);
   });
 
@@ -122,7 +124,7 @@ describe("ことだまの書のタブ", () => {
 
   describe("ことわざ・故事成語ずかん(タブ)", () => {
     const prologue = () => getStagesForArea("prologue").map((s) => s.id);
-    const kotonohaTab = () => tabs().find((t) => t.textContent?.includes("ずかん") && t.textContent.includes("故事成語"));
+    const kotonohaTab = () => tabs().find((t) => t.getAttribute("aria-label")?.includes("故事成語"));
 
     it("序章をクリアするまでは、タブが出ない。クリアすると、4つ目のタブとして出る", () => {
       useProgressStore.setState({ clearedStageIds: [] });
@@ -132,9 +134,8 @@ describe("ことだまの書のタブ", () => {
       useProgressStore.setState({ clearedStageIds: prologue() });
       render(<ZukanScreen key="cleared" />);
       expect(tabs()).toHaveLength(4);
-      expect(kotonohaTab()!.textContent).toContain("ことわざ・");
-      expect(kotonohaTab()!.textContent).toContain("ずかん");
-      expect(kotonohaTab()!.textContent).toContain("こじせいご"); // ふりがな(方針で残る語)
+      expect(kotonohaTab()!.textContent).toBe("ことわざ"); // 短い表示ラベル(ふりがななし)
+      expect(kotonohaTab()!.getAttribute("aria-label")).toBe("ことわざ・故事成語ずかん"); // タブの名前(読み上げ)
       useProgressStore.setState({ clearedStageIds: [] });
     });
 
@@ -186,7 +187,7 @@ describe("ことだまの書のタブ", () => {
 
     it("配列にタブを足すだけで増える。中身のないタブ(hasContent が false)は出ない", () => {
       render(<ZukanScreen tabs={extra} />);
-      expect(tabs().map((t) => t.textContent)).toEqual(["せいとうりつ", "ことばの ずかん", "おもいで", "ことわざ ずかん"]);
+      expect(tabs().map((t) => t.textContent)).toEqual(["せいとうりつ", "ずかん", "おもいで", "ことわざ ずかん"]);
       click("ことわざ ずかん");
       expect(container.querySelector(".dummy-panel")).not.toBeNull();
     });
@@ -205,13 +206,30 @@ describe("ことだまの書のタブ", () => {
       return start < 0 ? "" : css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
     };
 
-    it("タブの高さは44px以上。タブが増えて入りきらなくなったら、横にスクロールできる", () => {
-      expect(Number(rule(".zukan-tab").match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
-      expect(rule(".zukan-tablist")).toContain("overflow-x: auto;");
-      // 標準の文字サイズでは、タブが縮んで(長いラベルは折り返して)幅に収まる。「大」では、縮めず、横にスクロール
-      expect(rule(".zukan-tab")).toContain("flex: 1 1 auto;");
-      expect(css).toMatch(/html\[data-text-size="large"\] \.zukan-tab \{[^}]*flex: 1 0 auto;[^}]*white-space: nowrap;/);
-      expect(css).toMatch(/\.zukan-tabs\[data-fade-end="true"\]::after/);
+    it("タブは、幅が同じ(等分のグリッド)の1行。高さは44px以上、角丸は控えめ(高さの半分ではない)。折り返さず、ふりがなもない", () => {
+      const tab = rule(".zukan-tab");
+      expect(Number(tab.match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
+      expect(Number(tab.match(/border-radius: ([\d.]+)rem/)?.[1])).toBeLessThanOrEqual(0.9); // 14px以下
+      expect(tab).toContain("white-space: nowrap;");
+      expect(rule(".zukan-tablist")).toContain("display: grid;");
+      expect(rule(".zukan-tablist")).not.toContain("overflow-x"); // 横にスクロールしない
+      expect(css).not.toContain("data-fade");
+    });
+
+    it("グリッドは、タブの数だけの等分(minmax(0,1fr))。「大」で4つ以上のときは、2列(2×2)", () => {
+      render(<ZukanScreen />);
+      const list = container.querySelector<HTMLElement>('[role="tablist"]')!;
+      expect(list.style.gridTemplateColumns).toBe("repeat(3, minmax(0, 1fr))");
+      expect(css).toMatch(/html\[data-text-size="large"\] \.zukan-tablist\[data-count="4"\][^{]*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    });
+
+    it("タブの表示ラベルは短く(6文字まで)、ふりがなを付けない。正式な名前は、別に持つ", () => {
+      for (const tab of ZUKAN_TABS) {
+        const shown = tab.shortLabel ?? tab.label;
+        expect([...shown].length, tab.id).toBeLessThanOrEqual(6);
+        expect(shown, tab.id).not.toMatch(/[[\]|]/);
+      }
+      expect(ZUKAN_TABS.map((t) => t.shortLabel)).toEqual(["せいとうりつ", "ずかん", "おもいで", "ことわざ"]);
     });
   });
 });

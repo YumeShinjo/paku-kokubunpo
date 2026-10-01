@@ -1,47 +1,20 @@
-import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Rb } from "@/components/Rb";
+import { useRef, type KeyboardEvent } from "react";
 
 /**
- * ことだまの書のタブバー。押しやすい高さ(44px以上)の丸いタブを並べる。
- * 幅にあまりがあるときは、タブが幅いっぱいに広がる。タブが増えて入りきらなくなったら、横にスクロールできる
- * (はみ出している側に、うっすら見切れの影を出して、続きがあることを知らせる)。
+ * ことだまの書のタブバー。幅が同じ(等分)の、1行のタブを並べる。高さは44px以上。
+ * 表示する文字は、短い表示ラベル(shortLabel。なければ label)。タブの名前(読み上げ)は、長い label。
+ * 文字サイズ「大」で、タブが4つ以上のときは、2×2のように、2列に並べる(CSS)。
  */
 export function ZukanTabBar({
   tabs,
   selected,
   onSelect,
 }: {
-  tabs: { id: string; label: string }[];
+  tabs: { id: string; label: string; shortLabel?: string }[];
   selected: string;
   onSelect: (id: string) => void;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
-  const [fade, setFade] = useState({ start: false, end: false });
-
-  const updateFade = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const start = el.scrollLeft > 1;
-    const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
-    setFade((f) => (f.start === start && f.end === end ? f : { start, end }));
-  }, []);
-
-  useEffect(() => {
-    updateFade();
-    const el = listRef.current;
-    window.addEventListener("resize", updateFade);
-    const observer = typeof ResizeObserver === "undefined" || !el ? undefined : new ResizeObserver(updateFade);
-    if (el) observer?.observe(el);
-    return () => {
-      window.removeEventListener("resize", updateFade);
-      observer?.disconnect();
-    };
-  }, [updateFade, tabs.length]);
-
-  // 選んだタブが、見える範囲に入るようにする
-  useEffect(() => {
-    listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
-  }, [selected]);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const index = tabs.findIndex((t) => t.id === selected);
@@ -57,8 +30,16 @@ export function ZukanTabBar({
   }
 
   return (
-    <div className="zukan-tabs" data-fade-start={fade.start} data-fade-end={fade.end}>
-      <div ref={listRef} className="zukan-tablist" role="tablist" aria-label="ことだまの書" onScroll={updateFade} onKeyDown={onKeyDown}>
+    <div className="zukan-tabs">
+      <div
+        ref={listRef}
+        className="zukan-tablist"
+        role="tablist"
+        aria-label="ことだまの書"
+        data-count={tabs.length}
+        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        onKeyDown={onKeyDown}
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -67,19 +48,12 @@ export function ZukanTabBar({
             id={`zukan-tab-${tab.id}`}
             aria-selected={tab.id === selected}
             aria-controls={`zukan-panel-${tab.id}`}
+            aria-label={tab.label}
             tabIndex={tab.id === selected ? 0 : -1}
             className="zukan-tab"
             onClick={() => onSelect(tab.id)}
           >
-            <span className="zukan-tab-label">
-              {tab.label.split("|").map((part, i) => (
-                // 「|」は、幅がせまいときに折り返してよい場所(表示には出ない)
-                <Fragment key={i}>
-                  {i > 0 && <wbr />}
-                  <Rb t={part} />
-                </Fragment>
-              ))}
-            </span>
+            {tab.shortLabel ?? tab.label}
           </button>
         ))}
       </div>

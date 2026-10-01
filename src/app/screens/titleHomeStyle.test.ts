@@ -58,7 +58,7 @@ describe("ホーム画面のスタイル", () => {
     const primary = rule(".title-primary");
     expect(rem(primary, "min-height") / 4.5).toBeGreaterThanOrEqual(1.1);
     expect(rem(primary, "min-height") / 4.5).toBeLessThanOrEqual(1.2);
-    expect(primary).toMatch(/0 0\.3rem 0 #[0-9a-f]{6}/); // 下の縁(厚み)
+    expect(primary).toMatch(/0 var\(--primary-depth, 0\.3rem\) 0 #[0-9a-f]{6}/); // 下の縁(厚み。--primary-depth と同じ)
     expect(primary).toMatch(/inset 0 2px 0 rgba\(255, 255, 255, 0\.5\)/); // 上辺のハイライト
     expect(primary).toMatch(/0 0\.75rem 1rem rgba/); // やわらかい影
   });
@@ -67,7 +67,7 @@ describe("ホーム画面のスタイル", () => {
     const start = css.indexOf('button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {');
     expect(start).toBeGreaterThan(0);
     const body = css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
-    expect(body).toContain("transform: translateY(0.3rem);");
+    expect(body).toContain("transform: translateY(var(--primary-depth, 0.3rem));");
     expect(body).toMatch(/box-shadow:\s*0 0 0 #/); // 縁がなくなる(縁の分だけ沈む)
   });
 
@@ -79,6 +79,31 @@ describe("ホーム画面のスタイル", () => {
     const body = css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
     expect(body).toContain("transform: translateY(2px);");
     expect(body).toContain("background: var(--sub-bg-pressed");
+  });
+
+  it("縦に並ぶ下の要素(はじめる・言の葉の森・ことだまの書|ランキング・フッター)の見た目の間隔は、1つの変数(--home-gap)にそろう。「はじめる」の厚みの分は、余分にあける", () => {
+    const screen = rule(".screen-title");
+    expect(screen).toMatch(/--home-gap: [\d.]+rem;/);
+    expect(screen).toMatch(/--home-base-gap: [\d.]+rem;/);
+    expect(screen).toMatch(/--primary-depth: [\d.]+rem;/);
+    expect(screen).toContain("gap: var(--home-base-gap);");
+    // 見た目の間隔 = 12px(0.75rem)
+    expect(Number(screen.match(/--home-gap: ([\d.]+)rem;/)![1])).toBe(0.75);
+    // 「はじめる」の厚み(--primary-depth)は、box-shadow の濃い帯と同じ変数
+    expect(rule(".title-primary")).toContain("0 var(--primary-depth, 0.3rem) 0 #4fae8a");
+    expect(Number(screen.match(/--primary-depth: ([\d.]+)rem;/)![1])).toBe(0.3);
+    // 言の葉の森: 間隔 + 厚みの分。2つのボタン: 間隔。フッター: 間隔(文字の上の余白の分を引く)
+    expect(rule(".title-forest")).toContain("margin-top: calc(var(--home-gap) - var(--home-base-gap) + var(--primary-depth));");
+    expect(rule(".title-sub-buttons")).toContain("margin-top: calc(var(--home-gap) - var(--home-base-gap));");
+    expect(rule(".title-footer")).toContain("margin-block: calc(var(--home-gap) - var(--home-base-gap) - 0.725rem)");
+  });
+
+  it("言の葉の森のカード: 上下の内側の余白が同じくらい(ふりがなの上端から上まで ≒ 説明の下端から下まで)。ふりがなを含む行は、固定の行の高さ(1.9)。説明との間に余白がある", () => {
+    const card = rule(".title-forest");
+    const padding = card.match(/padding: ([\d.]+)rem [\d.]+rem ([\d.]+)rem;/)!;
+    expect(Math.abs(Number(padding[1]) - Number(padding[2]))).toBeLessThanOrEqual(0.08);
+    expect(rule(".title-forest .forest-name")).toContain("line-height: var(--ruby-line-height);");
+    expect(rem(rule(".title-forest .forest-sub"), "margin-top")).toBeGreaterThan(0);
   });
 
   it("上のバー: せってい(歯車)は、戻るボタンと同じ大きさ・同じ高さで、音量ボタンの左に並ぶ", () => {
