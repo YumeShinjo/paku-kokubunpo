@@ -81,14 +81,37 @@ describe("ホーム画面のスタイル", () => {
     expect(body).toContain("background: var(--sub-bg-pressed");
   });
 
-  it("サブボタン4つは、違う色で、どれも文字(濃い茶色)とのコントラスト比が7以上(読みやすい)。押したときの色は、少し濃い", () => {
+  it("上のバー: せってい(歯車)は、戻るボタンと同じ大きさ・同じ高さで、音量ボタンの左に並ぶ", () => {
+    const gear = rule(".title-settings");
+    const back = rule(".title-back");
+    expect(rem(gear, "width")).toBe(rem(back, "width"));
+    expect(rem(gear, "height")).toBe(rem(back, "height"));
+    expect(rem(gear, "width")).toBeGreaterThanOrEqual(2.75);
+    expect(gear).toContain("top: max(0.6rem, env(safe-area-inset-top));");
+    // 右の端は音量ボタン(右の余白0.6rem)。その幅(2.75rem)とすきま(0.5rem)の分だけ、左に離す
+    expect(gear).toContain("right: calc(max(0.6rem, env(safe-area-inset-right)) + 2.75rem + 0.5rem);");
+  });
+
+  it("フッター: タップできる高さは約44px(2.5rem以上)。文字は小さく、中央に並ぶ", () => {
+    expect(rem(rule(".title-footer button"), "min-height")).toBeGreaterThanOrEqual(2.5);
+    expect(rule(".title-footer")).toContain("justify-content: center;");
+    expect(rule(".title-footer button")).toContain("font-size: 0.7rem;");
+  });
+
+  it("称号カード: 称号が左、進捗(バーと数字)が右の1行。入りきらないときは、折り返す", () => {
+    const card = rule(".title-card");
+    expect(card).toContain("flex-direction: row;");
+    expect(card).toContain("flex-wrap: wrap;");
+  });
+
+  it("サブボタン2つは、違う色で、どれも文字(濃い茶色)とのコントラスト比が7以上(読みやすい)。押したときの色は、少し濃い", () => {
     const textColor = "#4b3a2e";
-    const colors = ["sub-book", "sub-rank", "sub-settings", "sub-credits"].map((name) => {
+    const colors = ["sub-book", "sub-rank"].map((name) => {
       const body = rule(`.title-sub-buttons .${name}`);
       const get = (prop: string) => body.match(new RegExp(`--${prop}: (#[0-9a-f]{6});`))![1];
       return { name, bg: get("sub-bg"), pressed: get("sub-bg-pressed") };
     });
-    expect(new Set(colors.map((c) => c.bg)).size).toBe(4);
+    expect(new Set(colors.map((c) => c.bg)).size).toBe(2);
     for (const c of colors) {
       expect(contrast(textColor, c.bg), c.name).toBeGreaterThanOrEqual(7);
       expect(contrast(textColor, c.pressed), `${c.name}(押したとき)`).toBeGreaterThanOrEqual(7);

@@ -937,8 +937,8 @@ html[data-text-size="large"] .story-textbox {
   position: relative;
   /* 行の間。言の葉の森の入口のカードを足した分、縦が伸びないよう、詰めてある */
   gap: 0.3rem;
-  /* 左右上のボタン(高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる)が、掛からない余白(文字サイズ「大」でも) */
-  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 1.9rem);
+  /* 上のボタン(戻る・せってい・音量。高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる。せっていの歯車は、その真上)が、掛からない余白(文字サイズ「大」でも) */
+  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 2.65rem);
   padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
 }
 
@@ -961,6 +961,24 @@ html[data-text-size="large"] .story-textbox {
   position: absolute;
   top: max(0.6rem, env(safe-area-inset-top));
   left: max(0.6rem, env(safe-area-inset-left));
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.14);
+}
+
+/* 右上: せってい(歯車)。戻るボタンと同じ見た目・同じ高さ。音量ボタン(右上の端。同じ余白)の、すぐ左に並べる */
+.title-settings {
+  position: absolute;
+  top: max(0.6rem, env(safe-area-inset-top));
+  right: calc(max(0.6rem, env(safe-area-inset-right)) + 2.75rem + 0.5rem);
   z-index: 2;
   display: grid;
   place-items: center;
@@ -1023,29 +1041,28 @@ html[data-text-size="large"] .story-textbox {
   .title-koto {
     margin-top: -0.3rem;
   }
+}
 
-  /* 言の葉の森の入口のカードを足した分、コトを少し小さくして、小さい画面でも、下のボタンが最初の画面に収まるようにする */
-  .title-koto .mascot-large {
-    --mascot-size: 10.3rem;
+/* バッジ(お腹をすかせている)があって、背の低め(高さ780px以下)の画面では、コトを、ほんの少しだけ小さくする(前より縦が長くならないように) */
+@media (max-height: 780px) {
+  .screen-title:has(.hungry-badge) .title-koto .mascot-large {
+    --mascot-size: 11.3rem;
   }
 }
 
-/* 「お腹をすかせている」バッジや称号が出て、ホームが縦に長くなるときは、背の低め(高さ860px以下)の画面で、コトを少し小さくする */
-@media (max-height: 860px) {
-  .screen-title:has(.hungry-badge) .title-koto .mascot-large,
-  .screen-title:has(.title-owned) .title-koto .mascot-large {
-    --mascot-size: 10.3rem;
-  }
-}
-
-/* 文字サイズ「大」は、rem が大きく、コトも大きくなって縦に伸びるので、同じく少し小さくする */
+/* 文字サイズ「大」は、rem が大きく、コトも大きくなって縦に伸びる。「お腹をすかせている」バッジや称号があるときは、さらに伸びる。ここだけ、コトを少し小さくする */
 html[data-text-size="large"] .title-koto .mascot-large {
-  --mascot-size: 9rem;
+  --mascot-size: 10.6rem;
 }
 
 html[data-text-size="large"] .screen-title:has(.hungry-badge) .title-koto .mascot-large,
 html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot-large {
-  --mascot-size: 7.8rem;
+  --mascot-size: 9rem;
+}
+
+/* 「お腹をすかせている」バッジが出ているときは、コトの影とバッジの間に、少しすきまをあける */
+.screen-title:has(.hungry-badge) .title-koto {
+  margin-bottom: -0.45rem;
 }
 
 .title-hero h1 {
@@ -1062,10 +1079,12 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
 /* 称号・進捗バー・正解数を、ひとつのカード(白に近い半透明・薄い縁・軽い影)にまとめる */
 .title-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.9rem 0.35rem;
+  justify-content: center;
+  gap: 0.25rem 0.7rem;
+  padding: 0.35rem 0.9rem 0.3rem;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(168, 224, 200, 0.75);
@@ -1073,10 +1092,23 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
 }
 
 .title-card .title-owned {
+  flex: none;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 進捗(バーと「ことばの正解 N / 392問」)は、称号の右。称号のないときは、カードの幅いっぱい */
+.title-card .title-mastery {
+  flex: 1 1 8rem;
+  width: auto;
+  min-width: 0;
+}
+
+.title-card .mastery-text {
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .mastery-progress {
@@ -2364,18 +2396,31 @@ html[data-text-size="large"] .zukan-tab {
 }
 
 /* タイトル画面: クレジットの下に、小さく置くプライバシーポリシーの入口 */
-.title-privacy {
-  align-self: center;
-  /* 幅360×高さ740の画面でも、縦にスクロールしないで収まるよう、高さと上の余白を詰めてある */
-  min-height: 1.5rem;
-  margin-top: -0.35rem;
-  padding: 0.1rem 0.6rem;
+.title-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* ボタンの高さ(約44px)の分の、上下の余白を、前後の余白と重ねて、縦に伸びないようにする */
+  margin-block: -0.5rem -0.55rem;
+  color: #6f5a5a;
+  font-size: 0.7rem;
+}
+
+.title-footer-dot {
+  padding: 0 0.1rem;
+}
+
+.title-footer button {
+  min-height: 2.5rem;
+  padding: 0 0.5rem;
   border: 0;
+  border-radius: 8px;
   background: transparent;
   box-shadow: none;
-  color: var(--color-text-muted, #8c7676);
+  color: #6f5a5a;
   font-size: 0.7rem;
   font-weight: normal;
+  white-space: nowrap;
   text-decoration: underline;
 }
 
@@ -3005,22 +3050,6 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
   --sub-edge: #ecd99a;
   --sub-badge-bg: #f4d36b;
   --sub-badge-fg: #6b4e00;
-}
-
-.title-sub-buttons .sub-settings {
-  --sub-bg: #d5ebf6;
-  --sub-bg-pressed: #bcdcec;
-  --sub-edge: #a9d3e8;
-  --sub-badge-bg: #8cc9e6;
-  --sub-badge-fg: #124a66;
-}
-
-.title-sub-buttons .sub-credits {
-  --sub-bg: #f8e7d8;
-  --sub-bg-pressed: #f0d3bc;
-  --sub-edge: #e6cbb3;
-  --sub-badge-bg: #f0bf9a;
-  --sub-badge-fg: #6b3a17;
 }
 
 /* 押したときは、少し沈み(縁の分)、色が濃くなる */
@@ -3915,18 +3944,35 @@ input[type="range"]:focus-visible {
   border-radius: 50%;
 }
 
-/* ボスの立ち絵は全身なので、顔のあたりを大きく切り出す */
+/*
+ * ボスの立ち絵は全身。上半身と、まわりの紫の靄が入る大きさで切り出す。
+ * (顔だけを大きく切り出すと、浄化前と浄化後で、顔がほとんど同じに見えてしまう。違いは、靄と目つきだけ)
+ */
 .stage-node-face img {
   position: absolute;
-  width: 200%;
+  width: 135%;
   max-width: none;
-  left: -50%;
-  top: -18%;
+  left: -17.5%;
+  top: -4%;
+}
+
+/* まだ倒していない(浄化前の)ボスは、紫がかった色を重ねて、取り憑かれていることを、はっきり見せる */
+.step-boss:not(.step-cleared) .stage-node-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 55%, rgba(70, 30, 110, 0) 35%, rgba(70, 30, 110, 0.5) 100%);
+}
+
+.step-boss:not(.step-cleared):not(.step-hidden) .stage-node {
+  border-color: #8e6cc0;
+  box-shadow: 0 0 0.6rem 0.12rem rgba(112, 78, 160, 0.5), 0 1px 4px rgba(75, 58, 46, 0.25);
 }
 
 .step-locked .stage-node-face img {
-  filter: grayscale(1) brightness(0.7);
-  opacity: 0.55;
+  filter: saturate(0.7) brightness(0.85);
+  opacity: 0.8;
 }
 
 .stage-node-badge {
@@ -4116,7 +4162,37 @@ input[type="range"]:focus-visible {
 }
 
 .screen-kotonoha {
-  gap: 0.7rem;
+  gap: 0.6rem;
+  /* ステータスバー・ダイナミックアイランドの下から始める(上の端に、キャラクターが掛からない) */
+  padding-top: calc(1rem + env(safe-area-inset-top));
+}
+
+.screen-kotonoha .back-button {
+  top: max(0.4rem, env(safe-area-inset-top));
+}
+
+/* 上のバー: 左に「もどる」、右に何問目か。右の端には、音量ボタン(右上)があるので、その分をあける */
+.kotonoha-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 3.4rem;
+  min-height: 2.75rem;
+}
+
+.kotonoha-topbar .kotonoha-progress {
+  flex: none;
+  margin-left: auto;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.92);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.kotonoha-topbar .kotonoha-scope-tag {
+  margin-left: 0.3rem;
+  white-space: nowrap;
 }
 
 .kotonoha-title {
@@ -4145,12 +4221,46 @@ input[type="range"]:focus-visible {
   --mascot-size: min(10rem, 38vw);
 }
 
+.kotonoha-scene.has-bubble .yurai-bubble::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 1.2rem;
+  border: 0.45rem solid transparent;
+  border-right-color: #d9bf9f;
+  border-left-width: 0;
+}
+
 .kotonoha-scene.is-compact {
-  --yurai-size: min(7.5rem, 30vw);
+  --yurai-size: min(6.5rem, 26vw);
 }
 
 .kotonoha-scene.is-compact .mascot-normal {
-  --mascot-size: min(7rem, 28vw);
+  --mascot-size: min(6rem, 24vw);
+}
+
+/* 答えたあと: ユライの隣に吹き出し。コトは、さらに小さく */
+.kotonoha-scene.has-bubble {
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.kotonoha-scene.has-bubble {
+  --yurai-size: min(5.5rem, 23vw);
+}
+
+.kotonoha-scene.has-bubble .mascot-normal {
+  --mascot-size: min(4.8rem, 20vw);
+}
+
+.kotonoha-scene.has-bubble .yurai-bubble {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.6rem 0.4rem;
+}
+
+.kotonoha-scene.has-bubble .yurai-text {
+  font-size: 0.85rem;
 }
 
 .kotonoha-koto {
@@ -4324,6 +4434,109 @@ input[type="range"]:focus-visible {
   align-items: center;
   justify-content: space-between;
   min-height: 2.75rem;
+}
+
+.kotonoha-sentence.kotonoha-full {
+  font-size: 1.15rem;
+}
+
+/* 答えたあと: 選んだ答えと正解だけを、1行ずつ残す(ほかの選択肢は消す) */
+.kotonoha-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kotonoha-answers li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 10px;
+  font-weight: bold;
+  border: 2px solid transparent;
+}
+
+.kotonoha-answers li.correct {
+  background: var(--color-primary);
+  border-color: var(--color-primary-strong);
+  color: var(--color-on-primary);
+}
+
+.kotonoha-answers li.incorrect {
+  background: rgba(238, 233, 222, 0.8);
+  border-color: rgba(126, 107, 93, 0.35);
+  color: var(--color-text-muted);
+}
+
+.kotonoha-answer-label {
+  flex: none;
+  font-size: 0.7rem;
+  font-weight: normal;
+  opacity: 0.85;
+}
+
+.kotonoha-answers svg {
+  flex: none;
+}
+
+/* 文字サイズ「大」でも、答えたあとが、スクロールなしで収まるように、少しだけ詰める */
+html[data-text-size="large"] .kotonoha-sentence.kotonoha-full {
+  font-size: 1rem;
+}
+
+html[data-text-size="large"] .kotonoha-answers li {
+  min-height: 2rem;
+}
+
+html[data-text-size="large"] .kotonoha-scene.has-bubble .yurai-text {
+  font-size: 0.8rem;
+}
+
+html[data-text-size="large"] .kotonoha-explain {
+  gap: 0.3rem;
+}
+
+/* 「もとの話を見る」(折りたたみ) */
+.kotonoha-origin-details summary {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--color-gold-text);
+}
+
+.kotonoha-origin-details .kotonoha-origin {
+  margin: 0 0 0.3rem;
+}
+
+/* 「つぎへ」: 画面の下に固定する(ホームバーなどの下の安全な余白を考える)。押しやすい大きさ */
+.kotonoha-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 0.5rem max(1rem, env(safe-area-inset-right)) calc(0.5rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: linear-gradient(to bottom, rgba(251, 244, 228, 0), rgba(251, 244, 228, 0.96) 28%);
+}
+
+.kotonoha-bottom .kotonoha-next {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* 答えたあとは、固定の「つぎへ」の分だけ、下をあける */
+.screen-kotonoha-play[data-phase="explain"] {
+  padding-bottom: calc(4.6rem + env(safe-area-inset-bottom));
 }
 
 .kotonoha-verdict {

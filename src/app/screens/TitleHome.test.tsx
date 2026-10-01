@@ -76,15 +76,45 @@ describe("ホーム画面(タップ後のタイトル画面)の構成", () => {
     expect(owned.compareDocumentPosition(card.querySelector(".mastery-bar")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("サブボタン4つ: 2×2の並びのまま、左に色つきの丸いバッジ(アイコンの土台)があり、4つの色が違う", () => {
+  it("サブボタン2つ(ことだまの書・ランキング): 左に色つきの丸いバッジ(アイコンの土台)があり、色が違う", () => {
     const buttons = [...container.querySelectorAll<HTMLButtonElement>(".title-sub-buttons button")];
-    expect(buttons.map((b) => b.textContent)).toEqual(["ことだまの書", "ランキング", "せってい", "クレジット"]);
+    expect(buttons.map((b) => b.textContent)).toEqual(["ことだまの書", "ランキング"]);
     for (const b of buttons) {
       const badge = b.querySelector(".sub-badge");
       expect(badge?.querySelector("svg"), b.textContent ?? "").not.toBeNull();
       expect(b.firstElementChild).toBe(badge);
     }
-    expect(buttons.map((b) => b.className)).toEqual(["sub-book", "sub-rank", "sub-settings", "sub-credits"]);
+    expect(buttons.map((b) => b.className)).toEqual(["sub-book", "sub-rank"]);
+  });
+
+  it("上のバー: 左に家(戻る)、右に「せってい」(歯車アイコン・44px以上)。音量ボタンの左に並ぶ。押すとせってい画面へ", () => {
+    const gear = q<HTMLButtonElement>("button.title-settings")!;
+    expect(gear.getAttribute("aria-label")).toBe("せってい");
+    expect(gear.querySelector("svg")).not.toBeNull();
+    expect(q("button.title-back")).not.toBeNull();
+    // 下のサブボタンには、せっていはない(入口は、上のバーのひとつだけ)
+    expect([...container.querySelectorAll(".title-sub-buttons button")].some((b) => b.textContent?.includes("せってい"))).toBe(false);
+    act(() => gear.click());
+    expect(useNavigationStore.getState().screen.name).toBe("settings");
+  });
+
+  it("フッター: 「クレジット」と「プライバシーポリシー」が、小さい文字で、中央の1行に並ぶ。押すと、それぞれの画面へ", () => {
+    const footer = q(".title-footer")!;
+    expect([...footer.querySelectorAll("button")].map((b) => b.textContent?.trim())).toEqual(["クレジット", "プライバシーポリシー"]);
+    // クレジットは、フッターにだけある(サブボタンにはない)
+    expect([...container.querySelectorAll(".title-sub-buttons button")].some((b) => b.textContent?.includes("クレジット"))).toBe(false);
+    act(() => footer.querySelector<HTMLButtonElement>(".title-credits")!.click());
+    expect(useNavigationStore.getState().screen.name).toBe("credits");
+    act(() => useNavigationStore.getState().goTo({ name: "title" }));
+    act(() => footer.querySelector<HTMLButtonElement>(".title-privacy")!.click());
+    expect(useNavigationStore.getState().screen.name).toBe("privacy");
+  });
+
+  it("並び順: 称号カード → はじめる → 言の葉の森 → ことだまの書・ランキング → フッター", () => {
+    const order = [".title-card", ".title-primary", ".title-forest", ".title-sub-buttons", ".title-footer"].map((sel) => q(sel)!);
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING, `${i}`).toBeTruthy();
+    }
   });
 
   it("「はじめる」は、左に足あとのアイコンがある主役のボタン", () => {

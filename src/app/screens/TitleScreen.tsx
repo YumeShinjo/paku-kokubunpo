@@ -1,4 +1,4 @@
-import { BookOpen, Footprints, House, Info, Settings, Trophy } from "lucide-react";
+import { BookOpen, Footprints, House, Settings, Trophy } from "lucide-react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
@@ -45,6 +45,10 @@ export function TitleScreen() {
       <button type="button" className="title-back" aria-label="タイトルへもどる" onClick={openSplash}>
         <House aria-hidden="true" size={22} />
       </button>
+      {/* 右上: せってい(歯車)。音量ボタン(右上の端)の左に並ぶ */}
+      <button type="button" className="title-settings" aria-label="せってい" onClick={handleSettings}>
+        <Settings aria-hidden="true" size={22} />
+      </button>
       {/* ロゴ+マスコットを、ひとかたまりの「顔」として見せる。コトの後ろに光の輪、足元に影(どちらも静止した飾り) */}
       <div className="title-hero">
         <h1>
@@ -83,7 +87,7 @@ export function TitleScreen() {
       </button>
       {/* 言の葉の森(ことわざ・故事成語のミニゲーム)への入口。序章をクリアするまでは、鍵つきで遊べる条件を出す */}
       <ForestEntry />
-      {/* サブ機能は、ひと回り小さく、2×2のグリッドにまとめる。左に、色つきの丸いバッジ(アイコンの土台) */}
+      {/* サブ機能(ことだまの書・ランキング)は、ひと回り小さく、2つ並べる。左に、色つきの丸いバッジ(アイコンの土台) */}
       <div className="title-sub-buttons">
         <button
           type="button"
@@ -104,22 +108,19 @@ export function TitleScreen() {
           </span>
           ランキング
         </button>
-        <button type="button" className="sub-settings" onClick={handleSettings}>
-          <span className="sub-badge">
-            <Settings aria-hidden="true" size={17} />
-          </span>
-          せってい
-        </button>
-        <button type="button" className="sub-credits" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
-          <span className="sub-badge">
-            <Info aria-hidden="true" size={17} />
-          </span>
+      </div>
+      {/* フッター: クレジットとプライバシーポリシー。最初の画面のフッターと同じ形(小さい文字で、中央に1行) */}
+      <div className="title-footer">
+        <button type="button" className="title-credits" onClick={() => goTo({ name: "credits", next: { name: "title" } })}>
           クレジット
         </button>
+        <span className="title-footer-dot" aria-hidden="true">
+          ・
+        </span>
+        <button type="button" className="title-privacy" onClick={() => goTo({ name: "privacy", next: { name: "title" } })}>
+          プライバシーポリシー
+        </button>
       </div>
-      <button type="button" className="title-privacy" onClick={() => goTo({ name: "privacy", next: { name: "title" } })}>
-        プライバシーポリシー
-      </button>
     </div>
   );
 }

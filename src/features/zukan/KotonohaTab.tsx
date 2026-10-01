@@ -20,7 +20,7 @@ function CollectedLeaf({ question }: { question: IdiomQuestion }) {
           </p>
           {question.origin && (
             <p>
-              <span className="kotonoha-origin-label">ゆらい</span>
+              <span className="kotonoha-origin-label">もとの話</span>
               <IdiomText text={question.origin} />
             </p>
           )}

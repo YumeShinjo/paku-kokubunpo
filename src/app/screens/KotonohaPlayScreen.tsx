@@ -96,14 +96,16 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
     );
   }
 
-  return (
-    <div className="screen screen-kotonoha screen-kotonoha-play">
-      <KotonohaBackground />
-      <BackButton onClick={() => goTo({ name: "kotonoha" })} />
-      <KotonohaScene expression={expression} compact />
+  const pickedChoice = question?.choices.find((c) => c.id === pickedId);
+  const correctChoice = question?.choices.find((c) => c.id === question.correctChoiceId);
 
-      {phase !== "result" && question && (
-        <section className="kotonoha-card" aria-label="もんだい">
+  return (
+    <div className="screen screen-kotonoha screen-kotonoha-play" data-phase={phase}>
+      <KotonohaBackground />
+      {/* 上のバー: 左に「もどる」、右に何問目か(右端の音量ボタンの分だけ、あけてある) */}
+      <div className="kotonoha-topbar">
+        <BackButton onClick={() => goTo({ name: "kotonoha" })} />
+        {phase !== "result" && question && (
           <p className="kotonoha-progress">
             <Leaf aria-hidden="true" size={15} className="inline-icon" />
             <span>
@@ -113,50 +115,77 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
               <Rb t={SCOPE_LABELS[scope]} />
             </span>
           </p>
+        )}
+      </div>
+      {/* 場面: 答えたあとは、ユライの一言を、ユライの立ち絵の隣の吹き出しにする */}
+      <KotonohaScene
+        expression={expression}
+        compact
+        bubble={
+          phase === "explain" && question ? (
+            <YuraiBubble>
+              <IdiomText text={question.yuraiLine} />
+            </YuraiBubble>
+          ) : undefined
+        }
+      />
+
+      {phase === "question" && question && (
+        <section className="kotonoha-card" aria-label="もんだい">
           <p className="kotonoha-sentence">
-            <IdiomText text={phase === "question" ? question.sentence : question.full} />
+            <IdiomText text={question.sentence} />
           </p>
           <ul className="engine-choice-list kotonoha-choices">
-            {question.choices.map((choice) => {
-              const isCorrect = choice.id === question.correctChoiceId;
-              const mark = phase === "explain" ? (isCorrect ? "correct" : choice.id === pickedId ? "incorrect" : "") : "";
-              return (
-                <li key={choice.id}>
-                  <button type="button" data-no-tap className={mark} disabled={phase !== "question"} onClick={() => answer(choice.id)}>
-                    <span className="kotonoha-choice-text">
-                      <IdiomText text={choice.text} />
-                    </span>
-                    {mark === "correct" && <Check aria-label="せいかい" size={18} />}
-                    {mark === "incorrect" && <X aria-label="ふせいかい" size={18} />}
-                  </button>
-                </li>
-              );
-            })}
+            {question.choices.map((choice) => (
+              <li key={choice.id}>
+                <button type="button" data-no-tap onClick={() => answer(choice.id)}>
+                  <span className="kotonoha-choice-text">
+                    <IdiomText text={choice.text} />
+                  </span>
+                </button>
+              </li>
+            ))}
           </ul>
         </section>
       )}
 
       {phase === "explain" && question && (
         <>
+          {/* 答えたあと: 1枚のカードに、ひとこと・完全な形・選んだ答えと正解(1行ずつ)・意味・もとの話(折りたたみ) */}
           <section className="kotonoha-card kotonoha-explain" aria-label="かいせつ">
-            <p className="kotonoha-verdict">{lastCorrect ? "せいかい!" : "ざんねん…こたえは こちら"}</p>
-            <p className="kotonoha-reading">{question.reading}</p>
+            <p className="kotonoha-verdict">{lastCorrect ? "せいかい!" : "ざんねん"}</p>
+            <p className="kotonoha-sentence kotonoha-full">
+              <IdiomText text={question.full} />
+            </p>
+            <ul className="kotonoha-answers">
+              {!lastCorrect && pickedChoice && (
+                <li className="incorrect">
+                  <X aria-hidden="true" size={16} />
+                  <span className="kotonoha-answer-label">えらんだ</span>
+                  <IdiomText text={pickedChoice.text} />
+                </li>
+              )}
+              {correctChoice && (
+                <li className="correct">
+                  <Check aria-hidden="true" size={16} />
+                  <span className="kotonoha-answer-label">{lastCorrect ? "えらんだ(せいかい)" : "せいかい"}</span>
+                  <IdiomText text={correctChoice.text} />
+                </li>
+              )}
+            </ul>
             <p className="kotonoha-meaning">
               <IdiomText text={question.meaning} />
             </p>
+            {/* 由来があるときだけ。タップで開く(旅人の「ユライ」と混ざらないよう、ラベルは「もとの話」) */}
             {question.origin && (
-              <p className="kotonoha-origin">
-                <span className="kotonoha-origin-label">ゆらい</span>
-                <IdiomText text={question.origin} />
-              </p>
+              <details className="kotonoha-origin-details">
+                <summary>もとの話を見る</summary>
+                <p className="kotonoha-origin">
+                  <IdiomText text={question.origin} />
+                </p>
+              </details>
             )}
           </section>
-          <YuraiBubble>
-            <IdiomText text={question.yuraiLine} />
-          </YuraiBubble>
-          <button type="button" className="kotonoha-next" onClick={next}>
-            {index + 1 >= round.length ? "けっかを みる" : "つぎへ"}
-          </button>
         </>
       )}
 
@@ -178,6 +207,15 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
             </button>
           </div>
         </section>
+      )}
+
+      {/* 「つぎへ」は、画面の下に固定する(解説が長いときは、その上の部分だけがスクロールする) */}
+      {phase === "explain" && question && (
+        <div className="kotonoha-bottom">
+          <button type="button" className="kotonoha-next" onClick={next}>
+            {index + 1 >= round.length ? "けっかを みる" : "つぎへ"}
+          </button>
+        </div>
       )}
     </div>
   );

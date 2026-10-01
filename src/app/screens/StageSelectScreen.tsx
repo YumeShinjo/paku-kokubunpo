@@ -1,6 +1,7 @@
 import { Check, Crown, Lock, Play, User } from "lucide-react";
 import { areas } from "@/data/areas";
-import { findImage, IMAGE } from "@/assets/registry";
+import { findImage } from "@/assets/registry";
+import { stageNodePortraitName } from "@/features/stageSelect/stageNodePortrait";
 import { ScreenBackground } from "@/components/ScreenBackground";
 import { areaBackgroundName, areaPurifyGateStageId, isLastBossRevealed } from "@/data/bosses";
 import { areaAccentStyle } from "@/data/areaTheme";
@@ -157,7 +158,7 @@ function StageNode({
       </span>
     );
   }
-  const portrait = isBoss ? findImage(bossPortraitName(stage, areaId, state === "cleared")) : undefined;
+  const portrait = isBoss ? findImage(stageNodePortraitName(stage, areaId, state === "cleared")) : undefined;
   return (
     <span className="stage-node" aria-hidden="true">
       {isBoss ? (
@@ -178,10 +179,4 @@ function StageNode({
       )}
     </span>
   );
-}
-
-/** ボスの立ち絵の名前。小ボスはエリアごとの絵、ラスボス(王様)は取り憑かれた姿(浄化後は元の姿) */
-function bossPortraitName(stage: Stage, areaId: string, cleared: boolean): string {
-  if (stage.type === "lastBoss") return cleared ? IMAGE.lastBossPurified : IMAGE.lastBossPossessed;
-  return cleared ? IMAGE.subBossPurified(areaId) : IMAGE.subBoss(areaId);
 }

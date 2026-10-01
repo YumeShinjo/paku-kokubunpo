@@ -12,8 +12,9 @@ export function MuteButton() {
   const setMuted = useSettingsStore((s) => s.setMuted);
   // 会話シーンでは、送りの合図・テキストボックスのある下側から離して、左上に置く(操作の位置を役割ごとに分ける)
   const inStory = useNavigationStore((s) => s.screen.name === "story");
-  // ホーム画面は、左上の戻るボタンと左右対称になるよう、右上に置く
-  const onHome = useNavigationStore((s) => s.screen.name === "title");
+  // ホーム画面は、左上の戻るボタンと左右対称になるよう、右上に置く。言の葉の森(入口・出題)も、
+  // 画面の下に「つぎへ」などの固定のボタンが来るので、ホーム画面と同じ、右上に置く
+  const onHome = useNavigationStore((s) => ["title", "kotonoha", "kotonohaPlay"].includes(s.screen.name));
   return (
     <button
       type="button"

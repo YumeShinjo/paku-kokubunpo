@@ -18,29 +18,29 @@ describe("タイトル画面のボタンレイアウト", () => {
     return { container, done: () => (act(() => root.unmount()), container.remove()) };
   }
 
-  it("「はじめる」が主役(.title-primary)で、その下に、サブ機能4つが2×2のまとまり(.title-sub-buttons)になっている", () => {
+  it("「はじめる」が主役(.title-primary)で、その下に、サブ機能2つが並んだまとまり(.title-sub-buttons)になっている", () => {
     const { container, done } = render();
     const primary = container.querySelector(".title-primary")!;
     expect(primary.textContent).toContain("はじめる");
     const sub = container.querySelector(".title-sub-buttons")!;
-    expect([...sub.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["ことだまの書", "ランキング", "せってい", "クレジット"]);
+    expect([...sub.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["ことだまの書", "ランキング"]);
     // 主役は、サブ機能のまとまりの外(上)にある
     expect(sub.contains(primary)).toBe(false);
     expect(primary.compareDocumentPosition(sub) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     done();
   });
 
-  it("サブ機能の4つのボタンは、これまでと同じ画面へ進む", () => {
+  it("サブ機能の2つのボタンと、上のバーのせってい、フッターのクレジットは、これまでと同じ画面へ進む", () => {
     const { container, done } = render();
     const click = (label: string) =>
       act(() => [...container.querySelectorAll<HTMLButtonElement>(".title-sub-buttons button")].find((b) => b.textContent === label)!.click());
     click("ランキング");
     expect(useNavigationStore.getState().screen.name).toBe("ranking");
-    click("せってい");
+    act(() => container.querySelector<HTMLButtonElement>(".title-settings")!.click());
     expect(useNavigationStore.getState().screen.name).toBe("settings");
     click("ことだまの書");
     expect(useNavigationStore.getState().screen.name).toBe("zukan");
-    click("クレジット");
+    act(() => container.querySelector<HTMLButtonElement>(".title-credits")!.click());
     expect(useNavigationStore.getState().screen.name).toBe("credits");
     done();
   });

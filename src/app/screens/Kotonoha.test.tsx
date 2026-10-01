@@ -13,6 +13,7 @@ import { ForestEntry } from "@/features/kotonoha/ForestEntry";
 import { KotonohaPlayScreen } from "./KotonohaPlayScreen";
 import { KotonohaScreen } from "./KotonohaScreen";
 import { sceneForScreen } from "@/features/audio/bgmScene";
+import { getAllIdiomQuestions } from "@/data/kotowaza";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -116,7 +117,7 @@ describe("言の葉の森(画面)", () => {
   describe("出題 → 解説 → 結果", () => {
     const answerFirst = () => click(q(".kotonoha-choices button"));
 
-    it("10問。答えると解説(読み・意味・ユライの一言)が出て、「つぎへ」で次の問題。最後は結果", () => {
+    it("10問。答えると解説(ひとこと・完全な形・意味・ユライの一言)が出て、「つぎへ」で次の問題。最後は結果", () => {
       render(<KotonohaPlayScreen scope="all" />);
       for (let i = 1; i <= 10; i++) {
         expect(q(".kotonoha-progress")!.textContent).toContain(`${i} / 10`);
@@ -124,31 +125,74 @@ describe("言の葉の森(画面)", () => {
         const choices = qa<HTMLButtonElement>(".kotonoha-choices button");
         expect(choices.length).toBeGreaterThanOrEqual(3);
         expect(choices.length).toBeLessThanOrEqual(4);
+        expect(q(".kotonoha-bottom")).toBeNull(); // 答えるまでは、「つぎへ」はない
         answerFirst();
-        expect(q(".kotonoha-explain")).not.toBeNull();
-        expect(q(".kotonoha-explain .kotonoha-reading")!.textContent!.length).toBeGreaterThan(0);
-        expect(q(".kotonoha-explain .kotonoha-meaning")!.textContent!.length).toBeGreaterThan(0);
-        expect(q(".yurai-bubble .yurai-text")!.textContent!.length).toBeGreaterThan(0);
-        // 答えたあとの選択肢は押せない(やり直しはさせない)
-        expect(qa<HTMLButtonElement>(".kotonoha-choices button").every((b) => b.disabled)).toBe(true);
-        // 完全な形(空欄が埋まっている)
-        expect(q(".kotonoha-sentence .kotonoha-blank")).toBeNull();
+        const card = q(".kotonoha-explain")!;
+        expect(card).not.toBeNull();
+        expect(card.querySelector(".kotonoha-verdict")!.textContent).toMatch(/^(せいかい!|ざんねん)$/);
+        // 完全な形(空欄が埋まっている)。読みだけのひらがなの行は、出さない(完全な形に、ふりがながある)
+        expect(card.querySelector(".kotonoha-full .kotonoha-blank")).toBeNull();
+        expect(card.querySelector(".kotonoha-full")!.textContent!.length).toBeGreaterThan(0);
+        expect(q(".kotonoha-reading")).toBeNull();
+        expect(card.querySelector(".kotonoha-meaning")!.textContent!.length).toBeGreaterThan(0);
+        // ほかの選択肢は消える。残るのは、選んだ答えと正解だけ(正解を選んだときは1行、まちがえたときは2行)
+        expect(q(".kotonoha-choices")).toBeNull();
+        const rows = qa(".kotonoha-answers li");
+        expect(rows.length).toBe(card.querySelector(".kotonoha-verdict")!.textContent === "せいかい!" ? 1 : 2);
+        expect(rows[rows.length - 1].className).toBe("correct");
+        // ユライの一言は、ユライの立ち絵の隣の吹き出し(別のカードにしない)
+        const bubble = q(".kotonoha-scene .yurai-bubble .yurai-text")!;
+        expect(bubble.textContent!.length).toBeGreaterThan(0);
+        expect(card.contains(bubble)).toBe(false);
+        expect(q(".kotonoha-scene.has-bubble .yurai")).not.toBeNull();
+        // 「つぎへ」は、画面の下に固定するところ(.kotonoha-bottom)にある
+        expect(q(".kotonoha-bottom .kotonoha-next")).not.toBeNull();
+        // 「ゆらい」のラベルはない(旅人の「ユライ」と混ざるため、「もとの話」)
+        expect(container.textContent).not.toContain("ゆらい");
         click(q(".kotonoha-next"));
       }
       expect(q(".kotonoha-result")).not.toBeNull();
+      expect(q(".kotonoha-bottom")).toBeNull();
       expect(q(".kotonoha-score")!.textContent).toMatch(/^\d+ \/ 10$/);
       expect(q(".kotonoha-new-leaves")!.textContent).toContain("葉");
       expect(qa(".kotonoha-result-buttons button").map((b) => b.textContent)).toEqual(["もういちど", "もどる"]);
     });
 
+    it("「もとの話を見る」は、由来(origin)がある問題だけ。折りたたみで、開くと由来が見える", () => {
+      const all = getAllIdiomQuestions();
+      expect(all.some((x) => !x.origin)).toBe(true); // ことわざには、由来のないものがある
+      expect(all.some((x) => x.origin)).toBe(true);
+      let withOrigin = 0;
+      let without = 0;
+      // 故事成語は由来が必ずある。ことわざ(由来のない問題がある)も含めて、何ラウンドか見る
+      for (const scope of ["koji", "kotowaza"] as const) {
+        for (let round = 0; round < 2; round++) {
+          render(<KotonohaPlayScreen scope={scope} key={`${scope}${round}`} />);
+          for (let i = 0; i < 10; i++) {
+            answerFirst();
+            const details = q<HTMLDetailsElement>(".kotonoha-origin-details");
+            if (details) {
+              withOrigin++;
+              expect(details.querySelector("summary")!.textContent).toBe("もとの話を見る");
+              expect(details.open).toBe(false);
+              expect(details.querySelector(".kotonoha-origin")!.textContent!.length).toBeGreaterThan(0);
+            } else {
+              without++;
+              expect(container.textContent).not.toContain("もとの話");
+            }
+            click(q(".kotonoha-next"));
+          }
+        }
+      }
+      expect(withOrigin).toBeGreaterThan(0);
+      expect(without).toBeGreaterThan(0);
+    });
+
     it("正解の選択肢を押すと葉が集まり、まちがえると、まちがえた問題に記録される。本編の記録は変わらない", () => {
       render(<KotonohaPlayScreen scope="koji" />);
-      // 1問目: 正解を押す
-      const firstQuestionButtons = qa<HTMLButtonElement>(".kotonoha-choices button");
-      expect(firstQuestionButtons.length).toBeGreaterThan(0);
       const store = useKotonohaStore.getState;
-      click(firstQuestionButtons[0]);
-      const pickedCorrect = firstQuestionButtons[0].className === "correct"; // 解説のあと、正解の選択肢に correct が付く
+      click(q(".kotonoha-choices button"));
+      const pickedCorrect = q(".kotonoha-verdict")!.textContent === "せいかい!";
       expect(store().collectedIds.length + store().missedIds.length).toBe(1);
       expect(pickedCorrect ? store().collectedIds.length : store().missedIds.length).toBe(1);
       // 本編の進捗などは、変わらない
@@ -194,6 +238,23 @@ describe("言の葉の森(画面)", () => {
     it("効果音とBGM: 入口は探索の曲、出題中は出題の曲(既存の曲を使う)", () => {
       expect(sceneForScreen({ name: "kotonoha" })).toBe("explore");
       expect(sceneForScreen({ name: "kotonohaPlay", scope: "all" })).toBe("stage");
+    });
+
+    it("CSS: 「つぎへ」は画面の下に固定(下の安全な余白を考える)。上は、ステータスバーの下から始める。音量ボタンは右上", () => {
+      const rule = (selector: string) => {
+        const start = css.indexOf(`
+${selector} {`);
+        return start < 0 ? "" : css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
+      };
+      expect(rule(".kotonoha-bottom")).toContain("position: fixed;");
+      expect(rule(".kotonoha-bottom")).toContain("bottom: 0;");
+      expect(rule(".kotonoha-bottom")).toContain("env(safe-area-inset-bottom)");
+      expect(rule(".screen-kotonoha")).toContain("padding-top: calc(1rem + env(safe-area-inset-top));");
+      expect(rule(".screen-kotonoha .back-button")).toContain("env(safe-area-inset-top)");
+      // 答えたあとは、固定の「つぎへ」の分、下をあける
+      expect(css).toMatch(/\.screen-kotonoha-play\[data-phase="explain"\] \{[^}]*padding-bottom: calc\([^)]*safe-area-inset-bottom/);
+      // 「つぎへ」は押しやすい高さ(44px以上)
+      expect(Number(rule(".kotonoha-next").match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
     });
 
     it("ネタバレ語が、画面の文言に出ない(ラスボス・王様・ヴェルバルト・コレット)", () => {

@@ -48,7 +48,9 @@ describe("App: タッチしてはじめる", () => {
     expect(useSettingsStore.getState().audioUnlocked).toBe(true);
     expect(container.textContent).not.toContain("タッチして");
     const names = buttons();
-    for (const title of ["はじめる", "せってい", "クレジット"]) expect(names, title).toContain(title);
+    for (const title of ["はじめる", "クレジット"]) expect(names, title).toContain(title);
+    // せってい(歯車)は、上のバーのアイコン(文字はなく、aria-label が名前)
+    expect(container.querySelector('button[aria-label="せってい"]')).not.toBeNull();
   });
 
   it("導入画面をタップしただけでは、押した場所のタイトルのボタンが反応しない(画面遷移しない)", () => {

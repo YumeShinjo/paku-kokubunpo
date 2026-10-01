@@ -28,6 +28,12 @@ describe("音量ボタンの位置(クラス)", () => {
     expect(button.className).toContain("on-home");
     expect(button.className).not.toContain("in-story");
 
+    // 言の葉の森(入口・出題)も、ホーム画面と同じ右上
+    act(() => useNavigationStore.getState().goTo({ name: "kotonoha" }));
+    expect(button.className).toContain("on-home");
+    act(() => useNavigationStore.getState().goTo({ name: "kotonohaPlay", scope: "all" }));
+    expect(button.className).toContain("on-home");
+
     act(() => useNavigationStore.getState().goTo({ name: "settings" }));
     expect(button.className).not.toContain("on-home");
     expect(button.className).not.toContain("in-story");

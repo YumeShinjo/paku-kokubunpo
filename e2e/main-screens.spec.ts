@@ -17,7 +17,12 @@ test.describe("タイトル画面", () => {
   test("ロゴ・主役ボタン・サブ機能が表示され、横はみ出しがない", async ({ page }) => {
     await startApp(page);
     await expect(page.locator(".title-primary")).toHaveText("はじめる");
-    await expect(page.locator(".title-sub-buttons button")).toHaveCount(4);
+    await expect(page.locator(".title-sub-buttons button")).toHaveCount(2); // ことだまの書・ランキング
+    // 上のバーに、せってい(歯車)。下のフッターに、クレジットとプライバシーポリシー
+    const gear = page.getByRole("button", { name: "せってい" });
+    await expect(gear).toBeVisible();
+    expect((await gear.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+    await expect(page.locator(".title-footer button")).toHaveText(["クレジット", "プライバシーポリシー"]);
     await expectNoHorizontalOverflow(page);
     await expect(page).toHaveScreenshot("title.png");
   });
@@ -162,9 +167,22 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     await expectNoHorizontalOverflow(page);
     const choice = page.locator(".kotonoha-choices button").first();
     expect((await choice.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    // 1画面で、スクロールなしで答えられる(縦にはみ出さない)
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
     await choice.click();
     await expect(page.locator(".kotonoha-explain")).toBeVisible();
-    await expect(page.locator(".yurai-bubble .yurai-text")).not.toBeEmpty();
+    await expect(page.locator(".kotonoha-scene .yurai-bubble .yurai-text")).not.toBeEmpty(); // ユライの一言は、立ち絵の隣の吹き出し
+    // ほかの選択肢は消えて、選んだ答えと正解だけが、1行ずつ残る
+    await expect(page.locator(".kotonoha-choices")).toHaveCount(0);
+    expect(await page.locator(".kotonoha-answers li").count()).toBeLessThanOrEqual(2);
+    // 「つぎへ」は、画面の下に固定され、スクロールしなくても見えて、押せる。音量ボタン(右上)とは重ならない
+    const next = page.locator(".kotonoha-bottom .kotonoha-next");
+    await expect(next).toBeInViewport();
+    const nb = (await next.boundingBox())!;
+    expect(nb.height).toBeGreaterThanOrEqual(44);
+    const mb = (await page.locator(".mute-button").boundingBox())!;
+    expect(mb.y + mb.height).toBeLessThan(nb.y);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
     await expectNoHorizontalOverflow(page);
 
     for (let i = 1; i < 10; i++) {
