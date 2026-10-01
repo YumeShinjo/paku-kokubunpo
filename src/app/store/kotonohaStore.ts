@@ -6,12 +6,17 @@ import { safeJSONStorage } from "@/lib/safeStorage";
  * 言の葉の森(ことわざ・故事成語のミニゲーム)の記録。本編の進捗・ランキングの累計正解数とは、まったく別に持つ。
  *  - collectedIds: 初めて正解した問題のid(「集めた葉」)。一度集めたら、あとで間違えても減らない
  *  - missedIds: まちがえた問題のid。正解すると外れる(次のラウンドで優先して出す)
+ *  - enteredForest: 言の葉の森に、はじめて入場したか(図鑑「なかまの ずかん」のユライの解放に使う)。
+ *    この記録がない端末でも、すでに遊んだ記録(葉を集めた・まちがえた)があれば、入場済みとして扱う(hasEnteredForest)
  * 端末(localStorage の paku-kokubunpo:kotonoha)にだけ保存する。引き継ぎコードには含めない。
  * 「データを初期化」は、paku-kokubunpo: で始まるキーを全部消すので、このキーも消える。
  */
 interface KotonohaState {
   collectedIds: string[];
   missedIds: string[];
+  enteredForest: boolean;
+  /** 言の葉の森に入場したことを記録する */
+  markEntered: () => void;
   /** 1問の結果を記録する。その問題の葉を、はじめて集めたときは true を返す */
   recordResult: (questionId: string, correct: boolean) => boolean;
 }
@@ -21,6 +26,10 @@ export const useKotonohaStore = create<KotonohaState>()(
     (set, get) => ({
       collectedIds: [],
       missedIds: [],
+      enteredForest: false,
+      markEntered: () => {
+        if (!get().enteredForest) set({ enteredForest: true });
+      },
       recordResult: (questionId, correct) => {
         const { collectedIds, missedIds } = get();
         if (correct) {
@@ -38,3 +47,8 @@ export const useKotonohaStore = create<KotonohaState>()(
     { name: "paku-kokubunpo:kotonoha", storage: safeJSONStorage },
   ),
 );
+
+/** 言の葉の森に入場したことがあるか。入場の記録がなくても、すでに遊んだ記録があれば、入場済み */
+export function hasEnteredForest(s: Pick<KotonohaState, "enteredForest" | "collectedIds" | "missedIds">): boolean {
+  return s.enteredForest || s.collectedIds.length > 0 || s.missedIds.length > 0;
+}

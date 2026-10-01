@@ -17,7 +17,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "さるもきからおちる",
     meaning: "その道の名人でも、ときには失敗することがあるというたとえ。",
     origin: "木登りが得意な猿でも、木から落ちることがある、というところから。",
-    yurai: "だれでも、しくじる ことは ある。",
+    yurai: "えだから、さるが おちる おとが した。",
   }),
   make({
     n: 2, difficulty: 1,
@@ -25,7 +25,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "橋", wrongs: ["川", "道"],
     reading: "いしばしをたたいてわたる",
     meaning: "とても用心深く、確かめながら物事を進めるたとえ。丈夫な石の橋でも、たたいて安全を確かめてから渡る、という意味から。",
-    yurai: "たしかめてから、すすもう。",
+    yurai: "いしばしを、とんとん たたいて みる。",
   }),
   make({
     n: 3, difficulty: 1,
@@ -33,7 +33,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "八", wrongs: ["九", "十"],
     reading: "ななころびやおき",
     meaning: "何度失敗しても、くじけずに立ち上がって挑戦し続けること。",
-    yurai: "ころんだら、また おきれば いい。",
+    yurai: "ころんでも、もう いちど たちあがる。",
   }),
   make({
     n: 4, difficulty: 1,
@@ -42,7 +42,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "はなよりだんご",
     meaning: "見た目の美しさや風流よりも、実際の利益になるものを選ぶこと。",
     origin: "花見の席で、花を見るよりもごちそうに夢中になる様子から、と説明される。",
-    yurai: "かざりより、なかみを えらぶ。",
+    yurai: "はなより、だんごの かおりが きに なる。",
   }),
   make({
     n: 5, difficulty: 1,
@@ -50,7 +50,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "棒[ぼう]", wrongs: ["石[いし]", "壁[かべ]"],
     reading: "いぬもあるけばぼうにあたる",
     meaning: "出しゃばると思わぬ災難にあうこと。また、何かをしているうちに思いがけない幸運にめぐりあうことも表す。",
-    yurai: "うごけば、なにかに ぶつかる。",
+    yurai: "いぬが、ぼうに こつんと あたった。",
   }),
   make({
     n: 6, difficulty: 1,
@@ -59,7 +59,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "いそがばまわれ",
     meaning: "急ぐときこそ、危ない近道より、遠回りでも安全で確実な方法を選ぶほうが、結局は早く着くということ。",
     origin: "室町時代の歌に、急ぐなら、近道の舟より遠回りでも安全な陸路(瀬田の唐橋[からはし])を行け、とよまれたことが由来とされる。",
-    yurai: "ちかみちより、たしかな みち。",
+    yurai: "とおまわりの みちで、うたが きこえた。",
   }),
   make({
     n: 7, difficulty: 1,
@@ -67,7 +67,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "証拠[しょうこ]", wrongs: ["説明[せつめい]", "理屈[りくつ]"],
     reading: "ろんよりしょうこ",
     meaning: "あれこれ議論を重ねるより、確かな証拠を示すほうが、物事をはっきりさせられるということ。",
-    yurai: "ことばより、たしかな しるし。",
+    yurai: "ことばより、ひとつの しるしを おいた。",
   }),
   make({
     n: 8, difficulty: 1,
@@ -75,7 +75,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "山[やま]", wrongs: ["海[うみ]", "森[もり]"],
     reading: "ちりもつもればやまとなる",
     meaning: "ほんの小さなものでも、積み重ねれば大きなものになるというたとえ。",
-    yurai: "ちいさな つみかさねが、おおきい。",
+    yurai: "ちいさな ちりが、やまに なった。",
   }),
   make({
     n: 9, difficulty: 1,
@@ -83,7 +83,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "雨[あめ]", wrongs: ["雪[ゆき]", "霧[きり]"],
     reading: "あめふってじかたまる",
     meaning: "もめごとや困ったことがあったあとは、かえって前よりも関係や状況が落ち着いて、しっかりするということ。",
-    yurai: "あらそいの あとに、かたまる。",
+    yurai: "あめの あとの つちが、かたく なった。",
   }),
   make({
     n: 10, difficulty: 1,
@@ -92,7 +92,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "せんりのみちもいっぽから",
     meaning: "どんなに大きなことも、身近な一歩から始まるということ。",
     origin: "中国の古典「老子[ろうし]」の言葉がもとになっているとされる。",
-    yurai: "はじまりは、ひとあし。",
+    yurai: "とおい みちの、さいしょの いっぽ。",
   }),
   make({
     n: 11, difficulty: 1,
@@ -100,7 +100,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "寝[ね]て", wrongs: ["走[はし]って", "歩[ある]いて"],
     reading: "かほうはねてまて",
     meaning: "幸運は人の力ではどうにもならないので、あせらずに、気長に待つのがよいということ。",
-    yurai: "やることを やったら、まつ。",
+    yurai: "まどの そとで、しずかに まつ よる。",
   }),
   make({
     n: 12, difficulty: 1,
@@ -108,7 +108,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "三[さん]", wrongs: ["五[ご]", "十[じゅう]"],
     reading: "はやおきはさんもんのとく",
     meaning: "朝早く起きると、何かしらよいことがあるということ。「三文」はわずかなお金のこと。",
-    yurai: "はやおきは、すこし とくを する。",
+    yurai: "あさひを みて、とくを ひとつ ひろう。",
   }),
   make({
     n: 13, difficulty: 1,
@@ -116,7 +116,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "猫[ねこ]", wrongs: ["犬[いぬ]", "鳥[とり]"],
     reading: "ねこにこばん",
     meaning: "価値のあるものを与えても、その値打ちがわからない相手には、何の役にも立たないということ。",
-    yurai: "ねうちは、わかる ひとに だけ。",
+    yurai: "こばんの うえで、ねこが あくびを する。",
   }),
   make({
     n: 14, difficulty: 1,
@@ -125,7 +125,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "いのなかのかわずたいかいをしらず",
     meaning: "自分の狭い世界だけで物事を考えて、広い世界があることを知らないことのたとえ。",
     origin: "中国の古典「荘子[そうじ]」にある話がもとになっているとされる。",
-    yurai: "せまい せかいの そとに、うみが ある。",
+    yurai: "いどの なかから、せまい そらを みる。",
   }),
   make({
     n: 15, difficulty: 1,
@@ -133,7 +133,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "口[くち]", wrongs: ["手[て]", "耳[みみ]"],
     reading: "めはくちほどにものをいう",
     meaning: "目つきは、口で話す言葉と同じくらい、気持ちをよく伝えるということ。",
-    yurai: "めは、こころを かたる。",
+    yurai: "ひとみが、ことばより さきに かたる。",
   }),
   make({
     n: 16, difficulty: 1,
@@ -142,7 +142,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "りょうやくはくちににがし",
     meaning: "自分のためになる忠告[ちゅうこく]は、聞くのがつらく感じられるものだということ。",
     origin: "中国の古い書物にある言葉がもとになっているとされる。",
-    yurai: "にがい ことばほど、ためになる。",
+    yurai: "にがい くすりを、ぐっと のみこむ。",
   }),
   make({
     n: 17, difficulty: 1,
@@ -150,7 +150,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "腹[はら]", wrongs: ["胸[むね]", "腰[こし]"],
     reading: "はらがへってはいくさができぬ",
     meaning: "おなかがすいていては、力が出なくて何もできないので、まず食事をとることが大切だということ。",
-    yurai: "おなかが すくと、ちからが でない。",
+    yurai: "おなかの おとが、たたかいを とめる。",
   }),
   make({
     n: 18, difficulty: 1,
@@ -158,7 +158,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "棚[たな]", wrongs: ["空[そら]", "壁[かべ]"],
     reading: "たなからぼたもち",
     meaning: "苦労せずに、思いがけない幸運が舞い込むこと。",
-    yurai: "おもわぬ しあわせが、おちてくる。",
+    yurai: "たなの うえから、あまい もちが おちる。",
   }),
   make({
     n: 19, difficulty: 1,
@@ -166,7 +166,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "口[くち]", wrongs: ["手[て]", "足[あし]"],
     reading: "くちはわざわいのもと",
     meaning: "不用意な言葉は、思わぬ災いを招くので、言葉には気をつけなさいということ。",
-    yurai: "ことばは、ときに きずを つくる。",
+    yurai: "ひとことが、しずかな みずに なみを よぶ。",
   }),
   make({
     n: 20, difficulty: 1,
@@ -175,7 +175,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "ひゃくぶんはいっけんにしかず",
     meaning: "人から何度も話を聞くより、一度自分の目で見るほうが、確かによくわかるということ。",
     origin: "中国の歴史書「漢書[かんじょ]」に見られる言葉がもとになっているとされる。",
-    yurai: "みた ものには、かなわない。",
+    yurai: "ひゃっかいの はなしより、いちど みる。",
   }),
 
   // ---- 難易度2 ----
@@ -185,7 +185,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "情[なさ]け", wrongs: ["恩[おん]", "愛[あい]"],
     reading: "なさけはひとのためならず",
     meaning: "人に親切にすれば、めぐりめぐって自分にもよい報いがある、ということ。「親切はその人のためにならない」という意味ではないので、注意しよう。",
-    yurai: "やさしさは、めぐって かえる。",
+    yurai: "ちいさな しんせつが、どこかで めぐる。",
   }),
   make({
     n: 22, difficulty: 2,
@@ -194,7 +194,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "さんにんよればもんじゅのちえ",
     meaning: "凡人[ぼんじん]でも、三人集まって相談すれば、すぐれた知恵が出るということ。",
     origin: "「文殊」は、知恵をつかさどる仏さまの名前。",
-    yurai: "みんなで かんがえれば、よい ちえ。",
+    yurai: "みっつの ちえが、ひとつに かさなる。",
   }),
   make({
     n: 23, difficulty: 2,
@@ -202,7 +202,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "喉[のど]", wrongs: ["胸[むね]", "首[くび]"],
     reading: "のどもとすぎればあつさをわすれる",
     meaning: "苦しいことも、過ぎ去ってしまうと、その苦しさやそのとき受けた恩を忘れてしまうということ。",
-    yurai: "おわれば、つらさは わすれる。",
+    yurai: "あつさが、のどを すぎれば きえる。",
   }),
   make({
     n: 24, difficulty: 2,
@@ -210,7 +210,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "三[さん]", wrongs: ["五[ご]", "十[じゅう]"],
     reading: "いしのうえにもさんねん",
     meaning: "冷たい石の上でも三年座り続ければ暖まるように、つらくても辛抱[しんぼう]して続ければ、やがて成功するということ。",
-    yurai: "がまんも、ときには ちからに。",
+    yurai: "つめたい いしが、だんだん あたたかく なる。",
   }),
   make({
     n: 25, difficulty: 2,
@@ -219,7 +219,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "とうだいもとくらし",
     meaning: "身近なことは、かえって気づきにくいというたとえ。",
     origin: "ここでの「灯台」は、海の灯台ではなく、昔、部屋の明かりに使った道具のこと。台の真下は、影になって暗いことから。",
-    yurai: "ちかくの ことほど、みえない。",
+    yurai: "あかりの もとこそ、くらい ばしょ。",
   }),
   make({
     n: 26, difficulty: 2,
@@ -228,7 +228,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "ふくすいぼんにかえらず",
     meaning: "一度してしまったことは、取り返しがつかないということ。",
     origin: "中国の周の時代、太公望[たいこうぼう]が、去った妻に「こぼした水は盆に戻らない」と言って復縁を断った話がもとになっているとされる。",
-    yurai: "こぼれた みずは、もどらない。",
+    yurai: "こぼれた みずを、ゆびで すくおうとする。",
   }),
   make({
     n: 27, difficulty: 2,
@@ -237,7 +237,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "こうぼうにもふでのあやまり",
     meaning: "その道の名人でも、ときには失敗することがあるというたとえ。",
     origin: "書の名人として知られる弘法[こうぼう]大師[だいし](空海[くうかい])でも、書き間違えることがある、というところから。",
-    yurai: "なだかい ひとも、まちがえる。",
+    yurai: "めいじんの ふでが、すこし すべった。",
   }),
   make({
     n: 28, difficulty: 2,
@@ -245,7 +245,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "川[かわ]", wrongs: ["海[うみ]", "池[いけ]"],
     reading: "かっぱのかわながれ",
     meaning: "泳ぎが得意な河童でも、ときには川で流されることがある、つまり、名人でも失敗することがあるというたとえ。",
-    yurai: "とくいな ひとも、おぼれる。",
+    yurai: "かっぱでも、かわに のまれる ときが ある。",
   }),
   make({
     n: 29, difficulty: 2,
@@ -254,7 +254,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "ぶたにしんじゅ",
     meaning: "どんなに価値のあるものでも、その値打ちがわからない人には、何の役にも立たないということ。",
     origin: "新約聖書[しんやくせいしょ]の「真珠を豚に投げてはならない」という言葉がもとになっているとされる。",
-    yurai: "ねうちは、わかる ひとに だけ。",
+    yurai: "しんじゅが、どろの なかに しずんでいく。",
   }),
   make({
     n: 30, difficulty: 2,
@@ -262,7 +262,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "蜂[はち]", wrongs: ["蚊[か]", "蟻[あり]"],
     reading: "なきっつらにはち",
     meaning: "不幸や困ったことの上に、さらに悪いことが重なるというたとえ。",
-    yurai: "ふこうは、かさなる ことも ある。",
+    yurai: "なみだの かおに、はちが また とぶ。",
   }),
   make({
     n: 31, difficulty: 2,
@@ -271,7 +271,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "にとをおうものはいっとをもえず",
     meaning: "同時に二つのことをしようとすると、どちらも成功しないということ。",
     origin: "西洋のことわざがもとになっているとされる。",
-    yurai: "ふたつを おうと、どちらも にげる。",
+    yurai: "にひきを おって、りょうほう にがす。",
   }),
   make({
     n: 32, difficulty: 2,
@@ -279,7 +279,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "月[つき]", wrongs: ["星[ほし]", "太陽[たいよう]"],
     reading: "つきとすっぽん",
     meaning: "形は丸くて似ていても、二つの間にはとても大きな違いがあること。",
-    yurai: "にて いても、ちがいは おおきい。",
+    yurai: "つきの よこに、すっぽんが うかぶ。",
   }),
   make({
     n: 33, difficulty: 2,
@@ -287,7 +287,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "腕[うで]", wrongs: ["肩[かた]", "手[て]"],
     reading: "のれんにうでおし",
     meaning: "いくら力を入れても、相手に手ごたえがなく、少しも効き目がないこと。",
-    yurai: "てごたえが、まるで ない。",
+    yurai: "のれんは ゆれるだけ。てごたえは ない。",
   }),
   make({
     n: 34, difficulty: 2,
@@ -295,7 +295,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "鯛[たい]", wrongs: ["鰯[いわし]", "鮭[さけ]"],
     reading: "くさってもたい",
     meaning: "本当にすぐれたものは、傷んだり、落ちぶれたりしても、それなりの値打ちがあるということ。",
-    yurai: "ほんものは、いたんでも ほんもの。",
+    yurai: "いたんだ たいにも、あかい うろこが のこる。",
   }),
   make({
     n: 35, difficulty: 2,
@@ -303,7 +303,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "念仏[ねんぶつ]", wrongs: ["説教[せっきょう]", "演説[えんぜつ]"],
     reading: "うまのみみにねんぶつ",
     meaning: "いくら言い聞かせても、少しも聞き入れず、効き目がないこと。",
-    yurai: "つたえても、とどかない。",
+    yurai: "なんども いっても、かぜに きえていく。",
   }),
   make({
     n: 36, difficulty: 2,
@@ -311,7 +311,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "悪事[あくじ]", wrongs: ["善行[ぜんこう]", "成功[せいこう]"],
     reading: "あくじせんりをはしる",
     meaning: "悪いおこないや悪いうわさは、あっという間に遠くまで知れ渡るということ。",
-    yurai: "わるい うわさは、はやく ひろがる。",
+    yurai: "わるい うわさが、かぜより はやい。",
   }),
   make({
     n: 37, difficulty: 2,
@@ -319,7 +319,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "兼[か]ねる", wrongs: ["補[おぎな]う", "越[こ]える"],
     reading: "だいはしょうをかねる",
     meaning: "大きいものは、小さいものの代わりにも使えるので、小さいものより役に立つということ。",
-    yurai: "おおきい ほうが、つかいみち ひろい。",
+    yurai: "おおきい はこに、ちいさいものが おさまる。",
   }),
   make({
     n: 38, difficulty: 2,
@@ -327,7 +327,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "朱[しゅ]", wrongs: ["墨[すみ]", "藍[あい]"],
     reading: "しゅにまじわればあかくなる",
     meaning: "人は、つきあう相手や環境によって、よくも悪くも変わってしまうということ。",
-    yurai: "ともだち しだいで、いろが かわる。",
+    yurai: "あかい いろに、しろが そまっていく。",
   }),
   make({
     n: 39, difficulty: 2,
@@ -335,7 +335,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "杖[つえ]", wrongs: ["傘[かさ]", "靴[くつ]"],
     reading: "ころばぬさきのつえ",
     meaning: "失敗しないように、前もってしっかり用心しておくことが大切だということ。",
-    yurai: "まえもって、そなえて おく。",
+    yurai: "ころぶ まえに、つえを ついて みる。",
   }),
   make({
     n: 40, difficulty: 2,
@@ -343,7 +343,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "餅屋[もちや]", wrongs: ["米屋[こめや]", "八百屋[やおや]"],
     reading: "もちはもちや",
     meaning: "何事も、その道の専門家にまかせるのがいちばんだということ。",
-    yurai: "せんもんの ひとに、まかせよう。",
+    yurai: "もちは、もちやの てで まるく なる。",
   }),
 
   // ---- 難易度3 ----
@@ -353,7 +353,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "山[やま]", wrongs: ["森[もり]", "里[さと]"],
     reading: "かれきもやまのにぎわい",
     meaning: "つまらないものでも、ないよりはましで、それなりに場をにぎやかにしてくれるということ。",
-    yurai: "ぱっとしなくても、いないより いい。",
+    yurai: "かれきも、やまの ながめの ひとつ。",
   }),
   make({
     n: 42, difficulty: 3,
@@ -362,7 +362,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "あまだれいしをうがつ",
     meaning: "小さな力でも、根気よく続ければ、やがて大きなことを成し遂げられるというたとえ。",
     origin: "軒[のき]から落ちる小さな雨のしずくでも、長い間には石に穴をあける、というところから。",
-    yurai: "ちいさな ちからも、いつか いしを ほる。",
+    yurai: "しずくが、いしに ちいさな あなを あける。",
   }),
   make({
     n: 43, difficulty: 3,
@@ -371,7 +371,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "かぜがふけばおけやがもうかる",
     meaning: "一見関係のなさそうな出来事が、めぐりめぐって意外なところに影響を及ぼすことのたとえ。",
     origin: "風でほこりが立ち、目を悪くする人が増え、と話がつながって、最後に桶屋が儲かる、という江戸時代の言葉遊びから来ているとされる。",
-    yurai: "めぐりめぐって、おもわぬ ところへ。",
+    yurai: "かぜが、おけやの ところまで はしる。",
   }),
   make({
     n: 44, difficulty: 3,
@@ -379,7 +379,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "拾[ひろ]う", wrongs: ["迎[むか]える", "支[ささ]える"],
     reading: "すてるかみあればひろうかみあり",
     meaning: "世の中には、見捨てる人もいれば、助けてくれる人もいるので、くよくよしなくてよいということ。",
-    yurai: "みすてる ひとも、たすける ひとも。",
+    yurai: "みすてる ひとの むこうに、たすける ひとが いる。",
   }),
   make({
     n: 45, difficulty: 3,
@@ -388,7 +388,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "むかしとったきねづか",
     meaning: "以前に身につけた腕前は、年月がたっても衰えず、いざというとき役に立つということ。",
     origin: "「杵柄」は、もちつきに使う杵の柄(持つところ)のこと。",
-    yurai: "みについた わざは、きえない。",
+    yurai: "ふるい きねの え、てが おぼえている。",
   }),
   make({
     n: 46, difficulty: 3,
@@ -396,7 +396,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "山[やま]", wrongs: ["岸[きし]", "丘[おか]"],
     reading: "せんどうおおくしてふねやまにのぼる",
     meaning: "指図する人が多すぎると、意見がまとまらず、物事がおかしな方向に進んでしまうということ。",
-    yurai: "ひとが おおいと、まとまらない。",
+    yurai: "かじを もつ ひとが おおすぎて、まよう ふね。",
   }),
   make({
     n: 47, difficulty: 3,
@@ -404,7 +404,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "水[みず]", wrongs: ["波[なみ]", "氷[こおり]"],
     reading: "うおごころあればみずごころ",
     meaning: "相手が好意を示せば、こちらも好意をもって応じるということ。",
-    yurai: "こころを むければ、こころが かえる。",
+    yurai: "さかなが うごけば、みずも うごく。",
   }),
   make({
     n: 48, difficulty: 3,
@@ -412,7 +412,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "茄子[なすび]", wrongs: ["桃[もも]", "柿[かき]"],
     reading: "うりのつるになすびはならぬ",
     meaning: "平凡な親から、とびぬけてすぐれた子は生まれないということ。子は親に似るものだ、というたとえ。",
-    yurai: "おやと にた こが、うまれやすい。",
+    yurai: "はたけで、つるを たどって みると、やっぱり うりだった。",
   }),
   make({
     n: 49, difficulty: 3,
@@ -420,7 +420,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     answer: "百[ひゃく]", wrongs: ["千[せん]", "十[じゅう]"],
     reading: "みっつごのたましいひゃくまで",
     meaning: "幼いころの性格は、年をとっても変わらないということ。",
-    yurai: "おさない ころの きもち、ずっと。",
+    yurai: "むかしの くちぐせが、いまも でて しまう。",
   }),
   make({
     n: 50, difficulty: 3,
@@ -429,6 +429,6 @@ export const kotowazaQuestions: IdiomQuestion[] = [
     reading: "てきにしおをおくる",
     meaning: "困っている敵の弱みにつけこまず、苦しいときには助けの手をさしのべるたとえ。",
     origin: "戦国時代、上杉謙信[うえすぎけんしん]が、塩に困っていた敵の武田信玄[たけだしんげん]に塩を送った話がもとになっているとされる。",
-    yurai: "ときには、てきにも てを かす。",
+    yurai: "てきに、しおの ふくろを ひとつ わたす。",
   }),
 ];

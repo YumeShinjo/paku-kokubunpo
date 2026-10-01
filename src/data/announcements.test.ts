@@ -44,8 +44,15 @@ describe("お知らせのデータ", () => {
     for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット"]) expect(first.title + first.body.join(), word).not.toContain(word);
   });
 
-  it("「お問い合わせフォームを追加しました」が、いちばん新しいお知らせとして先頭にある。ネタバレ語は使わない", () => {
+  it("「なかまの ずかんを追加しました」が、いちばん新しいお知らせとして先頭にある。ネタバレ語は使わない", () => {
     const first = announcements[0];
+    expect(first.id).toBe("2026-10-02-nakama");
+    expect(plain(first.title)).toBe("なかまの ずかんを追加しました");
+    for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(first.title + first.body.join(), word).not.toContain(word);
+  });
+
+  it("「お問い合わせフォームを追加しました」のお知らせも、残っている。ネタバレ語は使わない", () => {
+    const first = announcements.find((a) => a.id === "2026-10-01-contact")!;
     expect(first.id).toBe("2026-10-01-contact");
     expect(plain(first.title)).toBe("お問い合わせフォームを追加しました");
     expect(first.body.map(plain)).toEqual([

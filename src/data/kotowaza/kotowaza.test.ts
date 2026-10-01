@@ -70,7 +70,7 @@ describe("ことわざ・故事成語データ(ミニゲーム)", () => {
     expect(plain(q.choices.find((c) => c.id === q.correctChoiceId)!.text)).toBe("拾う");
     // 意味・ユライの一言は、そのまま
     expect(plain(q.meaning)).toBe("世の中には、見捨てる人もいれば、助けてくれる人もいるので、くよくよしなくてよいということ。");
-    expect(plain(q.yuraiLine)).toBe("みすてる ひとも、たすける ひとも。");
+    expect(plain(q.yuraiLine)).toBe("みすてる ひとの むこうに、たすける ひとが いる。");
   });
 
   it("完全な形は、sentence の空欄に answer を入れたものと一致する", () => {

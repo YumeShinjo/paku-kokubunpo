@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Leaf, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
@@ -20,9 +21,15 @@ export function KotonohaScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const unlocked = useKotonohaUnlocked();
   const collectedIds = useKotonohaStore((s) => s.collectedIds);
+  const markEntered = useKotonohaStore((s) => s.markEntered);
   const all = getAllIdiomQuestions();
   const collected = new Set(collectedIds);
   const countIn = (scope: KotonohaScope) => questionsInScope(all, scope).filter((q) => collected.has(q.id)).length;
+
+  // 遊べる状態で、森に入場したことを記録する(図鑑「なかまの ずかん」で、ユライが解放される)
+  useEffect(() => {
+    if (unlocked) markEntered();
+  }, [unlocked, markEntered]);
 
   return (
     <div className="screen screen-kotonoha">
