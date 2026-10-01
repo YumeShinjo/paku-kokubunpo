@@ -4,6 +4,10 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { useProgressStore } from "@/app/store/progressStore";
+import { getStagesForArea } from "@/data/stages";
+import { kojiQuestions, kotowazaQuestions } from "@/data/kotowaza";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { ENDING_CHOICE_EVENT_ID } from "@/data/titles";
 import { DEFAULT_ZUKAN_TAB, resolveZukanTab, visibleZukanTabs, ZUKAN_TABS, type ZukanTab } from "@/features/zukan/zukanTabs";
@@ -116,6 +120,62 @@ describe("ことだまの書のタブ", () => {
     expect(container.querySelectorAll(".zukan-row").length).toBeGreaterThan(0);
   });
 
+  describe("ことわざ・故事成語ずかん(タブ)", () => {
+    const prologue = () => getStagesForArea("prologue").map((s) => s.id);
+    const kotonohaTab = () => tabs().find((t) => t.textContent?.includes("ずかん") && t.textContent.includes("故事成語"));
+
+    it("序章をクリアするまでは、タブが出ない。クリアすると、4つ目のタブとして出る", () => {
+      useProgressStore.setState({ clearedStageIds: [] });
+      render(<ZukanScreen />);
+      expect(tabs()).toHaveLength(3);
+      expect(kotonohaTab()).toBeUndefined();
+      useProgressStore.setState({ clearedStageIds: prologue() });
+      render(<ZukanScreen key="cleared" />);
+      expect(tabs()).toHaveLength(4);
+      expect(kotonohaTab()!.textContent).toContain("ことわざ・");
+      expect(kotonohaTab()!.textContent).toContain("ずかん");
+      expect(kotonohaTab()!.textContent).toContain("こじせいご"); // ふりがな(方針で残る語)
+      useProgressStore.setState({ clearedStageIds: [] });
+    });
+
+    it("中身: 集めた数(N / 80)。集めた葉は完全な形を見出しにして、タップで詳細。集めていない葉は「？」で、答えが分かる文字は出ない", () => {
+      useProgressStore.setState({ clearedStageIds: prologue() });
+      const collected = kotowazaQuestions.slice(0, 2);
+      useKotonohaStore.setState({ collectedIds: [collected[0].id, collected[1].id, kojiQuestions[0].id], missedIds: [] });
+      render(<ZukanScreen initialTab="kotonoha" />);
+      expect(container.querySelector(".kotonoha-leaf-count")!.textContent).toBe("3 / 80");
+      const headings = [...container.querySelectorAll(".kotonoha-tab h3")].map((h) => h.textContent);
+      expect(headings[0]).toContain("ことわざ");
+      expect(headings[1]).toContain("故事成語");
+      expect(container.querySelectorAll(".leaf-card")).toHaveLength(80);
+      const opened = [...container.querySelectorAll("details.leaf-card")];
+      expect(opened).toHaveLength(3);
+      // 見出しは完全な形(答えを含む)。詳細には、読み・意味・ユライの一言
+      const first = opened[0];
+      expect(first.querySelector("summary")!.textContent!.replace(/\s/g, "")).toContain(collected[0].answer.map((s) => s.text).join(""));
+      expect(first.querySelector(".kotonoha-reading")!.textContent).toBe(collected[0].reading);
+      expect(first.querySelector(".leaf-yurai")!.textContent).toContain("ユライ");
+      // 集めていない葉: 「？」だけ。ほかの問題の答え・文は、見えない
+      const empty = [...container.querySelectorAll(".leaf-card.is-empty")];
+      expect(empty).toHaveLength(77);
+      expect(empty.every((e) => e.textContent!.replace(/\s/g, "") === "？")).toBe(true);
+      const uncollectedAnswer = kotowazaQuestions[10].answer.map((s) => s.text).join("");
+      expect(container.textContent).not.toContain(kotowazaQuestions[10].full.map((s) => s.text).join(""));
+      expect(uncollectedAnswer.length).toBeGreaterThan(0);
+      useProgressStore.setState({ clearedStageIds: [] });
+      useKotonohaStore.setState({ collectedIds: [], missedIds: [] });
+    });
+
+    it("ネタバレ語(ラスボス・王様・ヴェルバルト・コレット)は出ない", () => {
+      useProgressStore.setState({ clearedStageIds: prologue() });
+      useKotonohaStore.setState({ collectedIds: [...kotowazaQuestions, ...kojiQuestions].map((q) => q.id), missedIds: [] });
+      render(<ZukanScreen initialTab="kotonoha" />);
+      for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット"]) expect(container.textContent, word).not.toContain(word);
+      useProgressStore.setState({ clearedStageIds: [] });
+      useKotonohaStore.setState({ collectedIds: [], missedIds: [] });
+    });
+  });
+
   describe("タブの定義(データ)", () => {
     const Dummy = () => <p className="dummy-panel">ことわざ</p>;
     const extra: ZukanTab[] = [
@@ -148,7 +208,9 @@ describe("ことだまの書のタブ", () => {
     it("タブの高さは44px以上。タブが増えて入りきらなくなったら、横にスクロールできる", () => {
       expect(Number(rule(".zukan-tab").match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
       expect(rule(".zukan-tablist")).toContain("overflow-x: auto;");
-      expect(rule(".zukan-tab")).toContain("flex: 1 0 auto;");
+      // 標準の文字サイズでは、タブが縮んで(長いラベルは折り返して)幅に収まる。「大」では、縮めず、横にスクロール
+      expect(rule(".zukan-tab")).toContain("flex: 1 1 auto;");
+      expect(css).toMatch(/html\[data-text-size="large"\] \.zukan-tab \{[^}]*flex: 1 0 auto;[^}]*white-space: nowrap;/);
       expect(css).toMatch(/\.zukan-tabs\[data-fade-end="true"\]::after/);
     });
   });

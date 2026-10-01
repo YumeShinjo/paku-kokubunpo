@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it } from "vitest";
 import { useKotonohaStore } from "@/app/store/kotonohaStore";
 import { useMasteryStore } from "@/app/store/masteryStore";
@@ -203,5 +204,13 @@ describe("本編とのちがい・ネタバレ対策", () => {
       .map((t) => plain(t))
       .join("\n");
     for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "おうさま"]) expect(text, word).not.toContain(word);
+  });
+});
+
+describe("プライバシーポリシー", () => {
+  it("端末に保存する情報(第2条1)に、ことわざ・故事成語の、集めた記録とまちがえた記録が書かれている", () => {
+    const policy = readFileSync("docs/PRIVACY_POLICY.md", "utf-8");
+    const article = policy.slice(policy.indexOf("### 1. 利用者の端末に保存する情報"), policy.indexOf("### 2. サーバーに保存する情報"));
+    expect(article).toContain("- ことわざ・故事成語のミニゲームの、集めた記録とまちがえた記録");
   });
 });

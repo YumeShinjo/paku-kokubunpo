@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Rb } from "@/components/Rb";
 
 /**
  * ことだまの書のタブバー。押しやすい高さ(44px以上)の丸いタブを並べる。
@@ -70,7 +71,15 @@ export function ZukanTabBar({
             className="zukan-tab"
             onClick={() => onSelect(tab.id)}
           >
-            {tab.label}
+            <span className="zukan-tab-label">
+              {tab.label.split("|").map((part, i) => (
+                // 「|」は、幅がせまいときに折り返してよい場所(表示には出ない)
+                <Fragment key={i}>
+                  {i > 0 && <wbr />}
+                  <Rb t={part} />
+                </Fragment>
+              ))}
+            </span>
           </button>
         ))}
       </div>

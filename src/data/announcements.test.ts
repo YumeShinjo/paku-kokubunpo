@@ -30,9 +30,23 @@ describe("お知らせのデータ", () => {
     ]);
   });
 
-  it("プライバシーポリシーのお知らせが、新しいものとして先頭にある(本文は、指定された文章のとおり)", () => {
+  it("「あたらしい あそびが ふえたよ」(言の葉の森)が、いちばん新しいお知らせとして先頭にある(本文は、指定された文章のとおり)", () => {
     const first = announcements[0];
-    expect(first.id).toBe("2026-09-30-privacy");
+    expect(first.id).toBe("2026-10-01-kotonoha");
+    expect(first.date).toBe("2026-10-01");
+    expect(plain(first.title)).toBe("あたらしい あそびが ふえたよ");
+    expect(first.body.map(plain)).toEqual([
+      "『言の葉の森』を ひらいたよ。ことわざや故事成語を あそびながら おぼえよう。『ことばの分かれ道』を クリアすると あそべるよ。",
+    ]);
+    // ふりがなの方針で残る語(言・葉・森・故事成語)に、ふりがなが付いている
+    expect(first.body[0]).toContain("言[こと]の葉[は]の森[もり]");
+    expect(first.body[0]).toContain("故事成語[こじせいご]");
+    // ネタバレになる語は、出さない
+    for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット"]) expect(first.title + first.body.join(), word).not.toContain(word);
+  });
+
+  it("プライバシーポリシーのお知らせも、残っている(本文は、指定された文章のとおり)", () => {
+    const first = announcements.find((a) => a.id === "2026-09-30-privacy")!;
     expect(first.date).toBe("2026-09-30");
     expect(plain(first.title)).toBe("プライバシーポリシーを追加しました");
     expect(first.body.map(plain)).toEqual([
