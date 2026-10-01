@@ -35,7 +35,7 @@ describe("プライバシーポリシーの画面", () => {
     expect(container.querySelector("h2")?.textContent).toBe("プライバシーポリシー");
     expect(container.querySelectorAll(".policy-article")).toHaveLength(10);
     expect(container.querySelectorAll("table")).toHaveLength(2);
-    expect(container.querySelectorAll(".policy-summary li")).toHaveLength(5);
+    expect(container.querySelectorAll(".policy-summary li")).toHaveLength(6);
     expect(container.querySelector(".policy-article ol")).not.toBeNull();
     expect(container.textContent).not.toContain("運営者向けメモ");
     expect(container.querySelector("strong")).not.toBeNull();

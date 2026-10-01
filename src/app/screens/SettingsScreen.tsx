@@ -6,6 +6,7 @@ import { useState } from "react";
 import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
+import { ContactLink } from "@/components/ContactLink";
 
 /** 文字の大きさの、ボタンに出す呼び名 */
 const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "小", standard: "標準", large: "大" };
@@ -120,6 +121,8 @@ export function SettingsScreen() {
       <button type="button" onClick={() => goTo({ name: "privacy", next: { name: "settings" } })}>
         プライバシーポリシー
       </button>
+      {/* お問い合わせフォーム(外部のブラウザで開く) */}
+      <ContactLink />
 
       {confirmingReset ? (
         <div className="quit-confirm" role="alertdialog" aria-label="データの初期化の確認">

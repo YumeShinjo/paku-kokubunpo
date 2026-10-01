@@ -41,10 +41,10 @@ describe("プライバシーポリシーの表示データ", () => {
     expect(privacyPolicySections[privacyPolicySections.length - 1].kind).toBe("plain");
   });
 
-  it("「かんたんに言うと」は5つの箇条書きと、「以下は…」の一文からなる", () => {
+  it("「かんたんに言うと」は6つの箇条書きと、「以下は…」の一文からなる", () => {
     const summary = privacyPolicySections.find((s) => s.kind === "summary")!;
     const list = summary.blocks.find((b) => b.type === "ul");
-    expect(list && list.type === "ul" ? list.items : []).toHaveLength(5);
+    expect(list && list.type === "ul" ? list.items : []).toHaveLength(6); // 6つ目が、お問い合わせフォームの案内
     expect(JSON.stringify(summary.blocks)).toContain("以下は、正式な取り扱いの内容です。");
   });
 
@@ -135,6 +135,73 @@ describe("第2条の追記(端末に保存する情報・端末の機能の利�
     const headings = article2().blocks.filter((b) => b.type === "h3").map((b) => (b.type === "h3" ? b.text : ""));
     expect(headings).toEqual(["1. 利用者の端末に保存する情報", "2. サーバーに保存する情報", "3. 端末の機能の利用"]);
     expect(publicPolicy).not.toContain("運営者向けメモ");
+  });
+});
+
+describe("第10条(お問い合わせ)と、関連する条文", () => {
+  const article = (heading: string) => privacyPolicySections.find((s) => s.heading?.startsWith(heading))!;
+  const textOf = (heading: string) => JSON.stringify(article(heading).blocks);
+  const FORM = "https://forms.gle/dtyC4R6VM1JJMpEs9";
+
+  it("第10条: フォームのURL・送信される情報・本名などを入れない注意・Googleのサービス・1年以内の削除・個別のデータを特定できない旨の6項目", () => {
+    const blocks = article("第10条").blocks;
+    const list = blocks.find((b) => b.type === "ol");
+    expect(list && list.type === "ol" ? list.items : []).toHaveLength(6);
+    const text = textOf("第10条");
+    expect(text).toContain(FORM);
+    for (const phrase of [
+      "お問い合わせの内容、画面の名称、機器の種類、および任意で入力された連絡先",
+      "本名、学校名、住所、電話番号を入力しないでください",
+      "連絡先は、返信が必要な場合に限り、入力してください",
+      "Google LLC が提供するサービスです",
+      "Google のサーバーに保存されます",
+      "対応が完了した日から1年以内に削除します",
+      "利用者を特定できる情報を取得していません",
+      "データを初期化",
+    ]) {
+      expect(text, phrase).toContain(phrase);
+    }
+    expect(text).not.toContain("準備中");
+  });
+
+  it("第10条には、運営者の名前(Yume Shinjo)を書かない(「運営者」とだけ書く)。ほかの条にある運営者名は、そのまま", () => {
+    expect(textOf("第10条")).not.toContain("Yume Shinjo");
+    expect(textOf("第10条")).toContain("運営者");
+    expect(textOf("第1条")).toContain("Yume Shinjo");
+    expect(source).toContain("運営者:Yume Shinjo");
+  });
+
+  it("第7条は変えない。第10条(6)は、第7条2項の削除のご依頼を指していて、「個別に特定して削除できない場合がある」と矛盾なく書いてある", () => {
+    const seventh = textOf("第7条");
+    expect(seventh).toContain("サーバー上の累計正解数および匿名IDは、削除されません");
+    expect(seventh).toContain("第10条のお問い合わせ先にご連絡ください");
+    expect(textOf("第10条")).toContain("(第7条第2項)");
+  });
+
+  it("第5条3: 「外部との通信はFirebaseのみ」は、アプリ本体の通信のこと。お問い合わせフォーム(Googleフォーム)は別のサービスだとわかる", () => {
+    const text = textOf("第5条");
+    expect(text).toContain("本アプリ本体は、Firebase Hosting、Authentication、Cloud Firestore 以外の外部サービスとの通信を、行いません");
+    expect(text).toContain("第10条のお問い合わせフォームは、本アプリとは別のサービス(Googleフォーム)");
+  });
+
+  it("第2条: 連絡先を取得しないという記述に、お問い合わせフォームで任意に入力された連絡先は別、という例外がある。第3条の利用目的にも、お問い合わせへの対応がある", () => {
+    expect(textOf("第2条")).toContain("第10条のお問い合わせフォームにおいて、利用者が任意で入力した連絡先は、この限りではありません");
+    expect(textOf("第3条")).toContain("お問い合わせへの対応のため");
+  });
+
+  it("「かんたんに言うと」に、お問い合わせフォームから連絡できること・本名や学校名を書かないことの1つがある(生徒向けのやさしい言葉)", () => {
+    const text = JSON.stringify(privacyPolicySections.find((s) => s.kind === "summary")!.blocks);
+    expect(text).toContain("お問い合わせフォームから連絡できます。本名や学校名は、書かないでください。");
+    expect(text).toContain("連絡先は、返事がほしいときだけ書いてください");
+  });
+
+  it("運営者向けメモ(公開しない)に、お問い合わせ先(フォームのURL・回答は1年以内に削除)の項目がある", () => {
+    const withNotes = source;
+    expect(withNotes).toContain("お問い合わせフォーム(第10条)");
+    expect(withNotes).toContain(FORM);
+    expect(withNotes).toContain("対応が完了した日から1年以内");
+    expect(publicPolicy).not.toContain("お問い合わせフォーム(第10条)"); // メモは、公開用には入らない
+    expect(withNotes).not.toContain("お問い合わせ先を、Google フォームなどで用意したら");
   });
 });
 

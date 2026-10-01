@@ -30,9 +30,8 @@ describe("お知らせのデータ", () => {
     ]);
   });
 
-  it("「あたらしい あそびが ふえたよ」(言の葉の森)が、いちばん新しいお知らせとして先頭にある(本文は、指定された文章のとおり)", () => {
-    const first = announcements[0];
-    expect(first.id).toBe("2026-10-01-kotonoha");
+  it("「あたらしい あそびが ふえたよ」(言の葉の森)のお知らせがある(本文は、指定された文章のとおり)", () => {
+    const first = announcements.find((a) => a.id === "2026-10-01-kotonoha")!;
     expect(first.date).toBe("2026-10-01");
     expect(plain(first.title)).toBe("あたらしい あそびが ふえたよ");
     expect(first.body.map(plain)).toEqual([
@@ -42,6 +41,17 @@ describe("お知らせのデータ", () => {
     expect(first.body[0]).toContain("言[こと]の葉[は]の森[もり]");
     expect(first.body[0]).toContain("故事成語[こじせいご]");
     // ネタバレになる語は、出さない
+    for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット"]) expect(first.title + first.body.join(), word).not.toContain(word);
+  });
+
+  it("「お問い合わせフォームを追加しました」が、いちばん新しいお知らせとして先頭にある。ネタバレ語は使わない", () => {
+    const first = announcements[0];
+    expect(first.id).toBe("2026-10-01-contact");
+    expect(plain(first.title)).toBe("お問い合わせフォームを追加しました");
+    expect(first.body.map(plain)).toEqual([
+      "困ったことや聞きたいことは、せってい画面と、プライバシーポリシー画面の「お問い合わせ」から送れます。本名や学校名は、書かないでください。",
+    ]);
+    expect(first.body[0]).toContain("本名[ほんみょう]"); // 方針で残る語には、ふりがな
     for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット"]) expect(first.title + first.body.join(), word).not.toContain(word);
   });
 

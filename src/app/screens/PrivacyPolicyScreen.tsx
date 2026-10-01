@@ -1,14 +1,31 @@
 import { Fragment, useEffect, type ReactNode } from "react";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { BackButton } from "@/components/BackButton";
+import { ContactLink } from "@/components/ContactLink";
 import { Rb } from "@/components/Rb";
 import { addPrivacyRuby } from "@/data/privacyRuby";
 import { bodyHasRuby, privacyPolicySections, type PolicyBlock } from "@/data/privacyPolicy";
 
-/** **太字** を <strong> にし、ruby=true のときは、辞書の語にふりがなを付ける(ふりがなは Rb が方針で絞る) */
+/** URL(https://…)は、外部のブラウザ(別のタブ)で開くリンクにする。URL は半角の英数字と記号だけなので、日本語の文字の手前で終わる */
+const URL_PATTERN = /(https?:\/\/[A-Za-z0-9._~:/?#@!$&'*+,;=%-]+)/g;
+
+function withLinks(text: string, ruby: boolean): ReactNode {
+  return text.split(URL_PATTERN).map((part, i) => {
+    if (i % 2 === 1) {
+      return (
+        <a key={i} className="policy-link" href={part} target="_blank" rel="noopener noreferrer">
+          {part}
+        </a>
+      );
+    }
+    return <Fragment key={i}>{ruby ? <Rb t={addPrivacyRuby(part)} /> : part}</Fragment>;
+  });
+}
+
+/** **太字** を <strong> にし、URL をリンクにし、ruby=true のときは、辞書の語にふりがなを付ける(ふりがなは Rb が方針で絞る) */
 function inline(text: string, ruby: boolean): ReactNode {
   return text.split(/\*\*(.+?)\*\*/g).map((part, i) => {
-    const content = ruby ? <Rb t={addPrivacyRuby(part)} /> : part;
+    const content = withLinks(part, ruby);
     return i % 2 === 1 ? <strong key={i}>{content}</strong> : <Fragment key={i}>{content}</Fragment>;
   });
 }
@@ -120,9 +137,14 @@ export function PrivacyPolicyScreen({ next }: { next: Screen }) {
             );
           }
           return (
-            <footer key={index} className="policy-footer">
-              {body}
-            </footer>
+            <Fragment key={index}>
+              <div className="policy-contact">
+                <ContactLink />
+              </div>
+              <footer className="policy-footer">
+                {body}
+              </footer>
+            </Fragment>
           );
         })}
       </article>
