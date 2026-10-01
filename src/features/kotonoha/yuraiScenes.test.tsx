@@ -4,10 +4,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { KotonohaPlayScreen, ROUND_START_AUTO_MS } from "@/app/screens/KotonohaPlayScreen";
 import { KotonohaScreen } from "@/app/screens/KotonohaScreen";
-import { completionsToShow, newlyCompleted, useKotonohaStore } from "@/app/store/kotonohaStore";
+import { completionsToShow, hasEnteredForest, newlyCompleted, useKotonohaStore } from "@/app/store/kotonohaStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { getStagesForArea } from "@/data/stages";
+import { resolveCharacters } from "@/data/zukanCharacters";
 import { kojiQuestions, kotowazaQuestions } from "@/data/kotowaza";
 import {
   ENTRY_REPEAT_IDS,
@@ -170,7 +171,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
   const click = (el: Element | null) => act(() => (el as HTMLElement).click());
   const setStore = (state: Partial<ReturnType<typeof useKotonohaStore.getState>>) => useKotonohaStore.setState(state);
   const resetStore = () =>
-    useKotonohaStore.setState({ collectedIds: [], missedIds: [], enteredForest: false, shownCompletions: [], lastEntryScene: undefined });
+    useKotonohaStore.setState({ collectedIds: [], missedIds: [], enteredForest: false, seenEntryFirst: false, shownCompletions: [], lastEntryScene: undefined });
 
   beforeEach(() => {
     localStorage.clear();
@@ -191,7 +192,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
   });
 
   describe("入口", () => {
-    it("初回(enteredForest が false): entry_first。タップで1行ずつ、ユライ→コト→ユライ→コト。終わるまで、範囲のボタンは出ない", () => {
+    it("初回(見終えた記録がない・遊んだ記録もない): entry_first。タップで1行ずつ、ユライ→コト→ユライ→コト。終わるまで、範囲のボタンは出ない", () => {
       render(<KotonohaScreen />);
       expect(q('[data-scene="entry_first"]')).not.toBeNull();
       expect(q(".kotonoha-scope-list")).toBeNull();
@@ -216,14 +217,84 @@ describe("言の葉の森の画面: 場面台詞", () => {
       expect(q(".kotonoha-scope-list")).not.toBeNull();
     });
 
-    it("初回の最初の1行は、ユライの台詞。入場が記録され、次に開くと2回目以降の台詞になる", () => {
+    it("初回の最初の1行は、ユライの台詞。入場(enteredForest)は、画面を開いたときに記録される(図鑑のユライの解放)。台詞を見終えた記録は、まだない", () => {
       render(<KotonohaScreen />);
       expect(q(".scene-bubble-text")!.textContent).toContain("ここは、");
       expect(q(".scene-bubble")!.getAttribute("data-speaker")).toBe("yurai");
       expect(useKotonohaStore.getState().enteredForest).toBe(true);
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(false);
+    });
+
+    it("初回の途中で抜けて(ホームへ戻る・画面を離れる)、また入ると、初回の4行を、また最初から出す", () => {
+      render(<KotonohaScreen />);
+      click(q(".scene-next")); // 1行目 → 2行目(コト)
+      expect(q(".scene-bubble-name")!.textContent).toBe("コト");
+      click(q(".back-button")); // 途中で、ホームへ戻る
+      expect(useNavigationStore.getState().screen).toEqual({ name: "title" });
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(false);
+      act(() => root.unmount());
+      root = createRoot(container);
+      render(<KotonohaScreen key="again" />);
+      expect(q('[data-scene="entry_first"]')).not.toBeNull();
+      expect(q(".scene-bubble-name")!.textContent).toBe("ユライ"); // 1行目から
+      expect(q(".scene-bubble-text")!.textContent).toContain("ここは、");
+      // 3行目まで進めて離れても、同じ
+      click(q(".scene-next"));
+      click(q(".scene-next"));
+      act(() => root.unmount());
+      root = createRoot(container);
+      render(<KotonohaScreen key="third" />);
+      expect(q('[data-scene="entry_first"]')).not.toBeNull();
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(false);
+    });
+
+    it("最後まで進めると、見終えた記録が付き、次からは2回目以降の台詞になる", () => {
+      render(<KotonohaScreen />);
+      for (let i = 0; i < 4; i++) click(q(".scene-next"));
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(true);
       render(<KotonohaScreen key="second" />);
       expect(q('[data-scene="entry_first"]')).toBeNull();
-      expect(q(".kotonoha-scope-list")).not.toBeNull();
+      expect(ENTRY_REPEAT_IDS.some((id) => q(`[data-scene="${id}"]`))).toBe(true);
+    });
+
+    it("スキップしても、見終えた記録が付き、次からは2回目以降の台詞になる", () => {
+      render(<KotonohaScreen />);
+      click(q(".scene-skip"));
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(true);
+      render(<KotonohaScreen key="second" />);
+      expect(q('[data-scene="entry_first"]')).toBeNull();
+      expect(ENTRY_REPEAT_IDS.some((id) => q(`[data-scene="${id}"]`))).toBe(true);
+    });
+
+    it("図鑑のユライは、入場したときに解放される(初回の台詞を見終えなくても、遅れない)", () => {
+      const yurai = () => resolveCharacters({ hasSeen: () => false, enteredForest: hasEnteredForest(useKotonohaStore.getState()) }).find((c) => c.slot.id === "yurai")!;
+      expect(yurai().version).toBeUndefined();
+      render(<KotonohaScreen />);
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(false); // 台詞は、まだ途中
+      expect(yurai().version?.name).toBe("ユライ"); // 入場しただけで、解放されている
+    });
+
+    it("すでに入場済み(enteredForest が true)で、見終えた記録(seenEntryFirst)がない端末は、移行で、2回目以降の扱いにする", async () => {
+      // 以前の版の保存データ(version 0。seenEntryFirst の項目がない)を読み込ませる
+      localStorage.setItem("paku-kokubunpo:kotonoha", JSON.stringify({ state: { collectedIds: [], missedIds: [], enteredForest: true }, version: 0 }));
+      await useKotonohaStore.persist.rehydrate();
+      expect(useKotonohaStore.getState().seenEntryFirst).toBe(true);
+      render(<KotonohaScreen />);
+      expect(q('[data-scene="entry_first"]')).toBeNull();
+    });
+
+    it("移行: 遊んだ記録(葉を集めた・まちがえた)がある端末も、2回目以降。入場も記録もない端末は、初回のまま。今の版の保存データは、そのまま", async () => {
+      const load = async (state: object, version: number) => {
+        localStorage.setItem("paku-kokubunpo:kotonoha", JSON.stringify({ state, version }));
+        await useKotonohaStore.persist.rehydrate();
+        return useKotonohaStore.getState().seenEntryFirst;
+      };
+      expect(await load({ collectedIds: ["kotowaza-001"], missedIds: [] }, 0)).toBe(true);
+      expect(await load({ collectedIds: [], missedIds: ["koji-001"] }, 0)).toBe(true);
+      expect(await load({ collectedIds: [], missedIds: [], enteredForest: false }, 0)).toBe(false);
+      // 今の版(version 1)で、入場だけして途中で抜けた状態(enteredForest: true・seenEntryFirst: false)は、初回のまま
+      expect(await load({ collectedIds: [], missedIds: [], enteredForest: true, seenEntryFirst: false }, 1)).toBe(false);
+      expect(await load({ collectedIds: [], missedIds: [], enteredForest: true, seenEntryFirst: true }, 1)).toBe(true);
     });
 
     it("入場の記録がなくても、すでに遊んだ端末(葉を集めた・まちがえた)は、2回目以降の扱い", () => {
@@ -234,7 +305,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("2回目以降: 3つのどれか。ユライとコトの吹き出しを、2つ同時に出す。直前に出したものは、連続で出ない", () => {
-      setStore({ enteredForest: true });
+      setStore({ enteredForest: true, seenEntryFirst: true });
       let last: string | undefined;
       const seen = new Set<string>();
       for (let i = 0; i < 12; i++) {
@@ -344,7 +415,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("新しい葉が1枚もなかったときは、「あたらしい 葉は なかったよ」で、leaf_new は出さない", () => {
-      setStore({ enteredForest: true, collectedIds: allIds, shownCompletions: ["all", "kotowaza", "koji"] });
+      setStore({ enteredForest: true, seenEntryFirst: true, collectedIds: allIds, shownCompletions: ["all", "kotowaza", "koji"] });
       start("all");
       playRound();
       expect(q(".kotonoha-new-leaves")!.textContent).toContain("なかったよ");
@@ -353,7 +424,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("80/80: 最後の1枚を集めたラウンドの結果に、complete_all だけが出る(ことわざ・故事成語は出ない)。閉じると消え、次のラウンドでは出ない", () => {
-      setStore({ enteredForest: true, collectedIds: except(allIds, "kotowaza-001") });
+      setStore({ enteredForest: true, seenEntryFirst: true, collectedIds: except(allIds, "kotowaza-001") });
       start("all");
       playRound("猿");
       const overlay = q(".kotonoha-complete")!;
@@ -371,7 +442,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("ことわざ50/50 だけが埋まったとき complete_kotowaza。故事成語30/30 だけが埋まったとき complete_koji", () => {
-      setStore({ enteredForest: true, collectedIds: except(kotowazaIds, "kotowaza-001") });
+      setStore({ enteredForest: true, seenEntryFirst: true, collectedIds: except(kotowazaIds, "kotowaza-001") });
       start("kotowaza");
       playRound(plain(kotowazaQuestions[0].answer));
       expect(q(".kotonoha-complete")!.getAttribute("data-scene")).toBe("complete_kotowaza");
@@ -387,7 +458,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("すでに80/80だった端末: アップデート直後にも、そのあとのラウンドにも、遡って出ない", () => {
-      setStore({ enteredForest: true, collectedIds: allIds, shownCompletions: [] });
+      setStore({ enteredForest: true, seenEntryFirst: true, collectedIds: allIds, shownCompletions: [] });
       start("all");
       playRound();
       expect(q(".kotonoha-complete")).toBeNull();
@@ -395,7 +466,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
     });
 
     it("コンプリートの台詞にも、禁止語が出ない", () => {
-      setStore({ enteredForest: true, collectedIds: except(allIds, "kotowaza-001") });
+      setStore({ enteredForest: true, seenEntryFirst: true, collectedIds: except(allIds, "kotowaza-001") });
       start("all");
       playRound("猿");
       expect(q(".kotonoha-complete")).not.toBeNull();

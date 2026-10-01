@@ -3,7 +3,7 @@ import { Leaf, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { hasEnteredForest, useKotonohaStore } from "@/app/store/kotonohaStore";
+import { shouldShowEntryFirst, useKotonohaStore } from "@/app/store/kotonohaStore";
 import { getAllIdiomQuestions } from "@/data/kotowaza";
 import { KotonohaBackground } from "@/features/kotonoha/KotonohaBackground";
 import { KotonohaScene } from "@/features/kotonoha/KotonohaScene";
@@ -49,11 +49,14 @@ export function KotonohaScreen() {
   const collectedIds = useKotonohaStore((s) => s.collectedIds);
   const markEntered = useKotonohaStore((s) => s.markEntered);
   const setLastEntryScene = useKotonohaStore((s) => s.setLastEntryScene);
-  // 初回(入場の記録がない)か、2回目以降か。画面を開いた時点の状態で決める(このあと、入場が記録される)。
+  const markEntryFirstSeen = useKotonohaStore((s) => s.markEntryFirstSeen);
+  // 初回(入口の4行を、まだ最後まで見ていない)か、2回目以降か。画面を開いた時点の状態で決める。
+  // 入場(enteredForest。図鑑のユライの解放)は、画面を開いたときに記録するが、初回の台詞を見終えた記録(seenEntryFirst)は、
+  // 最後まで進めた・スキップしたときだけ。途中で抜けたら、次も初回の4行から出る。
   // 2回目以降は、3つの台詞からランダム。直前に出したものは避ける
   const [entry] = useState<SceneId>(() => {
     const state = useKotonohaStore.getState();
-    return hasEnteredForest(state) ? pickEntryRepeat(state.lastEntryScene) : "entry_first";
+    return shouldShowEntryFirst(state) ? "entry_first" : pickEntryRepeat(state.lastEntryScene);
   });
   const [firstDone, setFirstDone] = useState(false);
   const all = getAllIdiomQuestions();
@@ -84,7 +87,12 @@ export function KotonohaScreen() {
         <>
           <KotonohaScene />
           {showingFirst ? (
-            <EntryFirst onDone={() => setFirstDone(true)} />
+            <EntryFirst
+              onDone={() => {
+                markEntryFirstSeen();
+                setFirstDone(true);
+              }}
+            />
           ) : (
             <>
               {entry !== "entry_first" && <SceneBubbles sceneId={entry} />}

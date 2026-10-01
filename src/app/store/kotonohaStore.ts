@@ -10,6 +10,9 @@ import type { CompletionKind } from "@/data/yuraiScenes";
  *  - missedIds: まちがえた問題のid。正解すると外れる(次のラウンドで優先して出す)
  *  - enteredForest: 言の葉の森に、はじめて入場したか(図鑑「なかまの ずかん」のユライの解放に使う)。
  *    この記録がない端末でも、すでに遊んだ記録(葉を集めた・まちがえた)があれば、入場済みとして扱う(hasEnteredForest)
+ *  - seenEntryFirst: 入口の初回の台詞(entry_first・4行)を、最後まで見た(または、スキップした)か。途中で抜けたときは記録しない
+ *    (次も、初回の4行から出る)。enteredForest(入場したとき・図鑑のユライの解放)とは、別に持つ。
+ *    以前の版の保存データ(この項目がない)は、読み込むときに、入場済み・遊んだ記録があれば true にする(version 1 の migrate)
  *  - shownCompletions: ユライとコトの「コンプリートの台詞」を、もう出したカテゴリ("all" / "kotowaza" / "koji")。各1回だけ出す
  *  - lastEntryScene: 2回目以降の入口で、直前に出した台詞の場面ID(連続で同じものを出さないため)
  * 端末(localStorage の paku-kokubunpo:kotonoha)にだけ保存する。引き継ぎコードには含めない。
@@ -19,6 +22,9 @@ interface KotonohaState {
   collectedIds: string[];
   missedIds: string[];
   enteredForest: boolean;
+  seenEntryFirst: boolean;
+  /** 初回の入口の台詞を、最後まで見た・スキップしたことを記録する */
+  markEntryFirstSeen: () => void;
   shownCompletions: CompletionKind[];
   lastEntryScene?: string;
   /** 直前に出した、入口の台詞を記録する */
@@ -35,6 +41,10 @@ export const useKotonohaStore = create<KotonohaState>()(
       collectedIds: [],
       missedIds: [],
       enteredForest: false,
+      seenEntryFirst: false,
+      markEntryFirstSeen: () => {
+        if (!get().seenEntryFirst) set({ seenEntryFirst: true });
+      },
       shownCompletions: [],
       lastEntryScene: undefined,
       setLastEntryScene: (sceneId) => {
@@ -61,7 +71,20 @@ export const useKotonohaStore = create<KotonohaState>()(
         return false;
       },
     }),
-    { name: "paku-kokubunpo:kotonoha", storage: safeJSONStorage },
+    {
+      name: "paku-kokubunpo:kotonoha",
+      storage: safeJSONStorage,
+      // version 1: seenEntryFirst を追加。それ以前の保存データ(version 0)は、すでに入場した・遊んだ端末なので、初回の台詞は見たものとして、2回目以降の扱いにする
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = (persisted ?? {}) as Partial<KotonohaState>;
+        if (version < 1) {
+          const played = (state.collectedIds?.length ?? 0) > 0 || (state.missedIds?.length ?? 0) > 0;
+          return { ...state, seenEntryFirst: state.enteredForest === true || played } as KotonohaState;
+        }
+        return state as KotonohaState;
+      },
+    },
   ),
 );
 
@@ -93,4 +116,9 @@ export function newlyCompleted(before: string[], after: string[], shown: Complet
 /** 実際に台詞を出す種類(同時達成のときは、"all" だけ) */
 export function completionsToShow(newly: CompletionKind[]): CompletionKind[] {
   return newly.includes("all") ? ["all"] : newly;
+}
+
+/** 初回の入口の台詞(entry_first)を出すか。まだ最後まで見ていなくて、葉を集めた・まちがえた記録もない端末 */
+export function shouldShowEntryFirst(s: Pick<KotonohaState, "seenEntryFirst" | "collectedIds" | "missedIds">): boolean {
+  return !s.seenEntryFirst && s.collectedIds.length === 0 && s.missedIds.length === 0;
 }

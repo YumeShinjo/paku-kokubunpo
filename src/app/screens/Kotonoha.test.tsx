@@ -36,7 +36,7 @@ describe("言の葉の森(画面)", () => {
   beforeEach(() => {
     localStorage.clear();
     useProgressStore.setState({ clearedStageIds: prologue() });
-    useKotonohaStore.setState({ collectedIds: [], missedIds: [], enteredForest: true, shownCompletions: [], lastEntryScene: undefined });
+    useKotonohaStore.setState({ collectedIds: [], missedIds: [], enteredForest: true, seenEntryFirst: true, shownCompletions: [], lastEntryScene: undefined });
     useMasteryStore.setState({ correctQuestionIds: [], lastSyncedCount: 0 });
     useReviewStore.setState({ starredQuestionIds: [] });
     useStoryStore.setState({ choices: {}, seenStoryIds: [] });
