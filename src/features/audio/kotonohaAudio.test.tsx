@@ -127,8 +127,8 @@ describe("クレジット(ゲーム内の表示)", () => {
   const groups = buildCreditGroups(assetCredits);
   const lines = (kind: string) => groups.find((g) => g.kind === kind)!.lines;
 
-  it("BGM: 作曲者名と入手元が出る(Hareno - YouTube)。SE: 「Springin' Sound Stock」が、1回だけ出る", () => {
-    expect(lines("BGM")).toContain("Hareno - YouTube");
+  it("BGM: 同じ作曲者(小ボス戦の曲と、言の葉の森の曲)は「Hareno」の1行だけ(小ボス戦の曲の入手元が台帳にないので、入手元は出さない)。SE: 「Springin' Sound Stock」が、1回だけ出る", () => {
+    expect(lines("BGM").filter((l) => l.startsWith("Hareno"))).toEqual(["Hareno"]);
     expect(lines("SE").filter((l) => l === "Springin' Sound Stock")).toHaveLength(1);
     expect(lines("SE").some((l) => l.startsWith("Springin") && l !== "Springin' Sound Stock")).toBe(false);
   });
@@ -137,7 +137,11 @@ describe("クレジット(ゲーム内の表示)", () => {
     const forest = assetCredits.find((c) => c.name.startsWith("千年の内緒話"))!;
     expect(forest.name).toContain("A secret whispered for a millennium");
     expect(forest.name).toContain("https://youtu.be/CGjkJKXqgHY");
-    expect(forest.source).toBe("YouTube / Hareno");
+    expect(forest.source).toBe("Hareno"); // 画面に出る出典(小ボス戦の曲と同じ作曲者なので、1行にまとまる)
+    expect(forest.name).toContain("入手元: YouTube"); // 入手元は、台帳に、今までどおり控える
+    const subBoss = assetCredits.find((c) => c.name.startsWith("禁忌の詠唱"))!;
+    expect(subBoss.source).toBe("Hareno");
+    expect(assetCredits.filter((c) => c.kind === "BGM" && c.source === "Hareno")).toHaveLength(2);
     expect(forest.license).toContain("2026-10-02に確認");
     for (const word of ["クレジット表記", "教育での配信: 可", "ゲームへの利用: 可", "改変: 可"]) expect(forest.license, word).toContain(word);
     expect(forest.usage).toContain("44.1kHz・ステレオ・128kbps");
@@ -155,7 +159,7 @@ describe("クレジット(ゲーム内の表示)", () => {
 
   it("ライセンス確認表(docs/ASSET_LICENSE_CHECKLIST.md)にも、同じ内容がある", () => {
     const md = readFileSync("docs/ASSET_LICENSE_CHECKLIST.md", "utf-8");
-    for (const word of ["kotonoha.mp3", "千年の内緒話", "https://youtu.be/CGjkJKXqgHY", "roundEnd.mp3", "jingle_21.mp3", "https://www.springin.org/sound-stock/guideline/", "2026-10-02", "ハッシュ付き"]) {
+    for (const word of ["kotonoha.mp3", "千年の内緒話", "YouTube https://youtu.be/CGjkJKXqgHY", "roundEnd.mp3", "jingle_21.mp3", "https://www.springin.org/sound-stock/guideline/", "2026-10-02", "ハッシュ付き"]) {
       expect(md, word).toContain(word);
     }
   });

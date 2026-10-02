@@ -16,7 +16,7 @@
 | `title.mp3` | 爽やかなアイリッシュ的なBGM_2 | OpenTracks / 鷹尾まさき | タイトル・設定・図鑑・ランキング・通常のクレジット | 軽量化(96kbps)済み |
 | `explore-intro.mp3` / `explore.mp3` | 始まりの村 A / 始まりの村 B | zippy | エリア選択・ステージ選択(A→B→Bのループ) | |
 | `stage.mp3` | Prairie4(PerituneMaterial_Prairie4_loop) | PeriTune | 出題中 | |
-| `subBoss.mp3` | 禁忌の詠唱 - Phantom Resonance | Hareno | 小ボス戦 | 軽量化(96kbps)済み |
+| `subBoss.mp3` | 禁忌の詠唱 - Phantom Resonance | Hareno | 小ボス戦 | 軽量化(96kbps)済み。入手元は、この台帳に記載がない(ゲーム内の表示は、言の葉の森の曲と同じ作曲者のため、「Hareno」の1行にまとめている) |
 | `lastBoss.mp3` | 凍てつく世界の果て | EigHt | ラスボス戦 | 軽量化(96kbps)済み。サンプルレートを 48→44.1kHz に再エンコード(2026-09-26) |
 | `truth-intro.mp3` / `truth.mp3` | 星降る丘 LoopA / LoopB | zippy | 真相究明(A→B→Bのループ) | |
 | `ending.mp3` | The Forgotten Girl 1Loop | zippy | エンディング | 軽量化(96kbps)済み |
