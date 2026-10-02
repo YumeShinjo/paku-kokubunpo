@@ -305,9 +305,10 @@ export function QuizPlayer({
           <Star aria-hidden="true" size={16} fill={starred ? "currentColor" : "none"} />
           <span>{starred ? "にがてもんだい" : "にがてもんだいに いれる"}</span>
         </button>
-        <button type="button" className="zukan-button" onClick={() => setZukanOpen(true)}>
+        {/* 文法のことばを確かめられるボタン。ことだまの書の「ぶんぽう」タブと同じ名前(正式名「ぶんぽうの ずかん」) */}
+        <button type="button" className="zukan-button" aria-label={GRAMMAR_ZUKAN_NAME} onClick={() => setZukanOpen(true)}>
           <BookOpen aria-hidden="true" size={16} />
-          <span>ずかん</span>
+          <span>ぶんぽう</span>
         </button>
         {onQuit && (
           <button type="button" className="quit-button" onClick={() => setConfirmingQuit(true)}>

@@ -263,12 +263,19 @@ describe("ボス戦のライフ(5)", () => {
   });
 });
 
-describe("バトル中のことばのずかん", () => {
-  it("「ずかん」から、すべてのページ(未クリアのエリアも)を開け、閉じると問題に戻る", () => {
+describe("バトル中のぶんぽうの ずかん", () => {
+  it("「ぶんぽう」から、すべてのページ(未クリアのエリアも)を開け、閉じると問題に戻る", () => {
     const { container, click, done } = setup();
     expect(container.querySelector(".zukan-modal")).toBeNull();
-    click("ずかん");
+    // 出題中のボタンは、ことだまの書の「ぶんぽう」タブと同じ名前(正式名「ぶんぽうの ずかん」)
+    expect(container.textContent).not.toContain("ずかん");
+    const open = container.querySelector<HTMLButtonElement>(".zukan-button")!;
+    expect(open.textContent).toBe("ぶんぽう");
+    expect(open.getAttribute("aria-label")).toBe("ぶんぽうの ずかん");
+    click("ぶんぽう");
     const modal = container.querySelector(".zukan-modal")!;
+    expect(modal.getAttribute("aria-label")).toBe("ぶんぽうの ずかん");
+    expect(modal.querySelector("h3")!.textContent).toBe("ぶんぽうの ずかん");
     expect(modal.querySelectorAll("details.zukan-page").length).toBeGreaterThan(1);
     expect(modal.textContent).not.toContain("🔒");
     click("とじる");
@@ -280,7 +287,7 @@ describe("バトル中のことばのずかん", () => {
   it("解答したあと(解説を読んでいるとき)も開ける", () => {
     const { container, click, done } = setup();
     click("正しい");
-    click("ずかん");
+    click("ぶんぽう");
     expect(container.querySelector(".zukan-modal")).not.toBeNull();
     done();
   });

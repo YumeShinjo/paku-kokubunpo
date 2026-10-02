@@ -3312,6 +3312,7 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
 }
 
 .stage-actions button {
+  position: relative; /* 押せる範囲を広げる見えない枠(::before)の基準 */
   white-space: nowrap;
   padding: 0.35rem 0.6rem;
   font-size: 0.78rem;
@@ -3325,6 +3326,28 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
 .stage-actions .zukan-button,
 .stage-actions .quit-button {
   flex: none;
+}
+
+/*
+ * 出題中の上の3つのボタン(にがて・ぶんぽう・やめる)は、縦の場所を節約するため、見た目は小さい(約29〜33px)。
+ * 押せる範囲だけ、見えない枠で、上下左右に広げて、高さ44px以上にする(見た目・並びは、変わらない)。
+ * 広げる分(上下8px)で、いちばん低いボタン(29px)でも、押せる高さは45px。ボタンの上下の余白(最小約7px)に、ほぼおさまる。
+ */
+.stage-actions button::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem -0.2rem;
+}
+
+/* 文字サイズ「大」: 「ぶんぽう」が1文字ふえても、「にがてもんだいに いれる」が、ボタンからはみ出さないよう、少しだけ小さくする */
+html[data-text-size="large"] .stage-actions {
+  gap: 0.3rem;
+}
+
+html[data-text-size="large"] .stage-actions button {
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+  font-size: 0.68rem;
 }
 
 .stage-actions .quit-button {

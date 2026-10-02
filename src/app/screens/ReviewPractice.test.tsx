@@ -78,7 +78,7 @@ describe("出題画面上部のレイアウト(CSS)", () => {
     return css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
   };
 
-  it("3つのボタン(にがて・ずかん・やめる)は、同じ1つの行(.stage-actions)に、折り返さず並ぶ", () => {
+  it("3つのボタン(にがて・ぶんぽう・やめる)は、同じ1つの行(.stage-actions)に、折り返さず並ぶ", () => {
     expect(rule(".stage-actions")).toContain("display: flex;");
     expect(rule(".stage-actions button")).toContain("white-space: nowrap;");
   });
