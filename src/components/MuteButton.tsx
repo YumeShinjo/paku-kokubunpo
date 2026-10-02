@@ -15,11 +15,12 @@ export function MuteButton() {
   // ホーム画面は、左上の戻るボタンと左右対称になるよう、右上に置く。言の葉の森(入口・出題)も、
   // 画面の下に「つぎへ」などの固定のボタンが来るので、ホーム画面と同じ、右上に置く
   const onHome = useNavigationStore((s) => ["title", "kotonoha", "kotonohaPlay"].includes(s.screen.name));
+  const onTitle = useNavigationStore((s) => s.screen.name === "title");
   return (
     <button
       type="button"
       data-no-tap
-      className={`mute-button ${muted ? "is-muted" : ""} ${inStory ? "in-story" : ""} ${onHome ? "on-home" : ""}`
+      className={`mute-button ${muted ? "is-muted" : ""} ${inStory ? "in-story" : ""} ${onHome ? "on-home" : ""} ${onTitle ? "on-title" : ""}`
         .replace(/\s+/g, " ")
         .trim()}
       aria-pressed={muted}

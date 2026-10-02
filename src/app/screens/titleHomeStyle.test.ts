@@ -23,10 +23,10 @@ const contrast = (a: string, b: string) => {
 };
 
 describe("ホーム画面のスタイル", () => {
-  it("戻るボタン: 44px以上の丸いボタンで、左上。ノッチ・ダイナミックアイランドを避ける", () => {
+  it("戻るボタン: 48px以上(3rem)の丸いボタンで、左上。ノッチ・ダイナミックアイランドを避ける", () => {
     const back = rule(".title-back");
-    expect(rem(back, "width")).toBeGreaterThanOrEqual(2.75);
-    expect(rem(back, "height")).toBeGreaterThanOrEqual(2.75);
+    expect(rem(back, "width")).toBeGreaterThanOrEqual(3);
+    expect(rem(back, "height")).toBeGreaterThanOrEqual(3);
     expect(back).toContain("border-radius: 50%;");
     expect(back).toContain("top: max(0.6rem, env(safe-area-inset-top));");
     expect(back).toContain("left: max(0.6rem, env(safe-area-inset-left));");
@@ -34,10 +34,11 @@ describe("ホーム画面のスタイル", () => {
 
   it("音量ボタン(ホーム画面だけ): 右上。左上の戻るボタンと、同じ大きさ・同じ余白で、左右対称", () => {
     const back = rule(".title-back");
-    const mute = rule(".mute-button");
+    const mute = rule(".mute-button.on-title"); // ホーム画面(タイトル画面)だけ、3rem(ほかの画面は、これまでの2.75rem)
     const home = rule(".mute-button.on-home");
     expect(rem(mute, "width")).toBe(rem(back, "width"));
     expect(rem(mute, "height")).toBe(rem(back, "height"));
+    expect(rem(rule(".mute-button"), "width")).toBe(2.75);
     expect(home).toContain("top: max(0.6rem, env(safe-area-inset-top));");
     expect(home).toContain("right: max(0.6rem, env(safe-area-inset-right));");
     expect(home).toContain("bottom: auto;");
@@ -54,10 +55,10 @@ describe("ホーム画面のスタイル", () => {
     expect(rule(".mute-button.in-story")).toContain("left: max(0.75rem, env(safe-area-inset-left));");
   });
 
-  it("「はじめる」: 従来(4.5rem)の1.15倍前後の高さ。厚み(濃いミントの縁)・上辺のハイライト・やわらかい影がある", () => {
+  it("「はじめる」: いちばん大きいボタン(従来の5.2rem以上。高さに余裕のある画面では、さらに大きい)。厚み(濃いミントの縁)・上辺のハイライト・やわらかい影がある", () => {
     const primary = rule(".title-primary");
-    expect(rem(primary, "min-height") / 4.5).toBeGreaterThanOrEqual(1.1);
-    expect(rem(primary, "min-height") / 4.5).toBeLessThanOrEqual(1.2);
+    expect(rem(primary, "min-height")).toBeGreaterThanOrEqual(5.5);
+    expect(rem(primary, "min-height")).toBeGreaterThan(rem(rule(".title-forest"), "min-height")); // ほかのどのボタンより、高い
     expect(primary).toMatch(/0 var\(--primary-depth, 0\.3rem\) 0 #[0-9a-f]{6}/); // 下の縁(厚み。--primary-depth と同じ)
     expect(primary).toMatch(/inset 0 2px 0 rgba\(255, 255, 255, 0\.5\)/); // 上辺のハイライト
     expect(primary).toMatch(/0 0\.75rem 1rem rgba/); // やわらかい影
@@ -71,8 +72,8 @@ describe("ホーム画面のスタイル", () => {
     expect(body).toMatch(/box-shadow:\s*0 0 0 #/); // 縁がなくなる(縁の分だけ沈む)
   });
 
-  it("サブボタン4つ: サイズ(高さ2.75rem)と2列のグリッドは今のまま。押すと、沈み、色が濃くなる", () => {
-    expect(rem(rule(".title-sub-buttons button"), "min-height")).toBe(2.75);
+  it("サブボタン2つ: 押しやすい高さ(3rem = 48px以上)と2列のグリッド。押すと、沈み、色が濃くなる", () => {
+    expect(rem(rule(".title-sub-buttons button"), "min-height")).toBeGreaterThanOrEqual(3);
     expect(rule(".title-sub-buttons")).toContain("grid-template-columns: repeat(2, 1fr);");
     const start = css.indexOf('.title-sub-buttons button:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {');
     expect(start).toBeGreaterThan(0);
@@ -116,10 +117,10 @@ describe("ホーム画面のスタイル", () => {
     const back = rule(".title-back");
     expect(rem(gear, "width")).toBe(rem(back, "width"));
     expect(rem(gear, "height")).toBe(rem(back, "height"));
-    expect(rem(gear, "width")).toBeGreaterThanOrEqual(2.75);
+    expect(rem(gear, "width")).toBeGreaterThanOrEqual(3);
     expect(gear).toContain("top: max(0.6rem, env(safe-area-inset-top));");
-    // 右の端は音量ボタン(右の余白0.6rem)。その幅(2.75rem)とすきま(0.5rem)の分だけ、左に離す
-    expect(gear).toContain("right: calc(max(0.6rem, env(safe-area-inset-right)) + 2.75rem + 0.5rem);");
+    // 右の端は音量ボタン(右の余白0.6rem)。その幅(3rem)とすきま(0.5rem)の分だけ、左に離す
+    expect(gear).toContain("right: calc(max(0.6rem, env(safe-area-inset-right)) + 3rem + 0.5rem);");
   });
 
   it("フッター: タップできる高さは約44px(2.5rem以上)。文字は小さく、中央に並ぶ", () => {
@@ -158,10 +159,15 @@ describe("ホーム画面のスタイル", () => {
     expect(bg).toContain("pointer-events: none;");
   });
 
-  it("コト: 1.15倍前後(11rem → 12.65rem)。足元にやわらかい楕円の影、後ろに放射状の光の輪(白〜ごく薄いミント)", () => {
-    const size = rem(rule(".title-koto .mascot-large"), "--mascot-size");
-    expect(size / 11).toBeGreaterThanOrEqual(1.1);
-    expect(size / 11).toBeLessThanOrEqual(1.2);
+  it("コト: 残りの高さに合わせて大きくする(下限6rem・上限15rem = 従来の12.65remの1.15倍以上)。足元にやわらかい楕円の影、後ろに放射状の光の輪(白〜ごく薄いミント)", () => {
+    const stage = rule(".title-koto-stage");
+    const clamp = stage.match(/--koto-size: clamp\(([\d.]+)rem, min\(100cqh, 100cqw\), ([\d.]+)rem\);/)!;
+    expect(clamp).not.toBeNull();
+    expect(Number(clamp[2]) / 12.65).toBeGreaterThanOrEqual(1.15); // 今の1.15倍から、使える高さに応じて、さらに大きく
+    expect(Number(clamp[2])).toBeLessThanOrEqual(16); // PCで、大きすぎない上限
+    expect(rule(".title-koto")).toContain("container-type: size;"); // 残りの高さ(cqh)を測る入れ物
+    expect(rule(".title-koto")).toContain("flex: 1 1 0;");
+    expect(rule(".title-koto-stage .mascot-large")).toContain("--mascot-size: var(--koto-size);");
     const glow = rule(".title-koto-glow");
     expect(glow).toContain("radial-gradient(");
     expect(glow).toMatch(/rgba\(255, 255, 255, 0\.9\d?\)/);
@@ -182,9 +188,15 @@ describe("ホーム画面のスタイル", () => {
     expect(rule(".mastery-bar-fill")).toMatch(/linear-gradient\(90deg, #[0-9a-f]{6}, #[0-9a-f]{6}\)/);
   });
 
-  it("下部: 余白は、端末の下の安全領域を考慮する。ホーム画面には、動く装飾(アニメーション)を入れない", () => {
+  it("下部: 余白は、端末の下の安全領域を考慮する。動くものは、吹き出しの短い出現(opacity / transform だけ)のみ。動きを減らす設定では止まる。ずっと動き続けるものはない", () => {
     expect(rule(".screen-title")).toContain("env(safe-area-inset-bottom)");
     const home = css.slice(css.indexOf("\n.title-hero {"), css.indexOf("\n.mastery-complete {"));
-    expect(home).not.toMatch(/animation:|@keyframes/);
+    expect(home).not.toMatch(/infinite/);
+    expect([...home.matchAll(/@keyframes ([\w-]+)/g)].map((m) => m[1])).toEqual(["title-bubble-in"]);
+    const keyframes = home.slice(home.indexOf("@keyframes title-bubble-in"), home.indexOf("@media (prefers-reduced-motion: reduce)"));
+    expect(keyframes).toContain("opacity");
+    expect(keyframes).toContain("transform");
+    expect(keyframes).not.toMatch(/(top|left|width|height|margin)\s*:/);
+    expect(home).toMatch(/prefers-reduced-motion: reduce[^}]*\{[^}]*animation: none;/);
   });
 });

@@ -14,14 +14,20 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 }
 
 test.describe("タイトル画面", () => {
-  test("ロゴ・主役ボタン・サブ機能が表示され、横はみ出しがない", async ({ page }) => {
+  test("コトと吹き出し・主役ボタン・サブ機能が表示され、ロゴはなく、横はみ出しがない", async ({ page }) => {
     await startApp(page);
     await expect(page.locator(".title-primary")).toHaveText("はじめる");
     await expect(page.locator(".title-sub-buttons button")).toHaveCount(2); // ことだまの書・ランキング
+    // ホームには、ロゴを出さない。コトの頭の上に、一言の吹き出し。ボタンは、押しやすい高さ(48px以上)
+    await expect(page.locator(".title-logo")).toHaveCount(0);
+    await expect(page.locator(".title-bubble-text")).not.toBeEmpty();
+    for (const selector of [".title-back", ".title-settings", ".mute-button", ".title-forest", ".sub-book", ".sub-rank"]) {
+      expect((await page.locator(selector).boundingBox())!.height, selector).toBeGreaterThanOrEqual(48);
+    }
     // 上のバーに、せってい(歯車)。下のフッターに、クレジットとプライバシーポリシー
     const gear = page.getByRole("button", { name: "せってい" });
     await expect(gear).toBeVisible();
-    expect((await gear.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+    expect((await gear.boundingBox())!.width).toBeGreaterThanOrEqual(48);
     await expect(page.locator(".title-footer button")).toHaveText(["クレジット", "プライバシーポリシー"]);
     await expectNoHorizontalOverflow(page);
     await expect(page).toHaveScreenshot("title.png");

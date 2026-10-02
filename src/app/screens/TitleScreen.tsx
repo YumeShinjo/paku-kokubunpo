@@ -1,15 +1,20 @@
+import { useEffect, useState } from "react";
 import { BookOpen, Footprints, House, Settings, Trophy } from "lucide-react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
 import { ScreenBackground } from "@/components/ScreenBackground";
-import { findImage, findTitleLogo, IMAGE } from "@/assets/registry";
+import { findImage, IMAGE } from "@/assets/registry";
 import { TitleBadge } from "@/components/TitleBadge";
 import { HungryBadge } from "@/components/HungryBadge";
 import { ForestEntry } from "@/features/kotonoha/ForestEntry";
 import { MasteryProgress } from "@/components/MasteryProgress";
 import { useReviewStore } from "@/app/store/reviewStore";
-import { titleExpression } from "@/features/mascot/mood";
+import { Rb } from "@/components/Rb";
+import { homeLineText, nextTapLine, statusLine, type HomeLine } from "@/data/homeLines";
+import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { useProgressStore } from "@/app/store/progressStore";
+import { KOTONOHA_UNLOCK_AREA_ID } from "@/features/kotonoha/unlock";
 import { getEndingTitle } from "@/data/titles";
 import { useStoryStore } from "@/app/store/storyStore";
 
@@ -24,8 +29,26 @@ export function TitleScreen() {
   const openSplash = useNavigationStore((s) => s.openSplash);
   const bgUrl = findImage(IMAGE.splashBg); // 最初の画面の背景を、ぼかして薄く敷く
   const title = getEndingTitle(useStoryStore((s) => s.choices));
-  const logoUrl = findTitleLogo(); // 最初の画面と同じ、縁取り付きのロゴ
-  const starCount = useReviewStore((s) => s.starredQuestionIds.length); // 星の問題がたくさん(5問以上)残っているときだけ眠そう
+  const leafCount = useKotonohaStore((s) => s.collectedIds.length);
+
+  // コトの吹き出し。開いたときは、状況の一言(上から順に判定)。コトをタップすると、別の一言に替わる(直前と同じものは出さない)。
+  // 時間では消さず、元に戻すタイマーもない(次にタップするか、ホームを開き直すまで、そのまま)
+  const [line, setLine] = useState<HomeLine>(() =>
+    statusLine({
+      starCount: useReviewStore.getState().starredQuestionIds.length,
+      prologueCleared: useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
+      forestUnlocked: useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
+      leafCount: useKotonohaStore.getState().collectedIds.length,
+    }),
+  );
+
+  // 吹き出しで使う表情の画像を、ホームを開いたときに、一度だけ先に読み込む(タップで替わるときの、遅れ・ちらつきを防ぐ)
+  useEffect(() => {
+    for (const expression of ["combo", "hungry", "sleepy"] as const) {
+      const url = findImage(IMAGE.mascotExpression(expression));
+      if (url) new Image().src = url;
+    }
+  }, []);
 
   function handleStart() {
     unlockPlayback();
@@ -49,19 +72,34 @@ export function TitleScreen() {
       <button type="button" className="title-settings" aria-label="せってい" onClick={handleSettings}>
         <Settings aria-hidden="true" size={22} />
       </button>
-      {/* ロゴ+マスコットを、ひとかたまりの「顔」として見せる。コトの後ろに光の輪、足元に影(どちらも静止した飾り) */}
+      {/* 画面の名前(見えない見出し)。ロゴは、最初の「タッチして はじめる」画面にあるので、ここには出さない */}
+      <h1 className="visually-hidden">パクっと国文法</h1>
+      {/* コトと吹き出し。吹き出しは、コトの頭の上。コトの絵全体が、タップできる(別の一言に替わる)。コトの後ろに光の輪、足元に影(どちらも静止した飾り) */}
       <div className="title-hero">
-        <h1>
-          {logoUrl ? (
-            <img className="title-logo" src={logoUrl} alt="パクっと国文法" draggable={false} />
-          ) : (
-            "パクっと国文法"
-          )}
-        </h1>
+        <div className="title-bubble" role="status">
+          <p key={line.id} className="title-bubble-text">
+            {/* 句読点(。、?!)のところで折り返す(単語の途中で、折り返さない)。1つの区切りは、ひとかたまり */}
+            {homeLineText(line, leafCount)
+              .split(/(?<=[。、?!])/)
+              .map((part, i) => (
+                <span key={i} className="title-bubble-part">
+                  <Rb t={part} />
+                </span>
+              ))}
+          </p>
+        </div>
         <div className="title-koto">
-          <span className="title-koto-glow" aria-hidden="true" />
-          <span className="title-koto-shadow" aria-hidden="true" />
-          <Mascot size="large" expression={titleExpression(starCount)} />
+          <div className="title-koto-stage">
+            <span className="title-koto-glow" aria-hidden="true" />
+            <span className="title-koto-shadow" aria-hidden="true" />
+            <Mascot size="large" expression={line.expression} />
+            <button
+              type="button"
+              className="title-koto-tap"
+              aria-label="コトに話しかける"
+              onClick={() => setLine((current) => nextTapLine(current.id))}
+            />
+          </div>
         </div>
       </div>
       {/* 状態表示(バッジ・称号・進捗)をひとまとめにする。バッジが出たり消えたりしても、

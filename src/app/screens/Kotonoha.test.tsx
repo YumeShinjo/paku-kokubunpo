@@ -90,7 +90,7 @@ describe("言の葉の森(画面)", () => {
     });
 
     it("カードの高さは44px以上の決まり(CSS)。行の高さの固定値(1.9)より狭くして、ホームが伸びないようにしている", () => {
-      expect(css).toMatch(/\.title-forest \{[^}]*min-height: 2\.75rem;/);
+      expect(Number(css.match(/\n\.title-forest \{[^}]*min-height: ([\d.]+)rem;/)?.[1])).toBeGreaterThanOrEqual(3); // 押しやすい高さ(48px以上)
     });
   });
 

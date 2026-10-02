@@ -912,20 +912,15 @@ html[data-text-size="large"] .story-textbox {
   background: rgba(251, 244, 228, 0.82);
 }
 
-.title-logo {
-  display: block;
-  width: min(100%, 26rem);
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-}
-
-/* ロゴ+マスコットを、ひとかたまりの「顔」として見せる(上下に少し余白を足して、間延びした空白ではなく意図した余白にする) */
+/*
+ * ホーム画面の「コトと吹き出し」の場所。残りの高さを、ぜんぶもらう(下のボタンたちを、先に、押しやすい高さにしてから、
+ * 余った高さが、コトの大きさになる)。吹き出しは、コトの頭の上。ロゴは、最初の「タッチして はじめる」画面にだけある。
+ */
 .title-hero {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
   padding: 0;
 }
 
@@ -955,8 +950,8 @@ html[data-text-size="large"] .story-textbox {
   --sub-edge: 2px;
   --footer-ink-offset: 0.65rem;
   gap: var(--home-base-gap);
-  /* 上のボタン(戻る・せってい・音量。高さ2.75rem)の下端と、ロゴの文字(右の葉の先は、画像の上端のすぐ下から始まる。せっていの歯車は、その真上)が、掛からない余白(文字サイズ「大」でも) */
-  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 2.65rem);
+  /* 上のボタン(戻る・せってい・音量。高さ3rem)の下端と、吹き出しが、掛からない余白(文字サイズ「大」でも) */
+  padding-top: calc(max(0.6rem, env(safe-area-inset-top)) + 3rem + 0.4rem);
   padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
 }
 
@@ -982,8 +977,8 @@ html[data-text-size="large"] .story-textbox {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3rem;
+  height: 3rem;
   padding: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.88);
@@ -996,12 +991,12 @@ html[data-text-size="large"] .story-textbox {
 .title-settings {
   position: absolute;
   top: max(0.6rem, env(safe-area-inset-top));
-  right: calc(max(0.6rem, env(safe-area-inset-right)) + 2.75rem + 0.5rem);
+  right: calc(max(0.6rem, env(safe-area-inset-right)) + 3rem + 0.5rem);
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3rem;
+  height: 3rem;
   padding: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.88);
@@ -1010,20 +1005,117 @@ html[data-text-size="large"] .story-textbox {
   box-shadow: 0 2px 6px rgba(75, 58, 46, 0.14);
 }
 
-/* コト: 1.15倍に大きくする(静止。揺らさない)。後ろに光の輪、足元にやわらかい楕円の影。絵の上下の透明な余白は詰める */
+/* コトの吹き出し: コトの頭の上。タップするまで出しっぱなし。出現の動きは、短い opacity / transform だけ */
+.title-bubble {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 22rem);
+  /* 2行ぶん(ふりがな込み)の高さを、いつも確保する(一言が替わっても、下がずれない) */
+  min-height: 4.6rem;
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(168, 224, 200, 0.95);
+  box-shadow: 0 2px 6px rgba(75, 58, 46, 0.12);
+  text-align: center;
+}
+
+/* コトのほうを向く、しっぽ(下向き) */
+.title-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.5rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-right: 2px solid rgba(168, 224, 200, 0.95);
+  border-bottom: 2px solid rgba(168, 224, 200, 0.95);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.title-bubble-text {
+  margin: 0;
+  font-size: 1rem;
+  /* ふりがなを含む行は、固定の1.9 */
+  line-height: var(--ruby-line-height);
+  animation: title-bubble-in 0.18s ease-out;
+}
+
+/* 句読点で区切ったひとかたまり。折り返しは、かたまりの間だけ(かたまりが1行より長いときだけ、中で折り返す) */
+.title-bubble-part {
+  display: inline-block;
+  max-width: 100%;
+}
+
+@keyframes title-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.3rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-bubble-text {
+    animation: none;
+  }
+}
+
+/*
+ * コト: 残りの高さに合わせて大きくする(上限15rem。下限7rem)。静止。揺らさない。後ろに光の輪、足元にやわらかい楕円の影。
+ * .title-koto が、残りの高さ(cqh)を測る入れ物。絵の大きさ(--koto-size)は、入れ物の高さと幅の小さいほう。
+ */
 .title-koto {
+  position: relative;
+  flex: 1 1 0;
+  display: grid;
+  /* 吹き出しのすぐ下(コトの頭の上に、しっぽが向く)。高さに余りがあれば、コトの下に空く */
+  place-items: start center;
+  width: 100%;
+  min-height: 6rem;
+  container-type: size;
+}
+
+.title-koto-stage {
+  --koto-size: clamp(6rem, min(100cqh, 100cqw), 15rem);
   position: relative;
   display: grid;
   place-items: center;
-  margin-block: 0.4rem -0.75rem;
+  width: var(--koto-size);
+  height: var(--koto-size);
 }
 
-.title-koto > * {
+.title-koto-stage > * {
   grid-area: 1 / 1;
 }
 
-.title-koto .mascot-large {
-  --mascot-size: 12.65rem;
+.title-koto-stage .mascot-large {
+  --mascot-size: var(--koto-size);
+}
+
+/* コトの絵全体を覆う、見えないタップの場所(コトは動かさない) */
+.title-koto-tap {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.title-koto-tap:not(:disabled):not([aria-disabled="true"]):not(.tap-to-start):active {
+  transform: none;
 }
 
 .title-koto-glow {
@@ -1050,46 +1142,11 @@ html[data-text-size="large"] .story-textbox {
   pointer-events: none;
 }
 
-/* 背の低い画面(375x667 など)では、プライバシーポリシーのリンクが最初の画面から外れないよう、コトの上の余白と行の間を詰める */
+/* 背の低い画面(375x667 など)では、行の間を詰める */
 @media (max-height: 700px) {
   .screen-title {
     --home-base-gap: 0.22rem;
   }
-
-  /* 背の低い画面では、コトを少し小さくして、下のボタンまでが、これまでと同じ高さに収まるようにする */
-  .title-koto .mascot-large {
-    --mascot-size: 10.8rem;
-  }
-
-  .title-koto {
-    margin-top: -0.3rem;
-  }
-}
-
-/* バッジ(お腹をすかせている)があって、背の低め(高さ780px以下)の画面では、コトを、ほんの少しだけ小さくする(前より縦が長くならないように) */
-@media (max-height: 780px) {
-  .screen-title:has(.hungry-badge) .title-koto .mascot-large {
-    --mascot-size: 10.6rem;
-  }
-}
-
-/* 文字サイズ「大」は、rem が大きく、コトも大きくなって縦に伸びる。「お腹をすかせている」バッジや称号があるときは、さらに伸びる。ここだけ、コトを少し小さくする */
-html[data-text-size="large"] .title-koto .mascot-large {
-  --mascot-size: 9.4rem;
-}
-
-html[data-text-size="large"] .screen-title:has(.hungry-badge) .title-koto .mascot-large,
-html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot-large {
-  --mascot-size: 8.2rem;
-}
-
-/* 「お腹をすかせている」バッジが出ているときは、コトの影とバッジの間に、少しすきまをあける */
-.screen-title:has(.hungry-badge) .title-koto {
-  margin-bottom: -0.45rem;
-}
-
-.title-hero h1 {
-  margin: 0;
 }
 
 /* バッジ・称号・進捗をひとまとめにする帯 */
@@ -1130,7 +1187,7 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
 }
 
 .title-card .mastery-text {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 
@@ -1505,6 +1562,12 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
   right: max(0.6rem, env(safe-area-inset-right));
   bottom: auto;
   left: auto;
+}
+
+/* ホーム画面(タイトル画面)の音量ボタンは、戻る・せっていと同じ、3rem(48px)。位置は、これまでどおり、右上 */
+.mute-button.on-title {
+  width: 3rem;
+  height: 3rem;
 }
 
 .mute-button.is-muted {
@@ -2970,8 +3033,9 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   gap: 0.6rem;
   /* 称号カードの見える下の縁から、「はじめる」の上の縁まで = --home-gap */
   margin-top: calc(var(--home-gap) - var(--home-base-gap));
-  min-height: 5.2rem;
-  font-size: 1.5rem;
+  /* いちばん大きい主役のボタン。高さに余裕のある画面では、さらに大きくする(下のメディアクエリ) */
+  min-height: 5.5rem;
+  font-size: 1.6rem;
   letter-spacing: 0.06em;
   /* 主役: 他のボタンより、やや濃いめのミント。彩度は抑えたパステルトーンのまま */
   background: #7fcaa9;
@@ -3008,9 +3072,10 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: 2.75rem;
+  /* 押しやすい高さ(48px以上)。ラベルはひらがな・かなだけ(ふりがななし)で、1行なので、文字の大きさでも、高さの割合は変わらない */
+  min-height: 3rem;
   padding: 0.4rem 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   /* 文字サイズ「大」の幅360pxでも、ラベルが2行に割れないようにする */
   white-space: nowrap;
   /* サブ機能: ひと回り小さく、主役より薄い色。4つとも同系の明るい色で、色相だけ少しずつ変える(文字は濃い茶色で、読みやすさを保つ) */
@@ -4112,7 +4177,8 @@ input[type="range"]:focus-visible {
   align-items: center;
   gap: 0.6rem;
   width: 100%;
-  min-height: 2.75rem;
+  /* 高さは、ふりがなのある名前の行(固定の行の高さ1.9)と、説明の行で、決まる。ふりがなの有無では、変わらない(4.3rem) */
+  min-height: 4.3rem;
   /* 上下の内側の余白は、同じ(ふりがなの上端から上の端まで ＝ 説明の文字の下端から下の端まで) */
   padding: 0.45rem 0.75rem 0.39rem;
   /* 「はじめる」の厚み(下の濃い帯)の分だけ、余分にあける。見た目の間隔は、ほかと同じ --home-gap */
@@ -4181,6 +4247,38 @@ input[type="range"]:focus-visible {
 .title-forest.is-locked .forest-badge {
   background: #ddd5c6;
   color: var(--color-text-muted);
+}
+
+/*
+ * 高さに余裕のある画面では、余った高さを、コトを大きくするより先に、ボタンの高さに配分する(間延びしない上限つき)。
+ * ボタンどうしの間隔(見える縁から見える縁まで10px)は、変えない。
+ */
+@media (min-height: 741px) {
+  .title-primary {
+    min-height: 6.25rem;
+  }
+
+  .title-forest {
+    min-height: 4.6rem;
+  }
+
+  .title-sub-buttons button {
+    min-height: 3.25rem;
+  }
+}
+
+@media (min-height: 800px) {
+  .title-primary {
+    min-height: 6.75rem;
+  }
+
+  .title-forest {
+    min-height: 4.9rem;
+  }
+
+  .title-sub-buttons button {
+    min-height: 3.5rem;
+  }
 }
 
 /* ---- 言の葉の森(ミニゲーム) ---- */
