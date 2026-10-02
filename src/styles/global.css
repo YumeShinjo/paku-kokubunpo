@@ -929,11 +929,19 @@ html[data-text-size="large"] .story-textbox {
  * 余った高さが、コトの大きさになる)。吹き出しは、コトの頭の上。ロゴは、最初の「タッチして はじめる」画面にだけある。
  */
 .title-hero {
+  position: relative;
+  /* 重なりの順番: コトの場所(光の輪・影を含む)は、いちばん後ろ(0)。ボタン・カード・帯は、その前(1) */
+  z-index: 0;
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
   align-items: center;
   padding: 0;
+}
+
+.screen-title > :is(.title-status, .title-primary, .title-forest, .title-sub-buttons, .title-footer) {
+  position: relative;
+  z-index: 1;
 }
 
 /*
@@ -1101,6 +1109,8 @@ html[data-text-size="large"] .story-textbox {
 .title-koto-stage {
   --koto-size: clamp(6rem, min(100cqh, 100cqw), 15rem);
   position: relative;
+  /* 光の輪・影が、枠の外へ出ないように、念のため、枠で切る(コトの絵そのものは、枠の中に収まっている) */
+  overflow: clip;
   display: grid;
   place-items: center;
   width: var(--koto-size);
@@ -1131,9 +1141,10 @@ button.title-koto-tap:not(:disabled):not([aria-disabled="true"]):not(.tap-to-sta
   transform: none;
 }
 
+/* 後ろの光の輪: コトの枠(.title-koto-stage)の中に収める(枠の外へ、にじませない。下のボタン・カード・帯に被らない) */
 .title-koto-glow {
-  width: 135%;
-  height: 135%;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
@@ -5420,6 +5431,11 @@ button.nakama-card {
  * 行の間隔のばらつき(ふりがなのある行だけ広がる量)は、標準の文字サイズで 1.5 → 4.4px、1.6 → 3.0px、1.7 → 1.5px、
  * 1.76 → 0.7px、1.8 → 0.08px、1.82 以上 → 0px。文字サイズ「大」では、1.8 以上で 0px。
  * 以前の1.9からの減りは、標準・大のどちらも、ばらつき0のまま。これより狭めると、ばらつきが出る(行ズレの再発)。
+ *
+ * ふりがな(rt)自身の行の高さは、すべて1(下の ruby rt)。rt の行の高さを 0〜1.2 に変えても、ふりがなと漢字の間隔も、この最小値も、
+ * 変わらない(2026-10-02 に実測。どちらも、ふりがなの文字の大きさ・フォントの上下の余白で決まる)。
+ * ふりがなと漢字の間隔は、行の高さ1.82で、文字の大きさの0.14〜0.22倍(平均0.21倍)。
+ * 参考: ふりがなの文字を0.55倍にすると最小値は1.8、0.5倍にすると1.75(いまの0.6倍は1.82)。いまは、読みやすさを優先して、0.6倍のまま。
  */
 :root {
   --ruby-line-height: 1.82;

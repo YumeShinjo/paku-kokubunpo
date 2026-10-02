@@ -201,6 +201,20 @@ describe("ホーム画面のスタイル", () => {
     expect(badge).toContain("white-space: nowrap;");
   });
 
+  it("コトの影・光の輪は、コトの枠の中に収まり、ボタン・カード・帯より後ろ(重なりの順番)", () => {
+    // 光の輪は、枠と同じ大きさ(枠の外へ、にじまない)。枠でも切る。影は、ぼかしを使わず、枠の中の楕円
+    expect(rule(".title-koto-glow")).toContain("width: 100%;");
+    expect(rule(".title-koto-glow")).toContain("height: 100%;");
+    expect(rule(".title-koto-stage")).toContain("overflow: clip;");
+    // コトの場所(.title-hero)は後ろ(z-index: 0)、その下の要素は前(z-index: 1)。positioned の要素は、順番に関係なく、前へ出るため
+    expect(rule(".title-hero")).toContain("z-index: 0;");
+    expect(rule(".title-hero")).toContain("position: relative;");
+    const front = css.slice(css.indexOf(".screen-title > :is("));
+    const frontRule = front.slice(0, front.indexOf("}"));
+    for (const selector of [".title-status", ".title-primary", ".title-forest", ".title-sub-buttons", ".title-footer"]) expect(frontRule).toContain(selector);
+    expect(frontRule).toContain("z-index: 1;");
+  });
+
   it("下部: 余白は、端末の下の安全領域を考慮する。動くものは、吹き出しの短い出現(opacity / transform だけ)のみ。動きを減らす設定では止まる。ずっと動き続けるものはない", () => {
     expect(rule(".screen-title")).toContain("env(safe-area-inset-bottom)");
     const home = css.slice(css.indexOf("\n.title-hero {"), css.indexOf("\n.mastery-complete {"));

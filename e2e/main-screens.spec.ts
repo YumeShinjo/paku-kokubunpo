@@ -228,6 +228,49 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
   });
 });
 
+test.describe("ホーム画面: コトの影・光の輪", () => {
+  test("コトの影・光の輪が、下のボタン・カード・帯に被らない(消しても、コトの枠より下の画素が変わらない)", async ({ page }) => {
+    await seedProgress(page, clearedStagesThrough(["prologue"]));
+    await page.addInitScript(() => {
+      localStorage.setItem("paku-kokubunpo:review", JSON.stringify({ state: { starredQuestionIds: ["q-1"] }, version: 0 })); // 苦手問題の帯が出ている状態
+    });
+    await startApp(page);
+    await page.locator(".title-primary").waitFor();
+    await page.waitForTimeout(400);
+    const stageBottom = await page.evaluate(() => document.querySelector(".title-koto-stage")!.getBoundingClientRect().bottom);
+    const withDecoration = (await page.screenshot()).toString("base64");
+    await page.addStyleTag({ content: ".title-koto-glow,.title-koto-shadow{visibility:hidden!important}" });
+    const without = (await page.screenshot()).toString("base64");
+    const changed = await page.evaluate(
+      async ([a, b, top]) => {
+        const load = async (data: string) => {
+          const img = new Image();
+          img.src = "data:image/png;base64," + data;
+          await img.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const context = canvas.getContext("2d")!;
+          context.drawImage(img, 0, 0);
+          return context.getImageData(0, 0, canvas.width, canvas.height);
+        };
+        const [first, second] = [await load(a as string), await load(b as string)];
+        const ratio = first.width / window.innerWidth;
+        let count = 0;
+        for (let y = Math.ceil((top as number) * ratio); y < first.height; y++) {
+          for (let x = 0; x < first.width; x++) {
+            const i = (y * first.width + x) * 4;
+            if (Math.abs(first.data[i] - second.data[i]) + Math.abs(first.data[i + 1] - second.data[i + 1]) + Math.abs(first.data[i + 2] - second.data[i + 2]) > 6) count++;
+          }
+        }
+        return count;
+      },
+      [withDecoration, without, stageBottom] as const,
+    );
+    expect(changed).toBe(0);
+  });
+});
+
 test.describe("ふりがなを含む文章の行間", () => {
   test("ふりがなのある行だけが広がらない(行の間隔のばらつきが0)。ことだまの書「ぶんぽう」の文章で確かめる", async ({ page }) => {
     await startApp(page);
@@ -261,5 +304,11 @@ test.describe("ふりがなを含む文章の行間", () => {
     });
     expect(result.measured).toBeGreaterThan(0);
     expect(result.worst).toBeLessThan(0.5);
+    // ふりがな(rt)自身の行の高さは、すべて、文字の大きさと同じ(1)
+    const ratios = await page.evaluate(() =>
+      [...document.querySelectorAll("rt")].map((e) => parseFloat(getComputedStyle(e).lineHeight) / parseFloat(getComputedStyle(e).fontSize)),
+    );
+    expect(ratios.length).toBeGreaterThan(0);
+    for (const ratio of ratios) expect(ratio).toBeCloseTo(1, 2);
   });
 });
