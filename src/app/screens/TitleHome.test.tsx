@@ -46,14 +46,14 @@ describe("ホーム画面(タップ後のタイトル画面)の構成", () => {
     expect(useNavigationStore.getState().screen.name).toBe("title");
   });
 
-  it("進捗が0のとき: カードの中に、空の進捗バーと「ことばの正解 0 / N問」が出る(称号の行は出ない)", () => {
+  it("進捗が0のとき: カードの中に、空の進捗バーと「正解した問題 0 / N問」が出る(称号の行は出ない)", () => {
     const card = q(".title-card")!;
     const bar = card.querySelector('[role="progressbar"]')!;
     const total = getAllQuestions().length;
     expect(bar.getAttribute("aria-valuenow")).toBe("0");
     expect(bar.getAttribute("aria-valuemax")).toBe(String(total));
     expect((bar.firstElementChild as HTMLElement).style.width).toBe("0%");
-    expect(card.textContent).toContain(`ことばの正解 0 / ${total}問`);
+    expect(card.textContent).toContain(`正解した問題 0 / ${total}問`);
     expect(card.querySelector(".title-owned")).toBeNull();
   });
 
@@ -63,7 +63,7 @@ describe("ホーム画面(タップ後のタイトル画面)の構成", () => {
     const bar = q('[role="progressbar"]')!;
     expect(bar.getAttribute("aria-valuenow")).toBe("10");
     expect(parseFloat((bar.firstElementChild as HTMLElement).style.width)).toBeCloseTo((10 / total) * 100, 5);
-    expect(q(".title-card")!.textContent).toContain(`ことばの正解 10 / ${total}問`);
+    expect(q(".title-card")!.textContent).toContain(`正解した問題 10 / ${total}問`);
   });
 
   it("称号があるとき: 称号のバッジが、同じカードの中に、王冠のアイコンつきで出る", () => {

@@ -217,7 +217,7 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     await expect(page.locator(".kotonoha-scope-list")).toBeVisible();
     await page.locator(".back-button").click();
     await expect(page.locator(".title-primary")).toBeVisible();
-    // 本編の「ことばの正解」は、増えていない
+    // 本編の「正解した問題」は、増えていない
     await expect(page.locator(".mastery-text")).toContainText("0 /");
   });
 });

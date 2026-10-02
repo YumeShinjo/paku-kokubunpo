@@ -17,7 +17,7 @@ export function MasteryProgress({ className = "" }: { className?: string }) {
       <span
         className="mastery-bar"
         role="progressbar"
-        aria-label="ことばの正解の進み具合"
+        aria-label="正解した問題の進み具合"
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={correctCount}
@@ -28,7 +28,7 @@ export function MasteryProgress({ className = "" }: { className?: string }) {
         />
       </span>
       <p className="mastery-text">
-        ことばの正解 {correctCount} / {total}問
+        正解した問題 {correctCount} / {total}問
         {complete && (
           <span className="mastery-complete">
             {" "}

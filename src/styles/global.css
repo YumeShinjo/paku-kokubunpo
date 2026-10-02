@@ -1122,7 +1122,7 @@ html[data-text-size="large"] .screen-title:has(.title-owned) .title-koto .mascot
   justify-content: center;
 }
 
-/* 進捗(バーと「ことばの正解 N / 392問」)は、称号の右。称号のないときは、カードの幅いっぱい */
+/* 進捗(バーと「正解した問題 N / 392問」)は、称号の右。称号のないときは、カードの幅いっぱい */
 .title-card .title-mastery {
   flex: 1 1 8rem;
   width: auto;
