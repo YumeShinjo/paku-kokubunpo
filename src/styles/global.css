@@ -4292,8 +4292,9 @@ html[data-text-size="large"] .kotonoha-topbar .kotonoha-scope-tag {
     --yurai-size: min(6.5rem, 26vw);
   }
 
-  .kotonoha-scope-list button {
-    min-height: 2.9rem;
+  /* 3つのボタンは、同じ高さ(52px)。ふりがなのある「故事成語」の行も、この高さに収まる */
+  .screen-kotonoha-entry .kotonoha-scope-list button {
+    min-height: 3.25rem;
     padding-top: 0.3rem;
     padding-bottom: 0.3rem;
   }
@@ -4305,7 +4306,7 @@ html[data-text-size="large"] .kotonoha-scene:not(.has-bubble) {
 }
 
 html[data-text-size="large"] .kotonoha-scope-list button {
-  min-height: 3rem;
+  min-height: 3.12rem;
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
 }
@@ -4423,7 +4424,6 @@ html[data-text-size="large"] .kotonoha-result {
   min-height: 2.75rem;
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
-  padding-bottom: max(0.2rem, env(safe-area-inset-bottom));
   font-size: 1rem;
   background: rgba(255, 253, 247, 0.95);
   border: 2px solid #b9e3a0;
@@ -4446,13 +4446,31 @@ html[data-text-size="large"] .kotonoha-result {
   color: #5fa055;
 }
 
+/*
+ * 言の葉の森の入口の余白は、ホーム画面と同じ方針(見える縁から見える縁まで、約10px)。
+ * 範囲のボタンは、下に3pxの立体の縁(box-shadow)があるので、ボタンどうしのすき間は、10px + 3px にする。
+ * 縦に並ぶものの間隔は、--entry-gap(10px)。
+ */
+.screen-kotonoha-entry {
+  --entry-gap: 0.625rem;
+  --entry-depth: 3px;
+  gap: var(--entry-gap);
+  /* 音量ボタンは右上にあるので、下は、ボタンのために空けなくてよい(画面の下の安全な余白だけ) */
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
 .kotonoha-scope-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: calc(var(--entry-gap, 0.5rem) + var(--entry-depth, 0px));
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* 「ずかんを みる」: 範囲のボタンの立体の縁の分だけ、下げて、見える縁から10pxにする */
+.screen-kotonoha-entry .kotonoha-zukan-link {
+  margin-top: var(--entry-depth);
 }
 
 .kotonoha-scope-list button {
@@ -4460,7 +4478,8 @@ html[data-text-size="large"] .kotonoha-result {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 3.25rem;
+  /* 3つとも同じ高さにする(「故事成語」の行は、ふりがなの分だけ高くなるので、それに合わせる) */
+  min-height: 4.15rem;
   font-size: 1.1rem;
   text-align: left;
   background: rgba(255, 253, 247, 0.95);

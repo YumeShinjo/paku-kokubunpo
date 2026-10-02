@@ -156,7 +156,7 @@ describe("図鑑・言の葉の森の画面", () => {
 
     it("ボタンは高さ44px以上。下の安全な余白(safe-area)を考える", () => {
       expect(Number(rule(".kotonoha-zukan-link").match(/min-height: ([\d.]+)rem/)?.[1])).toBeGreaterThanOrEqual(2.75);
-      expect(rule(".kotonoha-zukan-link")).toContain("env(safe-area-inset-bottom)");
+      expect(rule(".screen-kotonoha-entry")).toContain("env(safe-area-inset-bottom)"); // 画面の下の余白(ボタンの下)
     });
 
     it("図鑑の「もどる」は、言の葉の森から来たときは言の葉の森の入口へ。ふつうに開いたときは、ホーム画面へ", () => {

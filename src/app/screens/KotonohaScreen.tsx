@@ -72,7 +72,7 @@ export function KotonohaScreen() {
   const showingFirst = entry === "entry_first" && !firstDone;
 
   return (
-    <div className="screen screen-kotonoha">
+    <div className="screen screen-kotonoha screen-kotonoha-entry">
       <KotonohaBackground />
       <BackButton onClick={() => goTo({ name: "title" })} />
       <h2 className="kotonoha-title">
