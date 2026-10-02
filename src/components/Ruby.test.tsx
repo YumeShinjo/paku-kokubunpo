@@ -31,16 +31,18 @@ describe("ふりがな付きテキストの折り返し", () => {
     container.remove();
   });
 
-  it("縦並びのバッジ(ホーム画面の「おなかをすかせている」)は、本文が1つの塊で、追加の行は注釈(small)だけ", () => {
+  it("苦手問題の帯(ホーム画面)は、1行にまとまっている(食器のアイコン + 「苦手問題 N問 ・ タップして練習」)", () => {
     useReviewStore.setState({ starredQuestionIds: ["a", "b"] });
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
     act(() => root.render(<HungryBadge />));
     const badge = container.querySelector(".hungry-badge")!;
-    expect(badge.children).toHaveLength(2); // 見出しの行(食器のアイコン + 本文の塊) + small
+    expect(badge.children).toHaveLength(1); // 1行(2行目はない)
     expect(badge.children[0].classList.contains("hungry-badge-title")).toBe(true);
-    expect(badge.children[0].querySelectorAll(".ruby-text")).toHaveLength(1); // 本文は、1つの塊のまま
+    expect(badge.textContent).toContain("苦手問題");
+    expect(badge.textContent).toContain("2問");
+    expect(badge.textContent).toContain("タップして練習");
     expect(badge.children[0].querySelector("svg")).not.toBeNull(); // 絵文字ではなく、アイコン
     expect(badge.textContent).not.toContain("🍙");
     act(() => root.unmount());

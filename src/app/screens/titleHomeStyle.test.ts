@@ -174,18 +174,31 @@ describe("ホーム画面のスタイル", () => {
     expect(glow).toContain("border-radius: 50%;");
     const shadow = rule(".title-koto-shadow");
     expect(shadow).toContain("border-radius: 50%;");
-    expect(shadow).toMatch(/filter: blur\(/);
+    // ぼかし(filter)は、枠の外へにじんで、下の帯に被る。枠の中だけで、まわりへ薄くなる影にする
+    expect(shadow).not.toMatch(/filter:/);
+    expect(shadow).toMatch(/background: radial-gradient\(closest-side,/);
   });
 
-  it("カード: 白に近い半透明・薄い縁・軽い影。進捗バーは、ミント色・角丸・細め", () => {
+  it("称号と進捗の帯: 押せないので、平らにする(枠・影・白い背景なし)。進捗バーは、ミント色・角丸・細め。称号は、枠つきのチップではなく、王冠 + 文字だけ", () => {
     const card = rule(".title-card");
-    expect(card).toMatch(/background: rgba\(255, 255, 255, 0\.[7-8]\d*\);/);
-    expect(card).toMatch(/border: 1px solid/);
-    expect(card).toMatch(/box-shadow:/);
+    expect(card).toMatch(/background: none;/);
+    expect(card).toMatch(/border: 0;/);
+    expect(card).toMatch(/box-shadow: none;/);
+    const flat = rule(".title-badge-flat");
+    expect(flat).toMatch(/border: 0;/);
+    expect(flat).toMatch(/background: none;/);
     const bar = rule(".mastery-bar");
     expect(bar).toContain("border-radius: 999px;");
     expect(rem(bar, "height")).toBeLessThanOrEqual(0.6);
     expect(rule(".mastery-bar-fill")).toMatch(/linear-gradient\(90deg, #[0-9a-f]{6}, #[0-9a-f]{6}\)/);
+  });
+
+  it("押せる苦手問題の帯: 1行・高さ48px以上。色・縁・下の厚みがあって、ボタンと分かる", () => {
+    const badge = rule(".hungry-badge");
+    expect(rem(badge, "min-height")).toBeGreaterThanOrEqual(3);
+    expect(badge).toMatch(/border: 2px solid/);
+    expect(badge).toMatch(/box-shadow: 0 2px 0/);
+    expect(badge).toContain("white-space: nowrap;");
   });
 
   it("下部: 余白は、端末の下の安全領域を考慮する。動くものは、吹き出しの短い出現(opacity / transform だけ)のみ。動きを減らす設定では止まる。ずっと動き続けるものはない", () => {

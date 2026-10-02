@@ -790,7 +790,7 @@ html[data-text-size="large"] .story-textbox {
 .engine-guide-steps {
   margin: 0;
   padding-left: 1.4rem;
-  line-height: 1.9;
+  line-height: var(--ruby-line-height);
   font-size: 0.95rem;
 }
 
@@ -815,6 +815,18 @@ html[data-text-size="large"] .story-textbox {
   border: 1px solid var(--color-gold-line);
   color: var(--color-text);
   font-weight: bold;
+}
+
+/* ホーム画面の称号は、枠つきのチップをやめて、王冠のアイコン + 文字だけ(押せないので) */
+.title-badge-flat {
+  padding: 0;
+  border: 0;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--color-gold-text);
 }
 
 .title-owned,
@@ -1015,9 +1027,9 @@ html[data-text-size="large"] .story-textbox {
   justify-content: center;
   width: min(100%, 22rem);
   /* 2行ぶん(ふりがな込み)の高さを、いつも確保する(一言が替わっても、下がずれない) */
-  min-height: 4.6rem;
+  min-height: 4.4rem;
   margin-bottom: 0.6rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(168, 224, 200, 0.95);
@@ -1042,15 +1054,16 @@ html[data-text-size="large"] .story-textbox {
 .title-bubble-text {
   margin: 0;
   font-size: 1rem;
-  /* ふりがなを含む行は、固定の1.9 */
-  line-height: var(--ruby-line-height);
+  /* 吹き出しは、行間を狭める(ふりがなのある行だけ、ふりがなの分だけ、その行が高くなる。前の行には重ならない) */
+  line-height: 1.55;
   animation: title-bubble-in 0.18s ease-out;
 }
 
 /* 句読点で区切ったひとかたまり。折り返しは、かたまりの間だけ(かたまりが1行より長いときだけ、中で折り返す) */
-.title-bubble-part {
+.title-bubble .title-bubble-part {
   display: inline-block;
   max-width: 100%;
+  line-height: 1.55;
 }
 
 @keyframes title-bubble-in {
@@ -1131,14 +1144,14 @@ button.title-koto-tap:not(:disabled):not([aria-disabled="true"]):not(.tap-to-sta
   pointer-events: none;
 }
 
+/* コトの足元の影: ぼかし(filter)は、枠の外へにじんで、下の帯に被るので、枠の中だけで、まわりへ薄くなる影にする */
 .title-koto-shadow {
   align-self: end;
-  width: 54%;
-  height: 6.5%;
-  margin-bottom: 3.5%;
+  width: 60%;
+  height: 8%;
+  margin-bottom: 2%;
   border-radius: 50%;
-  background: rgba(96, 76, 64, 0.24);
-  filter: blur(0.3rem);
+  background: radial-gradient(closest-side, rgba(96, 76, 64, 0.3) 0%, rgba(96, 76, 64, 0.2) 55%, rgba(96, 76, 64, 0) 100%);
   pointer-events: none;
 }
 
@@ -1156,19 +1169,19 @@ button.title-koto-tap:not(:disabled):not([aria-disabled="true"]):not(.tap-to-sta
   gap: 0.4rem;
 }
 
-/* 称号・進捗バー・正解数を、ひとつのカード(白に近い半透明・薄い縁・軽い影)にまとめる */
+/* 称号・進捗バー・正解数を、ひとつの帯にまとめる(押せないので、カードにしない) */
 .title-card {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem 0.7rem;
-  padding: 0.35rem 0.9rem 0.3rem;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(168, 224, 200, 0.75);
-  box-shadow: 0 2px 8px rgba(75, 58, 46, 0.09);
+  gap: 0.25rem 0.9rem;
+  /* 押せない場所: 枠・背景・影をなくして、平らにする(称号と進捗の、文字とバーだけ) */
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  box-shadow: none;
 }
 
 .title-card .title-owned {
@@ -1808,26 +1821,34 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
 }
 
+/* 苦手問題の帯: 押せる。色・縁・下の厚み(2px)で、ボタンと分かるようにする。1行で、高さは48px(3rem)以上 */
 .hungry-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  min-height: 3rem;
   color: var(--color-text);
   margin: 0;
-  padding: 0.5rem 0.9rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 12px;
   background: var(--color-gold-soft);
-  border: 1px solid var(--color-gold-line);
+  border: 2px solid var(--color-gold-line);
+  box-shadow: 0 2px 0 var(--color-gold-line);
   text-align: center;
   font-size: 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  white-space: nowrap;
 }
 
-.hungry-badge small {
+.hungry-badge-hint {
   color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.hungry-badge-dot {
+  color: var(--color-gold-line);
 }
 
 /* ---- ステージの続きから ---- */
@@ -5040,7 +5061,7 @@ html[data-text-size="large"] .kotonoha-explain {
   border-radius: 12px;
   background: var(--color-tint);
   font-size: 0.9rem;
-  line-height: 1.9;
+  line-height: var(--ruby-line-height);
 }
 
 .zukan-pages-guide {
@@ -5271,7 +5292,7 @@ button.nakama-card {
   gap: 0.2rem;
   margin: 0;
   font-size: 0.88rem;
-  line-height: 1.9;
+  line-height: var(--ruby-line-height);
 }
 
 .nakama-facts > div {
@@ -5312,7 +5333,7 @@ button.nakama-card {
   background: var(--color-tint);
   border: 2px solid rgba(168, 224, 200, 0.9);
   font-size: 0.92rem;
-  line-height: 1.9;
+  line-height: var(--ruby-line-height);
 }
 
 .nakama-memo {
@@ -5325,7 +5346,7 @@ button.nakama-card {
 .nakama-memo p,
 .nakama-hitokuchi {
   margin: 0;
-  line-height: 1.9;
+  line-height: var(--ruby-line-height);
 }
 
 .nakama-hitokuchi {
@@ -5394,9 +5415,14 @@ button.nakama-card {
  * そこで、ふりがなを含むブロックは、行の高さを固定値(--ruby-line-height)にする。
  * この高さなら、ふりがな(文字の0.6倍)が、行の上の余白の中に収まり、行を押し広げず、上の行の文字にも重ならない。
  * (ふりがなの有無で、行の間隔は変わらない。直接の親に .ruby-text があるブロックと、strong などで包んだブロックが対象)
+ *
+ * 値は、狭められるだけ狭めた最小値(1.82)。2026-10-02 に、全画面のふりがなを含むブロック(約170か所)で、1.5〜1.9 を実測した。
+ * 行の間隔のばらつき(ふりがなのある行だけ広がる量)は、標準の文字サイズで 1.5 → 4.4px、1.6 → 3.0px、1.7 → 1.5px、
+ * 1.76 → 0.7px、1.8 → 0.08px、1.82 以上 → 0px。文字サイズ「大」では、1.8 以上で 0px。
+ * 以前の1.9からの減りは、標準・大のどちらも、ばらつき0のまま。これより狭めると、ばらつきが出る(行ズレの再発)。
  */
 :root {
-  --ruby-line-height: 1.9;
+  --ruby-line-height: 1.82;
 }
 
 :has(> .ruby-text),

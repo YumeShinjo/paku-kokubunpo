@@ -112,7 +112,7 @@ export function TitleScreen() {
         <div className="title-card">
           {title && (
             <p className="title-owned">
-              <TitleBadge title={title} />
+              <TitleBadge title={title} flat />
             </p>
           )}
           <MasteryProgress className="title-mastery" />

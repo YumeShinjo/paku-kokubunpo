@@ -227,3 +227,39 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     await expect(page.locator(".mastery-text")).toContainText("0 /");
   });
 });
+
+test.describe("ふりがなを含む文章の行間", () => {
+  test("ふりがなのある行だけが広がらない(行の間隔のばらつきが0)。ことだまの書「ぶんぽう」の文章で確かめる", async ({ page }) => {
+    await startApp(page);
+    await page.locator(".sub-book").click();
+    await page.getByRole("tab", { name: "ぶんぽうの ずかん" }).click();
+    await page.locator("details.zukan-page summary").first().click();
+    // ふりがな(rt)を含み、2行以上になる文章を集めて、隣り合う行の上端の差(行の間隔)の、最大 − 最小を測る
+    const result = await page.evaluate(() => {
+      const blocks = [...new Set([...document.querySelectorAll(".ruby-text")].map((e) => e.parentElement!))].filter(
+        (el) => el.offsetParent !== null && el.querySelector("rt") && getComputedStyle(el).display !== "inline",
+      );
+      let worst = 0;
+      let measured = 0;
+      for (const el of blocks) {
+        const tops: number[] = [];
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          if (!n.textContent!.trim() || n.parentElement!.closest("rt")) continue;
+          const range = document.createRange();
+          range.selectNodeContents(n);
+          for (const r of range.getClientRects()) if (r.width > 0) tops.push(r.top);
+        }
+        const lines: number[] = [];
+        for (const t of tops.sort((a, b) => a - b)) if (lines.length === 0 || t - lines[lines.length - 1] > 6) lines.push(t);
+        if (lines.length < 3) continue;
+        const pitches = lines.slice(1).map((t, i) => t - lines[i]);
+        worst = Math.max(worst, Math.max(...pitches) - Math.min(...pitches));
+        measured++;
+      }
+      return { worst, measured };
+    });
+    expect(result.measured).toBeGreaterThan(0);
+    expect(result.worst).toBeLessThan(0.5);
+  });
+});

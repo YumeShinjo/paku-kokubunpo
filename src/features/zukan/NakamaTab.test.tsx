@@ -430,7 +430,7 @@ describe("なかまの ずかん: 画面", () => {
     });
   });
 
-  it("CSS: ボタンは44px以上。ふりがな付きの文は line-height 1.9。動く飾りは transform/opacity のみで、reduced-motion で止まる。余計な操作を奪わない(pointer-events)", () => {
+  it("CSS: ボタンは44px以上。ふりがな付きの文は line-height(ふりがな用の固定値 --ruby-line-height)。動く飾りは transform/opacity のみで、reduced-motion で止まる。余計な操作を奪わない(pointer-events)", () => {
     const rule = (selector: string) => {
       const start = css.indexOf(`\n${selector} {`);
       return start < 0 ? "" : css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
@@ -438,9 +438,9 @@ describe("なかまの ずかん: 画面", () => {
     for (const sel of [".nakama-card", ".nakama-close", ".nakama-view-switch button"]) {
       expect(Number(rule(sel).match(/min-height: ([\d.]+)rem/)?.[1]), sel).toBeGreaterThanOrEqual(2.75);
     }
-    expect(rule(".nakama-memo p,\n.nakama-hitokuchi")).toContain("line-height: 1.9;");
-    expect(rule(".nakama-bubble")).toContain("line-height: 1.9;");
-    expect(rule(".nakama-facts")).toContain("line-height: 1.9;");
+    expect(rule(".nakama-memo p,\n.nakama-hitokuchi")).toContain("line-height: var(--ruby-line-height);");
+    expect(rule(".nakama-bubble")).toContain("line-height: var(--ruby-line-height);");
+    expect(rule(".nakama-facts")).toContain("line-height: var(--ruby-line-height);");
     expect(rule(".nakama-overlay")).toContain("env(safe-area-inset-bottom)");
     expect(rule(".nakama-portrait")).toContain("pointer-events: none;");
     const motion = css.slice(css.indexOf("@keyframes nakama-modal-in"), css.indexOf(".nakama-modal-body {"));
