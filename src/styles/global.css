@@ -931,6 +931,166 @@ html[data-text-size="large"] .story-textbox {
   margin: 0;
 }
 
+/* 「くわしい出典」へのリンク(クレジット画面)。タップできる大きさ(高さ48px以上) */
+.credits-sources-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  width: 100%;
+}
+
+/* 「くわしい出典」ページ */
+.screen-sources {
+  line-height: 1.7;
+}
+
+.sources-warning {
+  padding: 0.75rem 0.9rem;
+  border: 2px solid var(--color-gold-line);
+  border-radius: 10px;
+  background: #fff6e0;
+  font-weight: bold;
+}
+
+.sources-warning p {
+  margin: 0;
+}
+
+.sources-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  width: 100%;
+}
+
+.sources-lead {
+  margin: 0;
+}
+
+/* 区分へ飛ぶボタン。折り返して並べる(高さ44px以上) */
+.sources-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sources-jump button {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0 0.7rem;
+  font-size: 0.85rem;
+}
+
+/* 見出しへ飛んだとき、上の「もどる」ボタン(固定)に隠れない */
+.sources-section h3 {
+  scroll-margin-top: 4rem;
+}
+
+/* このページ・あそびかた・クレジットの「もどる」は、タップできる大きさ(高さ44px以上)にする */
+.screen-sources .back-button,
+.screen-howto .back-button,
+.screen-credits .back-button {
+  min-height: 44px;
+}
+
+.sources-section h3 {
+  margin: 0.75rem 0 0.4rem;
+}
+
+.sources-list,
+.sources-required-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sources-item,
+.sources-required-item {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  overflow-wrap: anywhere;
+}
+
+.sources-required-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 2px solid var(--color-gold-line);
+  font-size: 0.85rem;
+}
+
+.sources-required-kind {
+  font-weight: bold;
+}
+
+.sources-required-note {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.sources-name {
+  margin: 0 0 0.3rem;
+  font-weight: bold;
+}
+
+.sources-detail {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  font-size: 0.82rem;
+}
+
+.sources-detail dt {
+  margin-top: 0.3rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.sources-detail dd {
+  margin: 0;
+}
+
+.sources-links {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 外のサイトへのリンク: 1つずつ、タップできる大きさ(高さ44px以上) */
+.sources-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.sources-link svg {
+  flex: none;
+}
+
+.sources-url-note {
+  display: block;
+  color: var(--color-text-muted);
+}
+
+.sources-proof {
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
 /* ---- 素材(画像)の受け皿。素材が置かれたときだけ使われる ---- */
 .screen-bg {
   position: fixed;
@@ -963,7 +1123,7 @@ html[data-text-size="large"] .story-textbox {
   padding: 0;
 }
 
-.screen-title > :is(.title-status, .title-primary, .title-forest, .title-sub-buttons, .title-footer) {
+.screen-title > :is(.title-status, .title-primary, .title-forest, .title-sub-buttons, .title-footer, .title-proof) {
   position: relative;
   z-index: 1;
 }
@@ -2520,6 +2680,38 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 
 .title-footer-dot {
   padding: 0 0.1rem;
+}
+
+/*
+ * 講義の自作証明(「情報通信技術活用論 2026」)。読めるサイズ(12px = 0.75rem)で、フッターの下に1行。
+ * フッターは、下の余白(-0.55rem)を、次の要素に重ねる作りなので、その分(0.55rem)を足して、
+ * フッターのボタンの枠と、この文字の枠が、重ならないようにする(他のUIとかぶらない)。
+ * 押せない文字なので、タップを受けない。
+ */
+.course-proof {
+  margin: 0;
+  color: #6f5a5a;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.title-proof {
+  margin-top: 0.55rem;
+}
+
+/* 最初の画面: フッター(クレジット・プライバシーポリシー)の下の行。フッターは折り返す作りなので、1行ぶんの幅をとって、次の行に置く */
+.splash-proof {
+  flex: 0 0 100%;
+  padding-bottom: 0.15rem;
+}
+
+/* クレジットの末尾 */
+.credits-proof {
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .title-footer button {

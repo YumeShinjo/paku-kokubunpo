@@ -51,9 +51,12 @@ describe("最初の画面(TapToStart)", () => {
     expect(q(".splash-bubble")?.textContent?.replace(/\s+/g, " ").trim()).toBe("いっしょに ことばを あつめよう!");
   });
 
-  it("下部は、「v… ・ クレジット ・ プライバシーポリシー」の1行。バージョンは押せない文字で、2つは押せるボタン", () => {
+  it("下部は、「v… ・ クレジット ・ プライバシーポリシー」の1行(その下に、講義の自作証明の行)。バージョンは押せない文字で、2つは押せるボタン", () => {
     const footer = q(".splash-footer")!;
-    expect(footer.textContent?.replace(/\s+/g, "")).toBe(`v${__APP_VERSION__}・クレジット・プライバシーポリシー`);
+    const clone = footer.cloneNode(true) as HTMLElement;
+    clone.querySelector(".splash-proof")!.remove();
+    expect(clone.textContent?.replace(/\s+/g, "")).toBe(`v${__APP_VERSION__}・クレジット・プライバシーポリシー`);
+    expect(footer.querySelector(".splash-proof")?.textContent).toBe("情報通信技術活用論 2026");
     expect(footer.querySelector(".splash-version")?.tagName).toBe("SPAN");
     expect([...footer.querySelectorAll("button")].map((b) => b.textContent?.trim())).toEqual(["クレジット", "プライバシーポリシー"]);
   });

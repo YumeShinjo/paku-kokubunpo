@@ -34,6 +34,8 @@ export function sceneForScreen(screen: Screen): BgmScene {
       return "title";
     case "credits":
       return screen.ending ? "ending" : "title";
+    case "sources":
+      return "title";
     case "endingResult":
       return "ending";
     case "areaSelect":

@@ -15,6 +15,7 @@ import { KotonohaPlayScreen } from "@/app/screens/KotonohaPlayScreen";
 import { FreePracticeScreen } from "@/app/screens/FreePracticeScreen";
 import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
+import { SourcesScreen } from "@/app/screens/SourcesScreen";
 import { PrivacyPolicyScreen } from "@/app/screens/PrivacyPolicyScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
@@ -131,6 +132,8 @@ function renderScreen(screen: Screen) {
       return <EndingResultScreen areaId={screen.areaId} next={screen.next} />;
     case "credits":
       return <CreditsScreen next={screen.next} areaId={screen.areaId} ending={screen.ending} />;
+    case "sources":
+      return <SourcesScreen next={screen.next} />;
     case "privacy":
       return <PrivacyPolicyScreen next={screen.next} />;
   }

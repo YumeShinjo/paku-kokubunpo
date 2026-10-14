@@ -1,10 +1,12 @@
 import { useEffect } from "react";
+import { FileText } from "lucide-react";
 import { assetCredits, buildCreditGroups, softwareCredits, staffCredits } from "@/data/credits";
 import { creditsId } from "@/features/story/storyIds";
 import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
+import { CourseProof } from "@/components/CourseProof";
 
 const KIND_LABEL: Record<string, string> = {
   画像: "がぞう",
@@ -103,11 +105,24 @@ export function CreditsScreen({
         </ul>
       </section>
 
+      {/* 曲名・素材名・入手元URLまで載せたページ。ネタバレを含むので、ページの中で「ひらく」を押すまで一覧は出ない */}
+      <button
+        type="button"
+        className="credits-sources-link"
+        onClick={() => goTo({ name: "sources", next: { name: "credits", next, areaId, ending } })}
+      >
+        <FileText aria-hidden="true" size={20} />
+        <span>くわしい出典</span>
+      </button>
+
       {ending && (
         <button type="button" onClick={close}>
           おわる
         </button>
       )}
+
+      {/* 講義の自作証明。画面の最後(スクロールの末尾)に置く */}
+      <CourseProof className="credits-proof" />
     </div>
   );
 }

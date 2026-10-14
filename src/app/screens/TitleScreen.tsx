@@ -11,6 +11,7 @@ import { ForestEntry } from "@/features/kotonoha/ForestEntry";
 import { MasteryProgress } from "@/components/MasteryProgress";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { Rb } from "@/components/Rb";
+import { CourseProof } from "@/components/CourseProof";
 import { homeLineText, nextTapLine, statusLine, type HomeLine } from "@/data/homeLines";
 import { useKotonohaStore } from "@/app/store/kotonohaStore";
 import { useProgressStore } from "@/app/store/progressStore";
@@ -159,6 +160,8 @@ export function TitleScreen() {
           プライバシーポリシー
         </button>
       </div>
+      {/* 講義の自作証明。フッターの下に、小さく置く(押せない) */}
+      <CourseProof className="title-proof" />
     </div>
   );
 }

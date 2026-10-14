@@ -127,7 +127,7 @@ describe("クレジット(ゲーム内の表示)", () => {
   const groups = buildCreditGroups(assetCredits);
   const lines = (kind: string) => groups.find((g) => g.kind === kind)!.lines;
 
-  it("BGM: 同じ作曲者(小ボス戦の曲と、言の葉の森の曲)は「Hareno」の1行だけ(小ボス戦の曲の入手元が台帳にないので、入手元は出さない)。SE: 「Springin' Sound Stock」が、1回だけ出る", () => {
+  it("BGM: 同じ作曲者(小ボス戦の曲と、言の葉の森の曲)は「Hareno」の1行だけ(入手元URLは、ゲーム内のクレジットには出さず、「くわしい出典」に出す)。SE: 「Springin' Sound Stock」が、1回だけ出る", () => {
     expect(lines("BGM").filter((l) => l.startsWith("Hareno"))).toEqual(["Hareno"]);
     expect(lines("SE").filter((l) => l === "Springin' Sound Stock")).toHaveLength(1);
     expect(lines("SE").some((l) => l.startsWith("Springin") && l !== "Springin' Sound Stock")).toBe(false);
@@ -136,10 +136,11 @@ describe("クレジット(ゲーム内の表示)", () => {
   it("素材管理表に、出典・URL・作者・利用条件・加工の内容が控えてある", () => {
     const forest = assetCredits.find((c) => c.name.startsWith("千年の内緒話"))!;
     expect(forest.name).toContain("A secret whispered for a millennium");
-    expect(forest.name).toContain("https://youtu.be/CGjkJKXqgHY");
+    expect(forest.url).toBe("https://youtu.be/CGjkJKXqgHY");
     expect(forest.source).toBe("Hareno"); // 画面に出る出典(小ボス戦の曲と同じ作曲者なので、1行にまとまる)
-    expect(forest.name).toContain("入手元: YouTube"); // 入手元は、台帳に、今までどおり控える
-    const subBoss = assetCredits.find((c) => c.name.startsWith("禁忌の詠唱"))!;
+    // 入手元は、台帳の「入手元URL」の欄に控える(名前の欄には入れない)
+    const subBoss = assetCredits.find((c) => c.name.includes("禁忌の詠唱"))!;
+    expect(subBoss.url).toBe("https://youtu.be/AdWxKyHYQM0");
     expect(subBoss.source).toBe("Hareno");
     expect(assetCredits.filter((c) => c.kind === "BGM" && c.source === "Hareno")).toHaveLength(2);
     expect(forest.license).toContain("2026-10-02に確認");
@@ -148,8 +149,8 @@ describe("クレジット(ゲーム内の表示)", () => {
 
     const jingle = assetCredits.find((c) => c.name.startsWith("ジングル21"))!;
     expect(jingle.name).toContain("jingle_21.mp3");
-    expect(jingle.name).toContain("https://www.springin.org/sound-stock/subcategory/jingle/");
-    expect(jingle.name).toContain("https://www.springin.org/sound-stock/guideline/");
+    expect(jingle.url).toContain("https://www.springin.org/sound-stock/subcategory/jingle/");
+    expect(jingle.url).toContain("https://www.springin.org/sound-stock/guideline/");
     expect(jingle.source).toBe("Springin' Sound Stock");
     expect(jingle.license).toContain("2026-10-02に確認");
     expect(jingle.license).toContain("目立たない配置");

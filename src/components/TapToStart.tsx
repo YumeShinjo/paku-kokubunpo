@@ -8,6 +8,7 @@ import { useReviewStore } from "@/app/store/reviewStore";
 import { hasUnseenAnnouncement, useAnnouncementStore } from "@/app/store/announcementStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { AnnouncementModal } from "@/components/AnnouncementModal";
+import { CourseProof } from "@/components/CourseProof";
 
 /**
  * 起動直後、タイトル画面の前に挟む1枚の導入画面(9章)。背景・ロゴ・手を振るコトを重ね、画面のどこをタップしても始まる。
@@ -126,6 +127,7 @@ export function TapToStart() {
           <button type="button" className="splash-privacy" onClick={openPrivacy}>
             プライバシーポリシー
           </button>
+          <CourseProof className="splash-proof" />
         </div>
       </div>
       {announceOpen && <AnnouncementModal onClose={() => setAnnounceOpen(false)} />}

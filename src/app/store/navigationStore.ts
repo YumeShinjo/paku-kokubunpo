@@ -31,6 +31,8 @@ export type Screen =
   | { name: "endingResult"; areaId: string; next: Screen }
   /** クレジット。ending は「エンディング後」の表示(ねぎらいの一言を添える)。閉じると next へ進む */
   | { name: "credits"; next: Screen; areaId?: string; ending?: boolean }
+  /** 「くわしい出典」(クレジット画面から開く)。もどるボタンで next(クレジット画面)へ戻る */
+  | { name: "sources"; next: Screen }
   /** プライバシーポリシー。もどるボタンで next へ戻る */
   | { name: "privacy"; next: Screen };
 
