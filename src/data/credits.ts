@@ -12,6 +12,8 @@ export interface AssetCredit {
   source: string;
   license: string;
   usage: string;
+  /** 入手元URL(6列目。なければ空)。分からないものは「要確認」と書いてある */
+  url: string;
 }
 
 const isSeparatorCell = (cell: string) => /^:?-{2,}:?$/.test(cell);
@@ -28,10 +30,10 @@ export function parseAssetCredits(markdown: string): AssetCredit[] {
       .split("|")
       .map((c) => c.trim());
     if (cells.length < 5) continue;
-    const [name, kind, source, license, usage] = cells;
+    const [name, kind, source, license, usage, url = ""] = cells;
     if (cells.every(isSeparatorCell) || name === "素材名" || name === "") continue;
     if (/^[(（]例[)）]/.test(name)) continue;
-    credits.push({ name, kind, source, license, usage });
+    credits.push({ name, kind, source, license, usage, url });
   }
   return credits;
 }
@@ -65,9 +67,11 @@ const isGeneratedByAi = (c: AssetCredit) => c.license.startsWith("生成AI");
 const unique = (lines: string[]) => [...new Set(lines)];
 
 const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
+/** ゲーム内のクレジットには出さず、「くわしい出典」のページにだけ出す種別 */
+const DETAIL_ONLY_KINDS = ["ライブラリ", "生成AIモデル"];
 
 export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
-  const kinds = [...KIND_ORDER, ...credits.map((c) => c.kind).filter((k) => !KIND_ORDER.includes(k))];
+  const kinds = [...KIND_ORDER, ...credits.map((c) => c.kind).filter((k) => !KIND_ORDER.includes(k) && !DETAIL_ONLY_KINDS.includes(k))];
   const groups: CreditGroup[] = [];
   for (const kind of unique(kinds)) {
     const rows = credits.filter((c) => c.kind === kind);

@@ -1,3 +1,39 @@
+# 素材ライセンスの棚卸し(2026-10-15 更新。下の A〜D は 2026-09-26 時点の記載で、この節が新しい)
+
+## 0. 2026-10-15 の確認結果(講義の評価項目「出典の特定」に合わせて、入手元URLと規約を調べた)
+
+[docs/ASSET_CREDITS.md](ASSET_CREDITS.md) の表に、6列目「入手元URL」を足した(ゲーム内には出ず、「くわしい出典」のページに出る)。
+公式ページを実際に開いて確認できたものだけ書き、見つからないものは「要確認」としてある(URLを推測で書かない方針)。
+
+### 入手元と規約を確認できたもの
+
+| 素材 | 入手元 | 規約の要点 |
+| --- | --- | --- |
+| 禁忌の詠唱(小ボス戦)・千年の内緒話(言の葉の森) | https://youtu.be/AdWxKyHYQM0 / https://youtu.be/CGjkJKXqgHY | Hareno。無料・商用可・ゲーム可。曲の二次配布・販売と、権利を主張する行為は禁止(制作者が2026-10-14に確認) |
+| 爽やかなアイリッシュ的なBGM | https://opentracks.com/bgm/play1840.html | OpenTracksのライセンス。クレジット不要。音源を取り出しやすい形での配布は禁止 |
+| Prairie4 | https://peritune.com/blog/2019/03/01/prairie4/ | **CC BY 4.0(表示が必要)**。PeriTuneの規約でも商用可。クレジットは任意 |
+| ゆっくりしよ | https://booth.pm/ja/items/7674668 | クレジット不要・商用可(題名の副題が台帳と違う点は要確認) |
+| 正解4・jingle_23・ジングル21・衝撃(Springin') | https://www.springin.org/sound-stock/ のカテゴリのページ | 商用可。クレジット任意。再配布は禁止。個別ファイルへの直リンクは禁止 |
+| ボタン音17(On-Jin) | https://on-jin.com/sound/muci.php | 学校・個人は無料。クレジット任意。企業の営利利用は連絡が必要 |
+| holy1(ポケットサウンド) | サイト https://pocket-se.info/ (素材のページは未確認) | **クレジット表記が必須**(規約 https://pocket-se.info/rules/ ) |
+| 画像のモデル | Illustrious-XL v2.0: https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0 | license欄は creativeml-openrail-m |
+| ライブラリ・フォント | package.json と各パッケージの LICENSE で確認(ISC / MIT / Apache-2.0 / OFL-1.1) | ASSET_CREDITS.md に行を追加した |
+
+### クレジット表記の義務がある素材
+
+- **ポケットサウンド(holy1)**: 表記が必須。「効果音：ポケットサウンド – https://pocket-se.info/」の形。ゲーム内のクレジットは、規約により名前だけで足りるか未確認のため、「くわしい出典」のページに、この書式で載せた。
+- **Prairie4(PeriTune)**: CC BY 4.0。曲名・作者・ライセンス名・入手元を示す。ゲーム内のクレジットには「PeriTune」がある。「くわしい出典」に、すべて載せた。
+
+### 要確認(見つからなかった・取得できなかったもの)
+
+- 入手元ページが見つからない: se_cancel15(効果音工房)、hit02・one23(くらげ工匠。サイトに接続できなかった)、VSQ_JINGLE_0067_Otoboke_01(VSQ plus+)、holy1 の素材ページ
+- 入手元は分かったが、規約の本文を取得できない: 始まりの村・星降る丘・The Forgotten Girl(zippy。規約はFANBOXの投稿 https://zippysound.fanbox.cc/posts/8574304 )、凍てつく世界の果て(EigHt。YouTubeの概要欄)
+- LoRA「Chibi Lerasigma 228 style」(作者 Ticovca): 配布元のCivitAIのページが2025-08-07に削除されている。アーカイブ(https://civarchive.com/models/966828)にライセンスの記載がなく、ベースモデルは Pony と表示されている
+- Stable Diffusion(使った画面ソフト・バージョン)、Gemini(生成物の利用条件)、タイトルロゴの制作方法
+- 音源を取り出しにくい配置にする条件(OpenTracks・Springin'・PeriTune): 音声ファイルは Git に置かず(.gitignore で除外。履歴にもない)、本番では、ビルド後のファイル名にハッシュが付く形で配信している
+
+---
+
 # 素材ライセンスの棚卸し(2026-09-26時点)
 
 [docs/ASSET_CREDITS.md](ASSET_CREDITS.md)(ゲーム内のクレジットの元)を確認し、**ライセンスの記載が「要確認」のまま、または最終確認が必要な素材**を一覧にしたもの。

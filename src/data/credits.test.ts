@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assetCredits, buildCreditGroups, formatMusicCredit, parseAssetCredits, withoutNote } from "./credits";
 
@@ -20,6 +21,7 @@ describe("素材管理表(docs/ASSET_CREDITS.md)の読み込み", () => {
         source: "フリー素材サイトA",
         license: "商用可",
         usage: "タイトル画面",
+        url: "",
       },
     ]);
   });
@@ -96,5 +98,42 @@ describe("ゲーム内クレジットの表示(ネタバレ防止のため簡略
     const all = buildCreditGroups(assetCredits).flatMap((g) => g.lines).join(" / ");
     expect(all).not.toContain("generate-icons");
     expect(all).toContain("M PLUS Rounded 1c(SIL Open Font License 1.1)");
+  });
+});
+
+describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイトル・URLまで特定できる形で示す)", () => {
+  const byName = (part: string) => assetCredits.find((c) => c.name.includes(part))!;
+
+  it("全素材に、入手元URLの欄がある。分からないものは、推測で書かず「要確認」と書いてある", () => {
+    for (const c of assetCredits) {
+      expect(c.url, `${c.name} の入手元URL`).not.toBe("");
+      expect(/https?:\/\//.test(c.url) || c.url.includes("要確認") || c.url.startsWith("なし") || c.url.includes("参照"), `${c.name}: ${c.url}`).toBe(true);
+    }
+  });
+
+  it("BGM・効果音は、すべて入手元URLがあるか、「要確認」になっている", () => {
+    for (const c of assetCredits.filter((c) => c.kind === "BGM" || c.kind === "SE")) {
+      expect(/https?:\/\//.test(c.url) || c.url.includes("要確認"), c.name).toBe(true);
+    }
+  });
+
+  it("小ボス戦の曲と言の葉の森の曲は、同じ作曲者(Hareno)で、入手元は、それぞれの動画", () => {
+    expect(byName("禁忌の詠唱").url).toBe("https://youtu.be/AdWxKyHYQM0");
+    expect(byName("千年の内緒話").url).toBe("https://youtu.be/CGjkJKXqgHY");
+    expect(byName("禁忌の詠唱").source).toBe("Hareno");
+    expect(byName("千年の内緒話").source).toBe("Hareno");
+  });
+
+  it("「ライブラリ」「生成AIモデル」は、ゲーム内のクレジットには出さない(くわしい出典のページにだけ出る)", () => {
+    expect(assetCredits.some((c) => c.kind === "ライブラリ")).toBe(true);
+    expect(assetCredits.some((c) => c.kind === "生成AIモデル")).toBe(true);
+    const kinds = buildCreditGroups(assetCredits).map((g) => g.kind);
+    expect(kinds).toEqual(["画像", "BGM", "SE", "フォント"]);
+  });
+
+  it("音声・画像の素材ファイルは、GitHubに置かない(曲の二次配布の禁止のため。.gitignore で除外)", () => {
+    const ignore = readFileSync(".gitignore", "utf-8");
+    expect(ignore).toContain("src/assets/audio/*/*");
+    expect(ignore).toContain("src/assets/images/*/*");
   });
 });
