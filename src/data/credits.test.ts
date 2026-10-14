@@ -37,7 +37,7 @@ describe("素材管理表(docs/ASSET_CREDITS.md)の読み込み", () => {
   });
 });
 
-const credit = (name: string, kind: string, source: string, license: string) => ({ name, kind, source, license, usage: "使用箇所" });
+const credit = (name: string, kind: string, source: string, license: string) => ({ name, kind, source, license, usage: "使用箇所", url: "" });
 
 describe("ゲーム内クレジットの表示(ネタバレ防止のため簡略化)", () => {
   it("出典が「サイト名 / 作曲者名」なら「作曲者名 - サイト名」に直す。それ以外はそのまま", () => {
@@ -135,5 +135,14 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     const ignore = readFileSync(".gitignore", "utf-8");
     expect(ignore).toContain("src/assets/audio/*/*");
     expect(ignore).toContain("src/assets/images/*/*");
+  });
+
+  it("解説書用の出典一覧(docs/SOURCES_FOR_REPORT.md)に、台帳の全素材と、入手元URLがある(台帳を直したら、一覧も作り直す)", () => {
+    const report = readFileSync("docs/SOURCES_FOR_REPORT.md", "utf-8");
+    expect(report).toContain("情報通信技術活用論 2026");
+    for (const c of assetCredits) {
+      expect(report, c.name).toContain(c.name);
+      for (const url of c.url.match(/https?:\/\/[^\s()（）、。「」]+/g) ?? []) expect(report, `${c.name}: ${url}`).toContain(url);
+    }
   });
 });
