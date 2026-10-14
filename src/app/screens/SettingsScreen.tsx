@@ -98,6 +98,9 @@ export function SettingsScreen() {
         ミュート
       </label>
 
+      <button type="button" onClick={() => goTo({ name: "howto" })}>
+        あそびかたを 見る
+      </button>
       <button type="button" onClick={resetGuides} disabled={guidesPending}>
         そうさの せつめいを もういちど 見る
       </button>

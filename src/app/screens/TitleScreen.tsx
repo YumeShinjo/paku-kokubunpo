@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Footprints, House, Settings, Trophy } from "lucide-react";
+import { BookOpen, CircleHelp, Footprints, House, Settings, Trophy } from "lucide-react";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { unlockPlayback } from "@/lib/audio";
 import { Mascot } from "@/features/mascot/Mascot";
@@ -72,6 +72,10 @@ export function TitleScreen() {
       {/* 右上: せってい(歯車)。音量ボタン(右上の端)の左に並ぶ */}
       <button type="button" className="title-settings" aria-label="せってい" onClick={handleSettings}>
         <Settings aria-hidden="true" size={22} />
+      </button>
+      {/* 右上: あそびかた(?)。せっていの左に並ぶ。アプリ全体の流れを、短いカードで説明する画面へ */}
+      <button type="button" className="title-howto" aria-label="あそびかた" onClick={() => goTo({ name: "howto" })}>
+        <CircleHelp aria-hidden="true" size={22} />
       </button>
       {/* 画面の名前(見えない見出し)。ロゴは、最初の「タッチして はじめる」画面にあるので、ここには出さない */}
       <h1 className="visually-hidden">パクっと国文法</h1>

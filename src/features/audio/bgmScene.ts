@@ -31,6 +31,7 @@ export function sceneForScreen(screen: Screen): BgmScene {
     case "zukan":
     case "ranking":
     case "privacy":
+    case "howto":
       return "title";
     case "credits":
       return screen.ending ? "ending" : "title";

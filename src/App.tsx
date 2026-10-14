@@ -16,6 +16,7 @@ import { FreePracticeScreen } from "@/app/screens/FreePracticeScreen";
 import { EndingResultScreen } from "@/app/screens/EndingResultScreen";
 import { CreditsScreen } from "@/app/screens/CreditsScreen";
 import { SourcesScreen } from "@/app/screens/SourcesScreen";
+import { HowToScreen } from "@/app/screens/HowToScreen";
 import { PrivacyPolicyScreen } from "@/app/screens/PrivacyPolicyScreen";
 import { RankingScreen } from "@/app/screens/RankingScreen";
 import { syncScore } from "@/features/ranking/scoreSync";
@@ -134,6 +135,8 @@ function renderScreen(screen: Screen) {
       return <CreditsScreen next={screen.next} areaId={screen.areaId} ending={screen.ending} />;
     case "sources":
       return <SourcesScreen next={screen.next} />;
+    case "howto":
+      return <HowToScreen />;
     case "privacy":
       return <PrivacyPolicyScreen next={screen.next} />;
   }

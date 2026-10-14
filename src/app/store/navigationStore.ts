@@ -27,6 +27,8 @@ export type Screen =
   | { name: "transferIssue" }
   | { name: "transferRestore" }
   | { name: "ranking" }
+  /** あそびかた(アプリ全体の流れの説明)。もどるボタンでホームへ戻る */
+  | { name: "howto" }
   /** エンディング後の称号授与。見終わると next へ進む */
   | { name: "endingResult"; areaId: string; next: Screen }
   /** クレジット。ending は「エンディング後」の表示(ねぎらいの一言を添える)。閉じると next へ進む */

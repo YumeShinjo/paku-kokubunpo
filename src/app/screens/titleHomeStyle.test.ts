@@ -123,6 +123,14 @@ describe("ホーム画面のスタイル", () => {
     expect(gear).toContain("right: calc(max(0.6rem, env(safe-area-inset-right)) + 3rem + 0.5rem);");
   });
 
+  it("上のバー: あそびかた(?)は、せっていと同じ大きさ・同じ高さで、せっていの、さらに左に並ぶ", () => {
+    const howto = rule(".title-howto");
+    expect(rem(howto, "width")).toBe(rem(rule(".title-settings"), "width"));
+    expect(rem(howto, "height")).toBe(rem(rule(".title-settings"), "height"));
+    expect(howto).toContain("top: max(0.6rem, env(safe-area-inset-top));");
+    expect(howto).toContain("right: calc(max(0.6rem, env(safe-area-inset-right)) + (3rem + 0.5rem) * 2);");
+  });
+
   it("フッター: タップできる高さは約44px(2.5rem以上)。文字は小さく、中央に並ぶ", () => {
     expect(rem(rule(".title-footer button"), "min-height")).toBeGreaterThanOrEqual(2.5);
     expect(rule(".title-footer")).toContain("justify-content: center;");
