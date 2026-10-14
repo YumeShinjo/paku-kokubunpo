@@ -8,7 +8,7 @@ export function IdiomText({ text }: { text: RubyText }) {
         if (seg.ruby) {
           return (
             <ruby key={i}>
-              {seg.text}
+              <span className="ruby-base">{seg.text}</span>
               <rt>{seg.ruby}</rt>
             </ruby>
           );
