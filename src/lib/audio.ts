@@ -1,6 +1,7 @@
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { bgmGainForUrl, findSeAudio, seGain } from "@/assets/registry";
-import { logAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audioDebug";
+import { isExperimentOn, logAudioDebug, registerAudioProbe, subscribeAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audioDebug";
+import { bufferBytes, createBufferBgm } from "@/lib/bgmBuffer";
 
 /**
  * BGM/SE再生の実体(9章: モバイル音声自動再生制約への対応)。
@@ -20,6 +21,8 @@ import { logAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audio
  */
 
 let audioContext: AudioContext | null = null;
+/** 直前の AudioContext の状態(実験Aが、interrupted → running を見分けるため) */
+let lastCtxState = "";
 
 /**
  * BGMと効果音の基準音量のバランス。BGMは効果音(特にクリア音・成長音)を邪魔しないよう、
@@ -64,8 +67,14 @@ function getAudioContext(): AudioContext | null {
       audioContext = new Ctor();
     }
     watchAudioContext(audioContext); // 調査用のログ(URLに ?audiodebug=1 があるときだけ動く。lib/audioDebug.ts)
+    lastCtxState = audioContext.state;
+    subscribeExperimentChanges();
     // 動き出した(running になった)ときに、鳴らそうとして待たされていたBGMを始める
     audioContext.addEventListener?.("statechange", () => {
+      const prev = lastCtxState;
+      lastCtxState = audioContext?.state ?? "";
+      // 実験A(デバッグ項目のスイッチ。ふだんはオフ): 中断(interrupted)から戻ったら、<audio> 要素を作り直す
+      if (prev === "interrupted" && audioContext?.state === "running" && isExperimentOn("rebuild")) rebuildBgmElement("interrupted→running");
       if (audioContext?.state === "running") {
         runPendingStart();
         ensureBgmPlaying();
@@ -234,6 +243,8 @@ function getBgmElement(): HTMLAudioElement {
  * 例外を握りつぶして、繰り返し呼ばないよう、試したかどうか(bgmSourceTried)を覚えておく。
  */
 let bgmSourceTried = false;
+/** BGM要素につないだ MediaElementSource(実験Aが、要素を作り直すとき、捨てるため) */
+let bgmSourceNode: MediaElementAudioSourceNode | null = null;
 function attachBgmGain(): void {
   if (bgmGain || bgmSourceTried) return;
   const ctx = getAudioContext();
@@ -243,6 +254,7 @@ function attachBgmGain(): void {
     const source = ctx.createMediaElementSource(getBgmElement());
     const gain = ctx.createGain();
     source.connect(gain).connect(ctx.destination);
+    bgmSourceNode = source;
     bgmGain = gain;
     bgmTargetLevel = -1;
     getBgmElement().volume = 1;
@@ -318,6 +330,11 @@ let backgroundHalted = false;
  * 場面が変わって曲を替えるときと同じ、まっさらな状態にする。導入曲を鳴らしている途中なら導入曲、そうでなければ、くり返しの曲。
  */
 function reloadBgmElement(): void {
+  // 実験B(AudioBuffer)で鳴らしているときは、いまの曲を、頭に戻す
+  if (bgmMethod === "buffer") {
+    bufferBgm.rewind();
+    return;
+  }
   const audio = bgmElement;
   const url = introEndedHandler ? bgmIntroSrc : bgmSrc;
   if (!audio || !url) return;
@@ -400,6 +417,7 @@ function haltPlayback(): void {
     resumeSettleTimer = null;
   }
   bgmElement?.pause();
+  pauseBufferBgm();
   const ctx = audioContext;
   if (ctx && ctx.state === "running") void ctx.suspend().catch(() => {});
 }
@@ -463,6 +481,10 @@ function playBgmElement(audio: HTMLAudioElement): void {
  * AudioContext が動き出したとき・アプリに戻ったとき)。ミュート中は再生しない(止めたまま)。
  */
 function ensureBgmPlaying(): void {
+  if (bgmMethod === "buffer") {
+    ensureBufferPlaying();
+    return;
+  }
   if (!bgmElement || !bgmSrc || !bgmElement.paused || backgroundHalted) return;
   // 音の受け皿(AudioContext)が止まっているあいだは、<audio> を再生しない(動き出したとき statechange が、ここを呼び直す)
   if (bgmGain && audioContext && audioContext.state !== "running") return;
@@ -505,18 +527,34 @@ export function playBgm(src: string, introSrc?: string): void {
   applyBgmLevel();
   bgmIntroSrc = introSrc ?? null;
   logAudioDebug("playBgm", (introSrc ?? src).split("/").pop());
+  // 実験B(デバッグ項目のスイッチ。ふだんはオフ): <audio> ではなく、AudioBuffer で鳴らす
+  if (isExperimentOn("buffer") && bgmGain && audioContext) {
+    startBufferBgm(audio, src, introSrc);
+    return;
+  }
+  if (bgmMethod === "buffer") leaveBufferBgm(); // AudioBuffer から、ふつうの方式に戻る(スイッチを切った)
+  startBgmElement(audio, src, introSrc);
+}
+
+/** 導入曲が終わったら、くり返しの曲へ移る待ち受けを付ける(曲が切り替わるとき・止めるときに外す) */
+function installIntroHandler(audio: HTMLAudioElement, src: string): void {
+  introEndedHandler = () => {
+    clearIntroHandler();
+    audio.src = src;
+    audio.loop = true;
+    bgmTrackGain = bgmGainForUrl(src);
+    applyBgmLevel();
+    playBgmElement(audio);
+  };
+  audio.addEventListener("ended", introEndedHandler);
+}
+
+/** <audio> 要素で曲を鳴らし始める(ふつうの方式) */
+function startBgmElement(audio: HTMLAudioElement, src: string, introSrc?: string): void {
   if (introSrc) {
     audio.src = introSrc;
     audio.loop = false;
-    introEndedHandler = () => {
-      clearIntroHandler();
-      audio.src = src;
-      audio.loop = true;
-      bgmTrackGain = bgmGainForUrl(src);
-      applyBgmLevel();
-      playBgmElement(audio);
-    };
-    audio.addEventListener("ended", introEndedHandler);
+    installIntroHandler(audio, src);
   } else {
     audio.src = src;
     audio.loop = true;
@@ -525,9 +563,206 @@ export function playBgm(src: string, introSrc?: string): void {
   bgmSrc = src;
 }
 
+/** いま導入曲を鳴らしている途中か */
+function inIntroPhase(): boolean {
+  return bgmMethod === "buffer" ? bufferPhaseIntro : introEndedHandler !== null;
+}
+
+// ---------------------------------------------------------------------------
+// 実験A・B(デバッグ項目の、2つのスイッチ。ふだんはオフ。lib/audioDebug.ts の isExperimentOn)。
+// オフのあいだは、ここから下の処理は、どれも呼ばれない(呼ばれても、何もしない)。
+// ---------------------------------------------------------------------------
+
+/** 最後に <audio> 要素を作り直した時刻(ミリ秒)。MARK の行に出す */
+let lastRebuildAt: number | null = null;
+
+const describeElement = (audio: HTMLAudioElement) => `ready=${audio.readyState} net=${audio.networkState} paused=${audio.paused} t=${Math.round(audio.currentTime * 1000) / 1000}`;
+
+/**
+ * 実験A「復帰したら audio 要素を作り直す」。古い要素と MediaElementSource を捨て(接続を切り、src を空にして、参照を外す)、
+ * 新しい要素と新しい MediaElementSource を作って、いまの GainNode につなぎ直し、いまの曲を、新しい要素で頭から鳴らし直す。
+ * 呼ばれるのは、AudioContext が interrupted → running に戻ったときと、アプリが見える状態に戻って、audio の readyState が 0 だったとき。
+ */
+function rebuildBgmElement(reason: string): void {
+  const old = bgmElement;
+  const ctx = audioContext;
+  if (!old || !ctx || !bgmGain || !bgmSrc || bgmMethod === "buffer") return;
+  const before = describeElement(old);
+  const wasIntro = introEndedHandler !== null; // 導入曲の途中なら、導入曲から入れ直す
+  // 1. 古い要素と MediaElementSource を捨てる
+  clearIntroHandler();
+  try {
+    bgmSourceNode?.disconnect();
+  } catch {
+    // すでに切れている
+  }
+  bgmSourceNode = null;
+  old.pause();
+  old.removeAttribute("src");
+  try {
+    old.load(); // 読み込み中のものを、やめさせる
+  } catch {
+    // 対応していない環境では、無視する
+  }
+  bgmElement = null;
+  // 2. 新しい要素と MediaElementSource を作り、いまの GainNode につなぎ直す
+  const audio = getBgmElement();
+  try {
+    bgmSourceNode = ctx.createMediaElementSource(audio);
+    bgmSourceNode.connect(bgmGain);
+    audio.volume = 1;
+  } catch {
+    // つなげなければ、要素の volume で代用する(attachBgmGain と同じ)
+    bgmGain = null;
+    bgmTargetLevel = -1;
+    applyBgmLevel();
+  }
+  // 3. いまの曲を、新しい要素で、頭から鳴らし直す(ミュート・裏に回っている・AudioContext が止まっているあいだは、鳴らさない)
+  if (wasIntro && bgmIntroSrc) {
+    audio.src = bgmIntroSrc;
+    audio.loop = false;
+    installIntroHandler(audio, bgmSrc);
+  } else {
+    audio.src = bgmSrc;
+    audio.loop = true;
+  }
+  lastRebuildAt = Date.now();
+  logAudioDebug("rebuild", `reason=${reason} old(${before}) new(${describeElement(audio)})`);
+  ensureBgmPlaying();
+}
+
+/** アプリが見える状態に戻ったとき、audio の readyState が 0(中身が空)なら、作り直す(実験A)。ふつうの再開処理(onPageVisible)より先に動く */
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (isPageHidden() || !isExperimentOn("rebuild")) return;
+    if (bgmMethod === "audio" && bgmElement && bgmSrc && bgmElement.readyState === 0) rebuildBgmElement("visible, readyState=0");
+  });
+}
+
+/** 実験B: AudioBuffer で鳴らす部品(いまのBGM1曲分のバッファだけを持つ) */
+const bufferBgm = createBufferBgm();
+/** いま曲を鳴らしている方式 */
+let bgmMethod: "audio" | "buffer" = "audio";
+/** 曲が替わったら増やす番号(古い読み込みの結果を、捨てるため) */
+let bufferToken = 0;
+let bufferLoop = true;
+let bufferOnEnded: (() => void) | undefined;
+let bufferPhaseIntro = false;
+let bufferTrackNote = "";
+
+const baseName = (url: string) => url.split("?")[0].split("/").pop() ?? url;
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+const megabytes = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+
+/** MARK の行に足す、再生まわりの情報(音のログが有効なときだけ呼ばれる) */
+registerAudioProbe(() => ({
+  method: bgmMethod,
+  lastRebuildAt,
+  bufferPosition: bgmMethod === "buffer" && audioContext && bufferBgm.hasBuffer() ? round3(bufferBgm.position(audioContext)) : null,
+}));
+
+/** 実験Bをやめて、ふつうの方式に戻る(バッファを捨てる) */
+function leaveBufferBgm(): void {
+  bufferToken++;
+  bufferBgm.stop();
+  bufferOnEnded = undefined;
+  bufferPhaseIntro = false;
+  bgmMethod = "audio";
+}
+
+/** AudioBuffer で鳴らしていれば、止める(止めた位置は覚える) */
+function pauseBufferBgm(): void {
+  if (bgmMethod === "buffer" && audioContext) bufferBgm.pause(audioContext);
+}
+
+/** AudioBuffer が失敗したので、ふつうの方式(<audio>)で、同じ曲を鳴らす */
+function fallbackToElement(src: string, introSrc?: string): void {
+  leaveBufferBgm();
+  startBgmElement(getBgmElement(), src, introSrc);
+}
+
+function startBufferBgm(audio: HTMLAudioElement, src: string, introSrc?: string): void {
+  audio.pause(); // <audio> は使わない(無音の準備用の曲を、鳴らしたままにしない)
+  bufferToken++;
+  bufferBgm.stop();
+  bgmMethod = "buffer";
+  bgmSrc = src;
+  bufferPhaseIntro = introSrc !== undefined;
+  const token = bufferToken;
+  const onIntroEnded = () => {
+    if (token !== bufferToken) return;
+    bufferPhaseIntro = false;
+    bgmTrackGain = bgmGainForUrl(src);
+    applyBgmLevel();
+    void loadAndPlayBuffer(src, true, token, undefined, () => fallbackToElement(src));
+  };
+  void loadAndPlayBuffer(introSrc ?? src, introSrc === undefined, token, introSrc ? onIntroEnded : undefined, () => fallbackToElement(src, introSrc));
+}
+
+/** 曲を読み込んで、デコードして(鳴らす直前に1回だけ)、鳴らせる状態なら鳴らす。失敗したら fallback を呼ぶ */
+async function loadAndPlayBuffer(url: string, loop: boolean, token: number, onEnded: (() => void) | undefined, fallback: () => void): Promise<void> {
+  const ctx = audioContext;
+  if (!ctx) {
+    fallback();
+    return;
+  }
+  try {
+    const loaded = await bufferBgm.load(ctx, url);
+    if (token !== bufferToken) return; // 読み込んでいるあいだに、曲が替わった
+    bufferBgm.set(loaded.buffer);
+    bufferLoop = loop;
+    bufferOnEnded = onEnded;
+    const b = loaded.buffer;
+    bufferTrackNote = `${baseName(url)} dur=${round3(b.duration)}s len=${b.length} sr=${b.sampleRate} ch=${b.numberOfChannels} bytes=${megabytes(bufferBytes(b))}`;
+    logAudioDebug("buffer-loaded", `${bufferTrackNote} fetch=${loaded.fetchMs}ms decode=${loaded.decodeMs}ms`);
+    ensureBufferPlaying();
+  } catch (error) {
+    if (token !== bufferToken) return;
+    logAudioDebug("fallback", `buffer→audio ${baseName(url)}: ${error instanceof Error ? error.message : String(error)}`);
+    fallback();
+  }
+}
+
+/** AudioBuffer で、止まっている曲を鳴らす(鳴らしてよいときだけ。ensureBgmPlaying の、実験B版) */
+function ensureBufferPlaying(): void {
+  const ctx = audioContext;
+  if (bgmMethod !== "buffer" || !bgmSrc || backgroundHalted || !bufferBgm.hasBuffer() || bufferBgm.isPlaying()) return;
+  if (!ctx || !bgmGain || ctx.state !== "running" || pendingStart || isPageHidden() || isBgmSilenced()) return;
+  const url = bgmSrc;
+  try {
+    const seam = bufferBgm.start(ctx, bgmGain, { loop: bufferLoop, onEnded: bufferOnEnded });
+    logAudioDebug("buffer-play", `${bufferTrackNote} loop=${seam.loop} loopStart=${seam.loopStart} loopEnd=${round3(seam.loopEnd)}`);
+  } catch (error) {
+    logAudioDebug("fallback", `buffer→audio ${baseName(url)}: ${error instanceof Error ? error.message : String(error)}`);
+    fallbackToElement(url, bufferPhaseIntro ? (bgmIntroSrc ?? undefined) : undefined);
+  }
+}
+
+/** スイッチBを切り替えたとき、いま鳴らしている曲を、新しい方式で、頭から鳴らし直す */
+let unsubscribeExperiment: (() => void) | null = null;
+let lastBufferOn = false;
+function subscribeExperimentChanges(): void {
+  if (unsubscribeExperiment) return;
+  lastBufferOn = isExperimentOn("buffer");
+  unsubscribeExperiment = subscribeAudioDebug(() => {
+    const on = isExperimentOn("buffer");
+    if (on === lastBufferOn) return;
+    lastBufferOn = on;
+    const src = bgmSrc;
+    if (!src) return;
+    const introSrc = inIntroPhase() && bgmIntroSrc ? bgmIntroSrc : undefined;
+    clearIntroHandler();
+    bgmElement?.pause();
+    if (bgmMethod === "buffer") leaveBufferBgm();
+    bgmSrc = null;
+    playBgm(src, introSrc);
+  });
+}
+
 export function stopBgm(): void {
   clearIntroHandler();
   bgmElement?.pause();
+  if (bgmMethod === "buffer") leaveBufferBgm();
   bgmSrc = null;
 }
 
@@ -582,8 +817,10 @@ useSettingsStore.subscribe((state, prev) => {
   const bgmWasOn = prev.bgmVolume > 0;
   const bgmIsOn = state.bgmVolume > 0;
   if (!state.muted) {
-    if (bgmWasOn && !bgmIsOn) bgmElement?.pause();
-    else if (!bgmWasOn && bgmIsOn) ensureBgmPlaying();
+    if (bgmWasOn && !bgmIsOn) {
+      bgmElement?.pause();
+      pauseBufferBgm();
+    } else if (!bgmWasOn && bgmIsOn) ensureBgmPlaying();
   }
 });
 
@@ -627,6 +864,11 @@ export function shutdownAudio(): void {
   bgmElement = null;
   bgmSrc = null;
   bgmGain = null;
+  bgmSourceNode = null;
+  lastCtxState = "";
+  unsubscribeExperiment?.();
+  unsubscribeExperiment = null;
+  if (bgmMethod === "buffer") leaveBufferBgm();
   bgmSourceTried = false;
   bgmTargetLevel = -1;
   bgmIntroSrc = null;
