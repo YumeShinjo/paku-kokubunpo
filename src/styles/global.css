@@ -2721,11 +2721,12 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 }
 
 .splash-new {
-  padding: 0 0.35rem;
+  padding: 0 0.4rem;
   border-radius: 999px;
   background: #e2634f;
   color: #fff;
-  font-size: 0.6rem;
+  /* 読める大きさ(12px = 0.75rem 以上) */
+  font-size: 0.75rem;
   font-weight: bold;
   line-height: 1.4;
 }

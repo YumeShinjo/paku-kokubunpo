@@ -91,4 +91,10 @@ describe("最初の画面のスタイル", () => {
   it("ロゴには、茶色系のやわらかい影を付ける", () => {
     expect(rule(".splash-logo")).toMatch(/filter: drop-shadow\([^)]*rgba\(111, 90, 90, [\d.]+\)\)/);
   });
+
+  it("お知らせの「NEW」バッジの文字は、12px(0.75rem)以上", () => {
+    const badge = rule(".splash-new");
+    const size = Number(badge.match(/font-size:\s*([\d.]+)rem/)?.[1]);
+    expect(size).toBeGreaterThanOrEqual(0.75);
+  });
 });
