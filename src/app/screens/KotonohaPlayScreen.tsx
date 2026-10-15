@@ -18,6 +18,8 @@ import {
   type CompletionKind,
 } from "@/data/yuraiScenes";
 import { completionsToShow } from "@/app/store/kotonohaStore";
+import { TitleBadge } from "@/components/TitleBadge";
+import { kotonohaTitle } from "@/data/titles";
 import { YuraiBubble } from "@/features/kotonoha/Yurai";
 import type { MascotExpression } from "@/assets/registry";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
@@ -98,6 +100,12 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
     setNewLeaves(0);
     setCompletions([]);
   }
+
+  // 80まいぜんぶそろって、称号を授与するときに、称号の授与の効果音(王座の間の称号と同じ)を鳴らす
+  const awardingTitle = phase === "result" && completions[0] === "all";
+  useEffect(() => {
+    if (awardingTitle) playSe("subBossClear");
+  }, [awardingTitle]);
 
   const score = results.filter(Boolean).length;
   const expression: MascotExpression | undefined =
@@ -272,6 +280,15 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
         <div className="kotonoha-complete-overlay">
           <div className="kotonoha-complete" role="dialog" aria-modal="true" aria-label="ユライとコトの会話" data-scene={COMPLETE_SCENE[completions[0]]}>
             <SceneBubbles sceneId={COMPLETE_SCENE[completions[0]]} />
+            {/* 80まいぜんぶそろったときだけ、ユライから称号を授与する(王座の間の称号と同じ見た目の TitleBadge) */}
+            {completions[0] === "all" && (
+              <div className="kotonoha-title-award" role="status">
+                <p>ユライから しょうごう(二つ名)を もらったよ!</p>
+                <p className="ending-title">
+                  <TitleBadge title={kotonohaTitle} />
+                </p>
+              </div>
+            )}
             <button type="button" className="scene-next" onClick={() => setCompletions((c) => c.slice(1))}>
               <CloseIcon aria-hidden="true" size={16} />
               <span>{completions.length > 1 ? "つぎへ" : "とじる"}</span>

@@ -1,6 +1,8 @@
 import { Leaf } from "lucide-react";
 import { Rb } from "@/components/Rb";
-import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { hasAllLeaves, useKotonohaStore } from "@/app/store/kotonohaStore";
+import { TitleBadge } from "@/components/TitleBadge";
+import { kotonohaTitle } from "@/data/titles";
 import { kojiQuestions, kotowazaQuestions, type IdiomQuestion } from "@/data/kotowaza";
 import { IdiomText } from "@/features/kotonoha/IdiomText";
 
@@ -79,6 +81,11 @@ export function KotonohaTab() {
           {count} / {total}
         </span>
       </p>
+      {hasAllLeaves(collectedIds) && (
+        <p className="kotonoha-tab-title-earned">
+          <TitleBadge title={kotonohaTitle} />
+        </p>
+      )}
       {count === 0 && (
         <p className="kotonoha-tab-empty">
           <Rb t="まだ 葉[は]を あつめていないよ。言[こと]の葉[は]の森[もり]で あそんで、あつめよう。" />

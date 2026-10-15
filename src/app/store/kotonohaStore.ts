@@ -113,6 +113,11 @@ export function newlyCompleted(before: string[], after: string[], shown: Complet
   return now.filter((kind) => !shown.includes(kind));
 }
 
+/** 葉を80まいぜんぶ集めたか(言の葉の森の称号をもらえる条件) */
+export function hasAllLeaves(collectedIds: string[]): boolean {
+  return CATEGORY_IDS.all.every((id) => collectedIds.includes(id));
+}
+
 /** 実際に台詞を出す種類(同時達成のときは、"all" だけ) */
 export function completionsToShow(newly: CompletionKind[]): CompletionKind[] {
   return newly.includes("all") ? ["all"] : newly;

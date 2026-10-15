@@ -5893,3 +5893,29 @@ ruby rt {
   line-height: 1;
 }
 
+
+/* 言の葉の森の入口の説明(本編との関係と、80まいそろったとき) */
+.kotonoha-about {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+/* 80まいそろったときの、称号の授与(コンプリートの会話のあと) */
+.kotonoha-title-award {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.kotonoha-title-award p {
+  margin: 0.2rem 0;
+}
+
+.kotonoha-tab-title-earned {
+  margin: 0.2rem 0 0.5rem;
+  text-align: center;
+}

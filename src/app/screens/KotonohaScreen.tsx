@@ -5,6 +5,9 @@ import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { shouldShowEntryFirst, useKotonohaStore } from "@/app/store/kotonohaStore";
 import { getAllIdiomQuestions } from "@/data/kotowaza";
+import { KOTONOHA_ABOUT } from "@/data/kotonohaAbout";
+import { Ruby } from "@/components/Ruby";
+import { rb } from "@/data/ruby";
 import { KotonohaBackground } from "@/features/kotonoha/KotonohaBackground";
 import { KotonohaScene } from "@/features/kotonoha/KotonohaScene";
 import { SCOPE_LABELS, questionsInScope, type KotonohaScope } from "@/features/kotonoha/selectRound";
@@ -86,6 +89,10 @@ export function KotonohaScreen() {
       ) : (
         <>
           <KotonohaScene />
+          {/* 本編との関係と、80まいそろったときに起こること。初回の会話とは別に、いつでも読める */}
+          <p className="kotonoha-about">
+            <Ruby text={rb(KOTONOHA_ABOUT)} />
+          </p>
           {showingFirst ? (
             <EntryFirst
               onDone={() => {

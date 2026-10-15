@@ -35,11 +35,11 @@ describe("あそびかた画面", () => {
     expect(howToCards.map((c) => c.id)).toEqual(["start", "quiz", "paku", "leaf", "book", "star", "forest"]);
   });
 
-  it("1枚の説明は、1〜2文(「。」で数える)", () => {
+  it("1枚の説明は、1〜3文(「。」で数える。ふつうは2文まで)", () => {
     for (const card of howToCards) {
       const sentences = plain(card.body).split("。").filter((s) => s.trim() !== "");
       expect(sentences.length, card.id).toBeGreaterThanOrEqual(1);
-      expect(sentences.length, card.id).toBeLessThanOrEqual(2);
+      expect(sentences.length, card.id).toBeLessThanOrEqual(3); // 言の葉の森のカードだけ、称号の1文があるので3文
     }
   });
 
