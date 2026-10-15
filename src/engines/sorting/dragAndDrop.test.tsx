@@ -5,6 +5,12 @@ import type { SortingQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { SortingEngine } from "./SortingEngine";
 
+const audio = vi.hoisted(() => ({ playSe: vi.fn() }));
+vi.mock("@/lib/audio", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/audio")>("@/lib/audio");
+  return { ...actual, playSe: audio.playSe };
+});
+
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const t = (text: string) => [{ text }];
@@ -423,6 +429,65 @@ describe("仕分け: ドラッグ&ドロップ", () => {
         expect(basketTexts(i % 2 === 0 ? "c1" : "c2")).toEqual(["走る"]);
         expect(basketTexts(i % 2 === 0 ? "c2" : "c1")).not.toContain("走る");
       }
+    });
+  });
+
+  describe("カードを置いたときの音(マウス・ペン・指のどれでも、同じように1回だけ tap)", () => {
+    const tapCount = () => audio.playSe.mock.calls.filter(([kind]) => kind === "tap").length;
+    beforeEach(() => audio.playSe.mockClear());
+
+    it("マウス(ドラッグ): カゴに置くと tap が1回鳴る。そのあとの click は、アプリ全体のタップ音(document の click)に届かない(二重に鳴らない)", () => {
+      const globalClick = vi.fn();
+      document.addEventListener("click", globalClick);
+      const el = chip("走る");
+      pointer(el, "pointerdown", 50);
+      pointer(el, "pointermove", 60);
+      pointer(el, "pointermove", 40);
+      pointer(el, "pointerup", 40);
+      act(() => el.click()); // ドラッグの終わりに続けて届く click
+      document.removeEventListener("click", globalClick);
+      expect(basketTexts("c1")).toEqual(["走る"]);
+      expect(tapCount()).toBe(1);
+      expect(globalClick).not.toHaveBeenCalled();
+    });
+
+    it("指(タッチ): カゴに置くと tap が1回鳴る(click は、止められて届かない)", () => {
+      const el = chip("走る");
+      const touch = (type: string, x: number) =>
+        act(() => {
+          const event = new Event(type, { bubbles: true, cancelable: true }) as Event & { touches: unknown[]; changedTouches: unknown[] };
+          const point = { clientX: x, clientY: 300, identifier: 1 };
+          event.touches = type === "touchend" ? [] : [point];
+          event.changedTouches = [point];
+          el.dispatchEvent(event);
+        });
+      touch("touchstart", 50);
+      touch("touchmove", 60);
+      touch("touchmove", 40);
+      touch("touchend", 40);
+      expect(basketTexts("c1")).toEqual(["走る"]);
+      expect(tapCount()).toBe(1);
+    });
+
+    it("ペン(pointerType: pen): マウスと同じように、tap が1回鳴る", () => {
+      const el = chip("山");
+      const penEvent = (type: string, x: number) =>
+        act(() => {
+          const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: 300, button: 0, buttons: type === "pointerup" ? 0 : 1 });
+          Object.defineProperty(event, "pointerType", { value: "pen" });
+          el.dispatchEvent(event);
+        });
+      penEvent("pointerdown", 50);
+      penEvent("pointermove", 60);
+      penEvent("pointermove", 150);
+      penEvent("pointerup", 150);
+      expect(basketTexts("c2")).toEqual(["山"]);
+      expect(tapCount()).toBe(1);
+    });
+
+    it("カゴのない場所で離したときは、置かないので、鳴らさない", () => {
+      drag(chip("走る"), -1);
+      expect(tapCount()).toBe(0);
     });
   });
 });

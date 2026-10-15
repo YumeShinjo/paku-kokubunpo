@@ -9,6 +9,8 @@
  *   src/assets/images/mascot/base.png(または .webp / .jpg など)に対応する。
  */
 
+import { AUDIO_GAIN_DB, dbToGain } from "./audioLevels";
+
 const IMAGE_EXTS = ["webp", "png", "jpg", "jpeg", "gif", "svg"];
 const AUDIO_EXTS = ["mp3", "m4a", "ogg", "wav"];
 
@@ -181,6 +183,20 @@ export const seAssetName = (kind: string) => `se/${kind}`;
  * subBossPurify(小ボス撃破)は、当面、subBossClear のファイルを使う。
  */
 export const SE_FILE_FALLBACK: Record<string, string> = { subBossPurify: "subBossClear" };
+
+/** 効果音の種類のゲイン(倍率)。素材ごとの補正(audioLevels.ts)。専用のファイルがなければ、代わりの種類のファイルの補正。表にないものは 1(補正なし) */
+export const seGain = (kind: string): number => {
+  const fallback = SE_FILE_FALLBACK[kind];
+  const db = AUDIO_GAIN_DB[seAssetName(kind)] ?? (fallback ? AUDIO_GAIN_DB[seAssetName(fallback)] : undefined) ?? 0;
+  return dbToGain(db);
+};
+
+/** BGMのファイル(URL)のゲイン(倍率)。素材ごとの補正(audioLevels.ts)。表にないものは 1(補正なし) */
+export function bgmGainForUrl(url: string | null | undefined): number {
+  if (!url) return 1;
+  for (const [name, indexed] of audioIndex) if (indexed === url) return dbToGain(AUDIO_GAIN_DB[name] ?? 0);
+  return 1;
+}
 
 /** 効果音の種類の実ファイルのURL。専用のファイルがなければ、代わりの種類のファイル。どちらもなければ undefined */
 export const findSeAudio = (kind: string): string | undefined =>

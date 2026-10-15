@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Lock } from "lucide-react";
+import { playSe } from "@/lib/audio";
 import type { SortingQuestion } from "@/data/schema";
 import { judgeSortingItems, type Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
@@ -230,7 +231,11 @@ export function SortingEngine({ question, onAnswer }: Props) {
       suppressClickRef.current = false;
     }, 0);
     const categoryId = categoryAt(x, y);
-    if (categoryId) placeItem(press.itemId, categoryId);
+    if (categoryId) {
+      placeItem(press.itemId, categoryId);
+      // カードを置いたときの音。マウス・ペン・指(タッチ)のどれでも、同じように1回だけ鳴らす
+      playSe("tap");
+    }
     return true;
   }
 
@@ -277,8 +282,13 @@ export function SortingEngine({ question, onAnswer }: Props) {
     cancelPress();
   }
 
-  function handleItemClick(itemId: string) {
-    if (suppressClickRef.current) return; // ドラッグの終わりの click は、選択として扱わない
+  function handleItemClick(itemId: string, event: React.MouseEvent) {
+    if (suppressClickRef.current) {
+      // ドラッグの終わりの click は、選択として扱わない。アプリ全体のボタンのタップ音(App.tsx)も、鳴らさない
+      // (置いたときの音は、endPress で、入力の種類によらず1回だけ鳴らす。マウスだけ二重に鳴らない)
+      event.stopPropagation();
+      return;
+    }
     selectItem(itemId);
   }
 
@@ -351,7 +361,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onPointerCancel={handlePointerCancel}
         onLostPointerCapture={handleLostPointerCapture}
         onDragStart={(e) => e.preventDefault()} // ブラウザ標準のドラッグ(文字・画像を引きずる動き)が割り込まないように
-        onClick={() => handleItemClick(item.id)}
+        onClick={(e) => handleItemClick(item.id, e)}
       >
         {compact ? renderCompact(item) : <TargetText text={item.text} mark={marks.get(item.id)} />}
         {locked && <Lock aria-label="確定" className="sorting-lock" size={12} />}

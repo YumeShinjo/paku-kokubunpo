@@ -1,5 +1,5 @@
 import { useSettingsStore } from "@/app/store/settingsStore";
-import { findSeAudio } from "@/assets/registry";
+import { bgmGainForUrl, findSeAudio, seGain } from "@/assets/registry";
 
 /**
  * BGM/SE再生の実体(9章: モバイル音声自動再生制約への対応)。
@@ -184,7 +184,7 @@ export function playSe(kind: SeKind): void {
     const source = ctx.createBufferSource();
     const gain = ctx.createGain();
     source.buffer = buffer;
-    gain.gain.value = seVolume;
+    gain.gain.value = seVolume * seGain(kind); // 素材ごとの補正(ピークを -1 dBFS 以下に。assets/audioLevels.ts)
     source.connect(gain).connect(ctx.destination);
     source.start();
     return;
@@ -249,10 +249,16 @@ function attachBgmGain(): void {
   }
 }
 
-/** いまのBGMの音量(ミュート・スライダー・基準・ダッキングをかけ合わせたもの) */
+/**
+ * いま鳴らす曲のゲイン補正(倍率)。曲ごとの音量の差をそろえる(assets/audioLevels.ts。BGMは -16 LUFS 前後)。
+ * 曲を切り替えるとき(playBgm・導入曲からループ曲へ)に、値を決めるだけ。再生・停止の仕組みには、触れない。
+ */
+let bgmTrackGain = 1;
+
+/** いまのBGMの音量(ミュート・スライダー・基準・曲ごとの補正・ダッキングをかけ合わせたもの) */
 function bgmLevel(): number {
   const { muted, bgmVolume } = useSettingsStore.getState();
-  return muted ? 0 : bgmVolume * BGM_BASE_GAIN * duckFactor;
+  return muted ? 0 : bgmVolume * BGM_BASE_GAIN * bgmTrackGain * duckFactor;
 }
 
 /**
@@ -485,6 +491,7 @@ export function playBgm(src: string, introSrc?: string): void {
   attachBgmGain();
   resumeAudioContext();
   clearIntroHandler();
+  bgmTrackGain = bgmGainForUrl(introSrc ?? src); // この曲の補正(音量の差をそろえる)
   applyBgmLevel();
   bgmIntroSrc = introSrc ?? null;
   if (introSrc) {
@@ -494,6 +501,8 @@ export function playBgm(src: string, introSrc?: string): void {
       clearIntroHandler();
       audio.src = src;
       audio.loop = true;
+      bgmTrackGain = bgmGainForUrl(src);
+      applyBgmLevel();
       playBgmElement(audio);
     };
     audio.addEventListener("ended", introEndedHandler);
