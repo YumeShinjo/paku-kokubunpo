@@ -7,6 +7,7 @@ import {
   markAudioDebug,
   setAudioDebugEnabled,
   setAudioDebugFull,
+  setAudioExperiment,
   subscribeAudioDebug,
 } from "@/lib/audioDebug";
 
@@ -16,7 +17,7 @@ import {
  * 使い方は、src/lib/audioDebug.ts の先頭に書いてある。
  */
 export function AudioDebugPanel() {
-  const { enabled, full } = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState);
+  const { enabled, full, rebuild, buffer } = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState);
   const [message, setMessage] = useState("");
 
   async function handleCopy() {
@@ -62,9 +63,32 @@ export function AudioDebugPanel() {
         />
       </label>
       {enabled && (
-        <button type="button" className="audio-debug-mark" onClick={handleMark}>
-          いま高い
-        </button>
+        <>
+          {/* ピッチ異常の対策を試す、2つのスイッチ(ふだんはオフ。オンのあいだだけ、その処理が働く) */}
+          <label className="settings-switch-row">
+            <span>A 復帰で作り直す</span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="settings-switch"
+              checked={rebuild}
+              onChange={(e) => setAudioExperiment("rebuild", e.target.checked)}
+            />
+          </label>
+          <label className="settings-switch-row">
+            <span>B AudioBufferで再生</span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="settings-switch"
+              checked={buffer}
+              onChange={(e) => setAudioExperiment("buffer", e.target.checked)}
+            />
+          </label>
+          <button type="button" className="audio-debug-mark" onClick={handleMark}>
+            いま高い
+          </button>
+        </>
       )}
       <div className="settings-pair">
         <button type="button" disabled={!enabled} onClick={() => void handleCopy()}>

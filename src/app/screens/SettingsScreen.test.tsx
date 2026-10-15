@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { AUDIO_DEBUG_FULL_KEY, AUDIO_DEBUG_KEY, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
+import { AUDIO_DEBUG_FULL_KEY, AUDIO_DEBUG_KEY, AUDIO_EXPERIMENT_KEYS, isExperimentOn, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
 import { useSettingsStore } from "@/app/store/settingsStore";
 
 const reset = vi.hoisted(() => ({
@@ -219,6 +219,27 @@ describe("設定画面: 音のログ(調査用。ふだんは見えない)", () 
     expect(window.localStorage.getItem(AUDIO_DEBUG_FULL_KEY)).toBe("1");
     act(() => sw().click()); // ログを切る
     expect(full().disabled).toBe(true);
+  });
+
+  it("実験のスイッチ A・B は、ログが有効なときだけ出る。入れると保存される(ふだんはオフ)", () => {
+    vi.useFakeTimers();
+    renderScreen();
+    for (let i = 0; i < 5; i++) act(() => version().click());
+    const switches = () => [...panel()!.querySelectorAll<HTMLInputElement>('input[role="switch"]')];
+    const labels = () => switches().map((x) => (x.closest("label")!.textContent ?? "").trim());
+    expect(labels()).toEqual(["ログを とる", "ぜんぶ きろく(約2秒ごと)"]); // ログが切れているあいだは、A・B は出ない
+    act(() => switches()[0].click());
+    expect(labels()).toEqual(["ログを とる", "ぜんぶ きろく(約2秒ごと)", "A 復帰で作り直す", "B AudioBufferで再生"]);
+    expect(switches()[2].checked).toBe(false);
+    expect(switches()[3].checked).toBe(false);
+    act(() => switches()[2].click());
+    act(() => switches()[3].click());
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.rebuild)).toBe("1");
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.buffer)).toBe("1");
+    expect(isExperimentOn("rebuild")).toBe(true);
+    act(() => switches()[0].click()); // ログを切ると、A・B は出なくなり、働かない
+    expect(labels()).toHaveLength(2);
+    expect(isExperimentOn("buffer")).toBe(false);
   });
 
   it("コピーを押すと、記録のテキストがクリップボードに入り、件数が出る", async () => {
