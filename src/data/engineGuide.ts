@@ -11,7 +11,7 @@ import { rb } from "./ruby";
 /** 出題形式ごとの操作ガイドのキー(4形式) */
 export type QuestionGuideKey = "sorting" | "assembly" | "choice" | "tapInSentence";
 /** 操作ガイド全体のキー。出題形式の4つに加えて、ことだまの書(図鑑)の初回ガイドがある */
-export type GuideKey = QuestionGuideKey | "zukan";
+export type GuideKey = QuestionGuideKey | "zukan" | "paku";
 
 export interface EngineGuide {
   title: RubyText;
@@ -21,6 +21,9 @@ export interface EngineGuide {
 }
 
 const t = (text: string): RubyText => rb(autoRuby(text));
+
+/** 「パクっと」の説明(最初の正解のポップアップに、初回だけ1度出す。「あそびかた」にも同じ内容のカードがある) */
+export const PAKU_NOTE = "コトは、正[ただ]しいことばを パクっと 食[た]べて 元気[げんき]になるよ";
 
 export const engineGuides: Record<GuideKey, EngineGuide> = {
   sorting: {
@@ -54,6 +57,11 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
       t("下線[かせん]のついた太[ふと]い言葉[ことば]は、問題[もんだい]の基準[きじゅん](ヒント)。そこはタップしなくていいよ"),
       t("タップすると、すぐに答[こた]え合[あ]わせができるよ"),
     ],
+  },
+  // 「パクっと」の説明(最初の正解のポップアップ。EngineGuide では出さない。「そうさの せつめいを もういちど 見る」で、もう一度出る)
+  paku: {
+    title: t("パクっと って なに?"),
+    steps: [rb(PAKU_NOTE)],
   },
   // ことだまの書(図鑑)の、初回に出す使い方
   zukan: {

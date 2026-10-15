@@ -2,7 +2,7 @@
  * 「あそびかた」画面のカード。上から順に、はじめる → 問題を解く → 言の葉 → ぶんぽう図鑑 → 苦手問題の練習 → 言の葉の森。
  * 1枚につき、1〜2文。文は、"漢字[ふりがな]" 記法で書く。ストーリーのネタバレ(ラスボス・王様・ヴェルバルト・コレット・王女)は書かない。
  */
-export type HowToIcon = "start" | "quiz" | "leaf" | "book" | "star" | "forest";
+export type HowToIcon = "start" | "quiz" | "paku" | "leaf" | "book" | "star" | "forest";
 
 export interface HowToCard {
   id: string;
@@ -25,6 +25,12 @@ export const howToCards: HowToCard[] = [
     icon: "quiz",
     title: "問題[もんだい]をとく",
     body: "ならべる・えらぶ・わける・文[ぶん]の中[なか]をタップ、など、いろいろな形[かたち]の問題[もんだい]があるよ。こたえるとすぐに答[こた]え合[あ]わせができて、まちがえても、なんどでもやりなおせるよ。",
+  },
+  {
+    id: "paku",
+    icon: "paku",
+    title: "「パクっと」って なに?",
+    body: "コトは、正[ただ]しいことばを パクっと 食[た]べて 元気[げんき]になるよ。",
   },
   {
     id: "leaf",

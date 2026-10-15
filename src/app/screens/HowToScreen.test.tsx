@@ -31,10 +31,8 @@ describe("あそびかた画面", () => {
     container.remove();
   });
 
-  it("カードは4〜6枚で、順番は「はじめる→問題を解く→言の葉→ぶんぽう図鑑→苦手問題の練習→言の葉の森」", () => {
-    expect(howToCards.length).toBeGreaterThanOrEqual(4);
-    expect(howToCards.length).toBeLessThanOrEqual(6);
-    expect(howToCards.map((c) => c.id)).toEqual(["start", "quiz", "leaf", "book", "star", "forest"]);
+  it("カードの順番は「はじめる→問題を解く→パクっと→言の葉→ぶんぽう図鑑→苦手問題の練習→言の葉の森」", () => {
+    expect(howToCards.map((c) => c.id)).toEqual(["start", "quiz", "paku", "leaf", "book", "star", "forest"]);
   });
 
   it("1枚の説明は、1〜2文(「。」で数える)", () => {

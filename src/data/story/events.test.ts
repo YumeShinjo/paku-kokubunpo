@@ -131,9 +131,9 @@ describe("表記の統一", () => {
 });
 
 describe("STORY.md の台詞の反映(抜粋の照合)", () => {
-  it("序章導入は10行(記憶がないこと・ことだま使いの説明)で、最初の行はナレーション、最後は主人公がうなずくナレーション", () => {
+  it("序章導入は11行(記憶がないこと・ことだま使いの説明・コトの自己紹介)で、最初の行はナレーション、10行目は主人公がうなずくナレーション", () => {
     const event = getStoryEvent(introStoryId("prologue"))!;
-    expect(event.lines).toHaveLength(10);
+    expect(event.lines).toHaveLength(11);
     expect(event.lines[0].speaker).toBeUndefined();
     expect(plain(event)[0]).toBe("目を覚ますと、そこは見知らぬ草原だった。");
     const texts = plain(event);
@@ -178,12 +178,14 @@ describe("STORY.md の台詞の反映(抜粋の照合)", () => {
     expect(texts.findIndex((t) => t.includes("静かに問いかける"))).toBeGreaterThan(at + 3);
   });
 
-  it("序章のエリアクリアは、ナレーション→コトの台詞(ユーザー提供の文面)", () => {
+  it("序章のエリアクリアは、ナレーション→コトの台詞(ユーザー提供の文面)→言の葉の森が開いたことの補足", () => {
     const event = getStoryEvent(areaClearStoryId("prologue"))!;
     expect(plain(event)).toEqual([
       "はじめてのことだまの力を、主人公はしっかりと示した。",
       "やったね!この調子で、みんなを助けに行こっか!",
+      "言の葉の森が ひらいたよ! ことわざや故事成語を あつめられる、あたらしい場所なんだって",
     ]);
+    expect(event.lines[2].speaker).toBe("コト");
     expect(event.lines[0].speaker).toBeUndefined();
     expect(event.lines[1].speaker).toBe("コト");
   });
@@ -319,5 +321,32 @@ describe("立ち絵の左右寄せの上書き(StoryLine.position)", () => {
     for (const l of alone) expect(l.position).toBe("left");
     const areaClear = getStoryEvent(areaClearStoryId("ohzaNoMa"))!;
     for (const l of areaClear.lines.filter((x) => x.mascotForm === "true")) expect(l.position).toBe("left");
+  });
+});
+
+describe("用語の補足の台詞(2026-10-15)", () => {
+  const last = (id: string, n = 1) => plain(getStoryEvent(id)!).slice(-n);
+
+  it("序章の導入の末尾に、コトの自己紹介(パクっと)", () => {
+    const event = getStoryEvent(introStoryId("prologue"))!;
+    expect(plain(event)[10]).toBe("わたしはコト。正しいことばを パクっと 食べると、元気が出るんだ!");
+    expect(event.lines[10].speaker).toBe("コト");
+  });
+
+  it("鍛冶場の導入の2行目のあとに、「姿変え」の説明", () => {
+    const event = getStoryEvent(introStoryId("sugatakaeNoKajiba"))!;
+    expect(plain(event)).toHaveLength(3);
+    expect(plain(event)[2]).toBe("ことばも おなじだよ。形をかえて、いろんな はたらきをするの。それを『姿変え』って いうんだ!");
+    expect(event.lines[2].speaker).toBe("コト");
+  });
+
+  it("ことばの市場の導入の最後に、「ぶんぽう」の案内", () => {
+    expect(last(introStoryId("kotobaNoIchiba"))[0]).toBe("わからなくなったら、『ぶんぽう』を ひらいてね。ことばの ルールが のってるよ");
+  });
+
+  it("追加した台詞に、ネタバレ禁止語がない", () => {
+    const ids = [introStoryId("prologue"), areaClearStoryId("prologue"), introStoryId("kotobaNoIchiba"), introStoryId("sugatakaeNoKajiba")];
+    const added = ids.flatMap((id) => last(id, 2)).join("");
+    for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(added, word).not.toContain(word);
   });
 });

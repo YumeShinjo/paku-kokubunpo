@@ -546,6 +546,17 @@ html[data-text-size="large"] .story-textbox {
   overflow: hidden;
 }
 
+/* 最初の正解のポップアップに、初回だけ出す、「パクっと」の説明(ポップアップを閉じると、見た印が付く) */
+.feedback-paku {
+  margin: 0.2rem 0 0;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  background: #fff6e0;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  text-align: center;
+}
+
 .feedback-message {
   margin: 0 0 0.4rem;
   font-weight: bold;

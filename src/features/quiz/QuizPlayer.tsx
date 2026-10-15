@@ -7,7 +7,8 @@ import { Ruby } from "@/components/Ruby";
 import { playSe } from "@/lib/audio";
 import { useReviewStore } from "@/app/store/reviewStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
-import { guideKeyOf } from "@/data/engineGuide";
+import { guideKeyOf, PAKU_NOTE } from "@/data/engineGuide";
+import { rb } from "@/data/ruby";
 import { EngineGuide } from "./EngineGuide";
 import { BossPortrait } from "./BossPortrait";
 import { MascotFace } from "@/features/mascot/Mascot";
@@ -218,7 +219,13 @@ export function QuizPlayer({
     });
   }
 
+  /** 「パクっと」の説明は、初回の正解のポップアップを閉じたときに、見た印を付ける(1度だけ出す) */
+  function markPakuSeen() {
+    if (feedback?.correct && !seenGuides.includes("paku")) markGuideSeen("paku");
+  }
+
   function handleNext() {
+    markPakuSeen();
     const defeated = boss !== undefined && hp <= 0;
     const lifeOut = boss !== undefined && !defeated && lives <= 0;
     const isLast = index + 1 >= questions.length;
@@ -368,8 +375,10 @@ export function QuizPlayer({
             if (e.target !== e.currentTarget) return;
             // 出た直後の誤タップで閉じない(進まない)よう、少しだけ待つ
             if (Date.now() - feedbackShownAt.current <= 400) return;
-            if (twoStage) setPopupOpen(false);
-            else handleNext();
+            if (twoStage) {
+              markPakuSeen();
+              setPopupOpen(false);
+            } else handleNext();
           }}
         >
           <div
@@ -413,6 +422,11 @@ export function QuizPlayer({
             <p className="feedback-message">
               <Rb t={feedback.message} />
             </p>
+            {feedback.correct && !seenGuides.includes("paku") && (
+              <p className="feedback-paku" role="note">
+                <Ruby text={rb(PAKU_NOTE)} />
+              </p>
+            )}
             {feedback.review && <p className="feedback-overcome">
                 <Star className="inline-icon icon-gold" aria-hidden="true" size="1.05em" fill="currentColor" />
                 にがてを こくふくした!

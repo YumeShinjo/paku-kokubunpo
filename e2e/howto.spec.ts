@@ -38,7 +38,7 @@ async function expectProofVisible(page: Page, selector: string) {
 
 
 test.describe("あそびかた", () => {
-  test("ホームの「あそびかた」ボタンから開き、カード6枚が順に出て、もどるとホームへ戻る", async ({ page }) => {
+  test("ホームの「あそびかた」ボタンから開き、カード7枚が順に出て、もどるとホームへ戻る", async ({ page }) => {
     await startApp(page);
     const entry = page.getByRole("button", { name: "あそびかた" });
     const box = (await entry.boundingBox())!;
@@ -46,9 +46,9 @@ test.describe("あそびかた", () => {
     expect(box.height).toBeGreaterThanOrEqual(44);
     await entry.click();
     await expect(page.getByRole("heading", { name: "あそびかた" })).toBeVisible();
-    await expect(page.locator(".howto-card")).toHaveCount(6);
+    await expect(page.locator(".howto-card")).toHaveCount(7);
     const titles = await page.locator(".howto-title").allTextContents();
-    expect(titles.map((t) => t.replace(/\s+/g, ""))).toHaveLength(6);
+    expect(titles.map((t) => t.replace(/\s+/g, ""))).toHaveLength(7);
     await expectNoHorizontalOverflow(page);
     expect(await smallTapTargets(page)).toEqual([]);
     for (const spoiler of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) {

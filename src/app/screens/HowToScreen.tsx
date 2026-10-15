@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BookOpen, FileText, Footprints, Leaf, ListChecks, Star, TreePine, type LucideIcon } from "lucide-react";
+import { BookOpen, Cookie, FileText, Footprints, Leaf, ListChecks, Star, TreePine, type LucideIcon } from "lucide-react";
 import { howToCards, howToFooter, type HowToIcon } from "@/data/howTo";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { BackButton } from "@/components/BackButton";
@@ -8,6 +8,7 @@ import { Rb } from "@/components/Rb";
 const ICONS: Record<HowToIcon, LucideIcon> = {
   start: Footprints,
   quiz: ListChecks,
+  paku: Cookie,
   leaf: Leaf,
   book: BookOpen,
   star: Star,
