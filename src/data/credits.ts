@@ -78,7 +78,7 @@ const unique = (lines: string[]) => [...new Set(lines)];
 
 const KIND_ORDER = ["画像", "BGM", "SE", "フォント"];
 /** ゲーム内のクレジットには出さず、「くわしい出典」のページにだけ出す種別 */
-const DETAIL_ONLY_KINDS = ["ライブラリ", "生成AIモデル"];
+const DETAIL_ONLY_KINDS = ["ライブラリ", "生成AIモデル", "制作素材"];
 
 export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
   const kinds = [...KIND_ORDER, ...credits.map((c) => c.kind).filter((k) => !KIND_ORDER.includes(k) && !DETAIL_ONLY_KINDS.includes(k))];

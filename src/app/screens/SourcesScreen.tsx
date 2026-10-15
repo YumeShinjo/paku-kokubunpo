@@ -56,12 +56,14 @@ export function SourcesScreen({ next }: { next: Screen }) {
 
           <section className="sources-section" aria-labelledby="sources-required">
             <h3 id="sources-required">
-              <Rb t="表記[ひょうき]が必要[ひつよう]な素材[そざい]" />
+              <Rb t="表記[ひょうき]が必要[ひつよう]・希望[きぼう]されている素材[そざい]" />
             </h3>
             <ul className="sources-required-list">
               {requiredCredits.map((r) => (
                 <li key={r.id} className="sources-required-item">
-                  <span className="sources-required-kind">{r.kind}</span>
+                  <span className="sources-required-kind">
+                    {r.kind}({r.basis === "必須" ? "規約で必要" : "作者の希望"})
+                  </span>
                   <span className="sources-required-line">{r.line}</span>
                   <span className="sources-required-note">{r.note}</span>
                 </li>

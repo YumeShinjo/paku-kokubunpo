@@ -118,9 +118,9 @@ describe("くわしい出典ページ", () => {
     act(() => (container.querySelector(".sources-open") as HTMLButtonElement).click());
     expect(container.querySelector(".sources-open")).toBeNull();
     const headings = [...container.querySelectorAll(".sources-section h3")].map((h) => h.textContent);
-    expect(headings).toEqual(expect.arrayContaining(["BGM(音楽)", "こうかおん", "がぞう(と、画像をつくったAI)", "フォント", "アイコン・ライブラリ"]));
+    expect(headings).toEqual(expect.arrayContaining(["BGM(音楽)", "こうかおん", "がぞう(と、画像をつくったAI・ツール・素材)", "フォント", "アイコン・ライブラリ"]));
     const text = container.textContent ?? "";
-    const shown = assetCredits.filter((c) => ["BGM", "SE", "画像", "生成AIモデル", "フォント", "ライブラリ"].includes(c.kind));
+    const shown = assetCredits.filter((c) => ["BGM", "SE", "画像", "生成AIモデル", "制作素材", "フォント", "ライブラリ"].includes(c.kind));
     expect(shown.length).toBe(assetCredits.length);
     for (const c of shown) expect(text, c.name).toContain(c.name);
     expect(text).toContain("Hareno");
@@ -141,7 +141,9 @@ describe("くわしい出典ページ", () => {
     const first = container.querySelector(".sources-required-list")!.textContent ?? "";
     expect(first).toContain("効果音：ポケットサウンド – https://pocket-se.info/");
     expect(first).toContain("CC BY 4.0");
-    expect(requiredCredits.length).toBe(2);
+    expect(first).toContain("フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058");
+    expect(requiredCredits.map((r) => r.basis)).toEqual(["必須", "必須", "希望"]); // 規約で必要なもの2つと、作者の希望1つ
+    expect(first).toContain("作者の希望");
   });
 
   it("リンクは、タップできる大きさ(高さ44px以上)で、ボタンは3rem以上", () => {
