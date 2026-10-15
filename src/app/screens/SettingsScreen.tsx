@@ -2,6 +2,7 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { TEXT_SIZES, useSettingsStore, type TextSize } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
+import { copyAudioDebug, isAudioDebugEnabled } from "@/lib/audioDebug";
 import { useState } from "react";
 import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { Rb } from "@/components/Rb";
@@ -25,6 +26,10 @@ export function SettingsScreen() {
     await resetAllData(); // ランキング参加中なら先にクラスから抜ける。通信できなくても、端末のデータは消す
     reloadApp(); // 読み込み直して、メモリ上のデータも最初の状態にする
   }
+
+  // 音のログのコピー(URLに ?audiodebug=1 を付けて開いたときだけ出る、調査用の隠しボタン)
+  const audioDebug = isAudioDebugEnabled();
+  const [audioDebugCopied, setAudioDebugCopied] = useState<"idle" | "ok" | "ng">("idle");
 
   const resetGuides = useTutorialStore((s) => s.resetGuides);
   const guidesPending = useTutorialStore((s) => s.seenGuides.length === 0);
@@ -130,6 +135,16 @@ export function SettingsScreen() {
       </button>
       {/* お問い合わせフォーム(外部のブラウザで開く) */}
       <ContactLink />
+
+      {audioDebug && (
+        <button
+          type="button"
+          className="audio-debug-copy"
+          onClick={() => void copyAudioDebug().then((ok) => setAudioDebugCopied(ok ? "ok" : "ng"))}
+        >
+          {audioDebugCopied === "ok" ? "音のログを コピーしました" : audioDebugCopied === "ng" ? "コピーできませんでした" : "音のログを コピー"}
+        </button>
+      )}
 
       {confirmingReset ? (
         <div className="quit-confirm" role="alertdialog" aria-label="データの初期化の確認">

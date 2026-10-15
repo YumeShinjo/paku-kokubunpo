@@ -1,5 +1,6 @@
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { bgmGainForUrl, findSeAudio, seGain } from "@/assets/registry";
+import { logAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audioDebug";
 
 /**
  * BGM/SE再生の実体(9章: モバイル音声自動再生制約への対応)。
@@ -62,6 +63,7 @@ function getAudioContext(): AudioContext | null {
     } catch {
       audioContext = new Ctor();
     }
+    watchAudioContext(audioContext); // 調査用のログ(URLに ?audiodebug=1 があるときだけ動く。lib/audioDebug.ts)
     // 動き出した(running になった)ときに、鳴らそうとして待たされていたBGMを始める
     audioContext.addEventListener?.("statechange", () => {
       if (audioContext?.state === "running") {
@@ -221,6 +223,7 @@ function getBgmElement(): HTMLAudioElement {
   if (!bgmElement) {
     bgmElement = new Audio();
     bgmElement.loop = true;
+    watchAudioElement(bgmElement); // 調査用のログ(?audiodebug=1 のときだけ)
   }
   return bgmElement;
 }
@@ -403,6 +406,13 @@ function haltPlayback(): void {
 
 /** play() はブラウザによって Promise を返さない/同期的に例外を投げることがあるため、両対応で呼ぶ */
 function safePlay(audio: HTMLAudioElement): void {
+  // 再生を始める・再開するたびに、再生速度を 1 に戻しておく(曲を入れ替えると、再生速度は defaultPlaybackRate に戻る決まり)。
+  // このアプリは playbackRate を一度も変えていないので、ふだんは何もしない。1 以外になっていたら、ピッチが変わって聞こえるので、戻す。
+  if (audio.playbackRate !== 1 || audio.defaultPlaybackRate !== 1) {
+    logAudioDebug("playbackRate-reset", `rate=${audio.playbackRate} defRate=${audio.defaultPlaybackRate}`);
+    audio.defaultPlaybackRate = 1;
+    audio.playbackRate = 1;
+  }
   try {
     const playResult = audio.play() as unknown;
     if (playResult && typeof (playResult as Promise<void>).catch === "function") {
@@ -494,6 +504,7 @@ export function playBgm(src: string, introSrc?: string): void {
   bgmTrackGain = bgmGainForUrl(introSrc ?? src); // この曲の補正(音量の差をそろえる)
   applyBgmLevel();
   bgmIntroSrc = introSrc ?? null;
+  logAudioDebug("playBgm", (introSrc ?? src).split("/").pop());
   if (introSrc) {
     audio.src = introSrc;
     audio.loop = false;

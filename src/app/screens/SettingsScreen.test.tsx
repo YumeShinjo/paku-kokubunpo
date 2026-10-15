@@ -82,3 +82,30 @@ describe("設定画面: もじの おおきさ(アクセシビリティ)", () =>
     container.remove();
   });
 });
+
+describe("設定画面: 音のログのコピー(調査用の隠しボタン)", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  const renderScreen = () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => root.render(<SettingsScreen />));
+  };
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    window.history.replaceState({}, "", "/");
+  });
+
+  it("ふだんは、音のログのボタンは出ない", () => {
+    renderScreen();
+    expect(container.querySelector(".audio-debug-copy")).toBeNull();
+  });
+
+  it("URLに ?audiodebug=1 があるときだけ、音のログをコピーするボタンが出る", () => {
+    window.history.replaceState({}, "", "/?audiodebug=1");
+    renderScreen();
+    expect(container.querySelector(".audio-debug-copy")?.textContent).toContain("音のログ");
+  });
+});
