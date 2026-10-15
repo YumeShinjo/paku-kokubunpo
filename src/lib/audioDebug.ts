@@ -19,6 +19,8 @@
  * 「全記録」のときは、窓を、約10秒ごとに1件へ間引いて記録する(間引いた行には、それまでの a/w・c/w の最大値と最小値を添える)。
  * ただし、どれかの比が 1.0 から ±0.01 以上ずれた窓(先頭に「!」を付ける)と、止まる・動き出す・裏に回るなどの出来事は、間引かず、すべて記録する。
  * 窓が、止まる・動き出す(statechange)・裏に回る/戻る・一時停止・シークをまたいだときは、その行に「窓をまたいだ」と印を付ける。
+ * 実験B(AudioBuffer)で鳴らしているあいだは、無音ダミーの <audio> の時計に意味がないので、その窓・seeking・waiting・playing は記録しない。代わりに、
+ * ダミーの timeupdate を契機に、約10秒ぶん溜まったときに1件、「buffer-tick」(ctx/wall・曲の中の位置 bufferPos)を記録する(新しいタイマーは作らない)。
  * 記録は、メモリ上の2000件までのリング(古いものから消える)。全記録で約3時間ぶん。
  *
  * このファイルは、ピッチ異常の対策を試す2つのスイッチ(実験A・B)の状態も持つ(どちらも、ふだんはオフ。端末に保存する):
@@ -33,6 +35,8 @@ const MAX_ENTRIES = 2000;
  * 約10秒ごと1件 + リング2000件で、約3時間ぶんが残る。
  */
 const THIN_MS = 9000;
+/** 実験Bのとき、buffer-tick を出す間隔(ミリ秒)。ダミーの timeupdate が来たとき、これだけ溜まっていれば、1件出す */
+const TICK_MS = 10000;
 /** 比が 1.0 からこれ以上ずれた窓は、ふつうのモードでも記録する */
 const RATIO_TOLERANCE = 0.02;
 /** 比が 1.0 からこれ以上ずれた行には、先頭に「!」を付ける(あとで探しやすくする) */
@@ -73,6 +77,18 @@ export interface AudioDebugWindow {
   looped: boolean;
 }
 
+/** 実験B(AudioBuffer)のときの、約10秒ぶんの測定(ctx の時計だけ。ダミーの <audio> の時計は使わない) */
+export interface AudioDebugTick {
+  wallMs: number;
+  ctxMs: number | null;
+  /** ctx / wall */
+  cw: number | null;
+  /** 曲の中の位置(秒。loopStart・loopEnd を考えた、ループの中の位置) */
+  bufferPos: number | null;
+  /** この10秒のあいだに、止まる・動き出す・裏に回る/戻るがあった */
+  crossed: boolean;
+}
+
 /** 間引いた窓も含めた、a/w・c/w の最大値と最小値(c/w が測れなかったときは null) */
 export interface AudioDebugSpan {
   /** 何個の窓を、まとめたか */
@@ -108,6 +124,8 @@ export interface AudioDebugEntry {
   win?: AudioDebugWindow;
   /** どれかの比が 1.0 から ±0.01 以上ずれている(先頭に「!」) */
   bang?: boolean;
+  /** 実験B: buffer-tick の測定 */
+  tick?: AudioDebugTick;
   /** 全記録で、前に記録した行から、この行までの窓の、a/w・c/w の最大値と最小値(間引かれた窓のずれも分かる) */
   span?: AudioDebugSpan;
   /** 「いま高い」ボタン(MARK)を押した瞬間の値 */
@@ -119,6 +137,8 @@ export interface AudioDebugEntry {
     current: AudioDebugWindow | null;
     /** 直前に終わった窓の測定 */
     last: AudioDebugWindow | null;
+    /** 実験B: 直前の buffer-tick(ctx/wall・bufferPos) */
+    lastTick: AudioDebugTick | null;
     /** 実験A・Bのスイッチの状態・再生方式・最後の rebuild の時刻(ミリ秒。なければ null)・buffer 方式のときの曲の中の位置(秒) */
     experiment: { rebuild: boolean; buffer: boolean; method: string; lastRebuildAt: number | null; bufferPosition: number | null };
   };
@@ -247,7 +267,7 @@ function audioSessionType(): string {
 
 const num = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
 
-type Extra = Partial<Pick<AudioDebugEntry, "win" | "bang" | "span" | "mark" | "note">>;
+type Extra = Partial<Pick<AudioDebugEntry, "win" | "bang" | "span" | "tick" | "mark" | "note">>;
 
 function push(event: string, extra?: Extra): void {
   const ctx = ctxRef;
@@ -317,6 +337,45 @@ let sampler: Sampler = newSampler();
 /** 窓を、止まる・動き出す・裏に回る/戻る・一時停止・シークがまたいだ、という印を付ける */
 function markCrossed(): void {
   sampler.crossed = true;
+  tickState.crossed = true;
+}
+
+/** 実験B: buffer-tick の、測り始めと、直前の tick */
+const tickState: { baseWall: number | null; baseCtx: number | null; crossed: boolean; last: AudioDebugTick | null } = { baseWall: null, baseCtx: null, crossed: false, last: null };
+
+/** 実験Bで鳴らしているか(lib/audio.ts が登録した probe の、再生方式) */
+function isBufferMethod(): boolean {
+  return probe !== null && probe().method === "buffer";
+}
+
+/** 実験B: ダミーの timeupdate のたびに呼ぶ(足し算・引き算だけ)。10秒ぶん溜まったら、buffer-tick を1件出す */
+function onBufferTick(wall: number, ctxNow: number | null, bufferPos: number | null): void {
+  sampler.started = false; // <audio> 方式に戻ったとき、窓を測り直す
+  const t = tickState;
+  if (t.baseWall === null) {
+    t.baseWall = wall;
+    t.baseCtx = ctxNow;
+    t.crossed = false;
+    return;
+  }
+  const wallMs = wall - t.baseWall;
+  if (wallMs < TICK_MS) return;
+  const ctxMs = ctxNow !== null && t.baseCtx !== null ? (ctxNow - t.baseCtx) * 1000 : null;
+  const cw = ctxMs === null ? null : ratio3(ctxMs, wallMs);
+  const tick: AudioDebugTick = {
+    wallMs: Math.round(wallMs),
+    ctxMs: ctxMs === null ? null : Math.round(ctxMs),
+    cw,
+    bufferPos,
+    crossed: t.crossed,
+  };
+  t.last = tick;
+  const bang = cw !== null && Math.abs(cw - 1) > BANG_TOLERANCE;
+  // ふつうのモードは、ずれた tick(±0.02 以上)だけ。全記録は、すべての tick(約10秒ごと)
+  if (current().full || (cw !== null && Math.abs(cw - 1) > RATIO_TOLERANCE)) push("buffer-tick", { tick, bang });
+  t.baseWall = wall;
+  t.baseCtx = ctxNow;
+  t.crossed = false;
 }
 
 const ratio3 = (n: number, d: number): number | null => (d > 0 ? Math.round((n / d) * 1000) / 1000 : null);
@@ -379,6 +438,7 @@ function attachAudio(audio: HTMLAudioElement): void {
   const abort = (audioAbort = new AbortController());
   const { signal } = abort;
   sampler = newSampler();
+  tickState.baseWall = null;
   push("audio-created");
   audio.addEventListener("ratechange", () => push("ratechange"), { signal });
   // 止まる・動き出す・待たされる・シークは、窓をまたぐ(記録もする。どれも、ふだんは、まれにしか起きない)
@@ -386,6 +446,9 @@ function attachAudio(audio: HTMLAudioElement): void {
     audio.addEventListener(
       name,
       () => {
+        // 実験Bのあいだ、無音ダミーの <audio> は、ループのたびに seeking・waiting・playing を出す(約1秒ごと)。調査に意味がないので、記録しない
+        // (pause は、ミュートなどで止めたときの、まれなイベントなので、記録する)
+        if (name !== "pause" && isBufferMethod()) return;
         markCrossed();
         push(name);
       },
@@ -399,6 +462,13 @@ function attachAudio(audio: HTMLAudioElement): void {
       const wall = performance.now();
       const pos = audio.currentTime;
       const ctxNow = num(ctxRef?.currentTime) ?? null;
+      const info = probe ? probe() : null;
+      if (info && info.method === "buffer") {
+        // 実験B: <audio> は、無音ダミー。その時計は使わず、ctx の時計だけで、約10秒ごとに記録する
+        onBufferTick(wall, ctxNow, info.bufferPosition);
+        return;
+      }
+      tickState.baseWall = null; // <audio> 方式(ふつう)に戻ったら、tick は測り直す
       const s = sampler;
       if (!s.started) {
         Object.assign(s, { started: true, baseWall: wall, baseCtx: ctxNow, audioAcc: 0, lastWall: wall, lastPos: pos, crossed: false, looped: false });
@@ -550,6 +620,7 @@ export function markAudioDebug(): boolean {
       ctxTime: ctxNow,
       current: windows ? currentWin : null,
       last: windows ? sampler.last : null,
+      lastTick: tickState.last,
       experiment: { rebuild: now.rebuild, buffer: now.buffer, ...info },
     },
   });
@@ -568,6 +639,14 @@ export function clearAudioDebug(): void {
 }
 
 const fmt = (n: number | boolean | string | null | undefined): string => (n === null || n === undefined ? "-" : String(n));
+
+/** buffer-tick の測定を、1行ぶんの文字にする */
+function formatTick(t: AudioDebugTick): string {
+  return `tick=${t.wallMs}ms ctx=${fmt(t.ctxMs)}ms c/w=${fmt(t.cw)} bufferPos=${fmt(t.bufferPos)}${t.crossed ? " 窓をまたいだ" : ""}`;
+}
+
+/** MARK の行に、lastTick を出すか(実験Bのとき、または、tick が記録されているとき。<audio> 方式のふだんの行は、今までと同じ書式のまま) */
+const x0Method = (m: NonNullable<AudioDebugEntry["mark"]>): boolean => m.experiment.method === "buffer" || m.lastTick !== null;
 
 /** 窓の測定を、1行ぶんの文字にする */
 function formatWindow(w: AudioDebugWindow): string {
@@ -594,6 +673,7 @@ export function formatAudioDebug(list: readonly AudioDebugEntry[] = entries): st
     if (e.outputLatency !== undefined) parts.push(`outLat=${e.outputLatency}`);
     if (e.baseLatency !== undefined) parts.push(`baseLat=${e.baseLatency}`);
     if (e.win) parts.push(formatWindow(e.win));
+    if (e.tick) parts.push(formatTick(e.tick));
     if (e.span) {
       const sp = e.span;
       parts.push(`span=${sp.ms}ms n=${sp.windows} a/w=[${sp.awMin}..${sp.awMax}] c/w=[${fmt(sp.cwMin)}..${fmt(sp.cwMax)}]`);
@@ -603,6 +683,7 @@ export function formatAudioDebug(list: readonly AudioDebugEntry[] = entries): st
       parts.push(`wall=${m.wallNow} audioT=${fmt(m.audioTime)} ctxT=${fmt(m.ctxTime)}`);
       parts.push(m.current ? `now:[${formatWindow(m.current)}]` : "now:[-]");
       parts.push(m.last ? `last:[${formatWindow(m.last)}]` : "last:[-]");
+      if (x0Method(m)) parts.push(m.lastTick ? `lastTick:[${formatTick(m.lastTick)}]` : "lastTick:[-]");
       const x = m.experiment;
       parts.push(
         `A=${x.rebuild ? "on" : "off"} B=${x.buffer ? "on" : "off"} method=${x.method} lastRebuild=${x.lastRebuildAt === null ? "-" : time(x.lastRebuildAt)}${
@@ -634,6 +715,7 @@ export function resetAudioDebugForTest(enabled?: boolean): void {
   startedAt = 0;
   listeners.clear();
   sampler = newSampler();
+  Object.assign(tickState, { baseWall: null, baseCtx: null, crossed: false, last: null });
   try {
     window.localStorage.removeItem(AUDIO_DEBUG_KEY);
     window.localStorage.removeItem(AUDIO_DEBUG_FULL_KEY);

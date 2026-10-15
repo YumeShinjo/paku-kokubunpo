@@ -482,10 +482,122 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     markAudioDebug();
     const text = formatAudioDebug();
     expect(text).toMatch(/MARK .*A=on B=off method=buffer lastRebuild=12:34:56\.789 bufferPos=12\.345/);
-    expect(text).toMatch(/now:\[-\] last:\[-\] A=on/); // buffer 方式のときは、audio の時計の窓は出さない
+    expect(text).toMatch(/now:\[-\] last:\[-\] lastTick:\[-\] A=on/); // buffer 方式のときは、audio の時計の窓は出さない
     registerAudioProbe(null);
     clearAudioDebug();
     markAudioDebug();
     expect(formatAudioDebug()).toMatch(/A=on B=off method=audio lastRebuild=-$/m);
+  });
+  describe("実験B(AudioBuffer)のとき: ダミーの <audio> の記録をやめて、ctx の時計だけで、約10秒ごとに buffer-tick を記録する", () => {
+    /** 実験Bで鳴らしている状態にする(曲の中の位置は、ctx の時計に合わせて進む) */
+    const bufferSetup = (ctxSpeed = 1) => {
+      const { audio, ctx } = setup();
+      registerAudioProbe(() => ({ method: "buffer", lastRebuildAt: null, bufferPosition: Math.round(((ctx.currentTime % 85.94) * 1000)) / 1000 }));
+      // 無音ダミーの <audio>(1秒のループ): 250ms ごとに timeupdate、1秒ごとに seeking
+      const run = (steps: number, startWall = 1000) => {
+        for (let i = 0; i <= steps; i++) {
+          wall = startWall + i * 250;
+          ctx.currentTime = ((wall - 1000) / 1000) * ctxSpeed;
+          audio.currentTime = (i * 0.25) % 1;
+          if (i % 4 === 0) audio.dispatchEvent(new Event("seeking"));
+          if (i % 4 === 0) audio.dispatchEvent(new Event("waiting"));
+          if (i % 4 === 0) audio.dispatchEvent(new Event("playing"));
+          audio.dispatchEvent(new Event("timeupdate"));
+        }
+      };
+      return { audio, ctx, run };
+    };
+    const names = () => getAudioDebugEntries().map((e) => e.event);
+
+    it("ダミーの timeupdate・seeking・waiting・playing は、ログに出さない(pause は、ミュートなどで止めたときなので、記録する)(a/w の窓も、「!」の行も、作らない)", () => {
+      setAudioDebugFull(true);
+      const { run } = bufferSetup();
+      run(400); // 100秒
+      expect(names()).not.toContain("timeupdate");
+      expect(names()).not.toContain("seeking");
+      expect(names()).not.toContain("waiting");
+      expect(names()).not.toContain("playing");
+      expect(getAudioDebugEntries().some((e) => e.bang && e.event !== "buffer-tick")).toBe(false);
+    });
+
+    it("pause(ミュートなどで、ダミーを止めたとき)は、Bのあいだも、記録する", () => {
+      setAudioDebugFull(true);
+      const { audio } = bufferSetup();
+      audio.dispatchEvent(new Event("pause"));
+      expect(names()).toContain("pause");
+    });
+
+    it("約10秒ごとに1件、buffer-tick を記録する(全記録)。ctx/wall・ctx・曲の中の位置・ctx.state・session が入る。「!」は付かない", () => {
+      setAudioDebugFull(true);
+      const { run } = bufferSetup();
+      run(400); // 100秒 → 約10件
+      const ticks = getAudioDebugEntries().filter((e) => e.event === "buffer-tick");
+      expect(ticks).toHaveLength(10);
+      for (const t of ticks) {
+        expect(t.tick).toMatchObject({ wallMs: 10000, ctxMs: 10000, cw: 1, crossed: false });
+        expect(t.bang).toBe(false);
+        expect(t.ctxState).toBe("running");
+        expect(t.session).toBe("n/a");
+      }
+      expect(ticks[1].tick!.bufferPos).toBe(20); // ctx の時計 20 秒(曲は 85.94 秒でループ)
+      const text = formatAudioDebug();
+      expect(text).toMatch(/buffer-tick ctx=running .*session=n\/a tick=10000ms ctx=10000ms c\/w=1 bufferPos=10$/m);
+    });
+
+    it("ctx/wall が 1.0 から ±0.01 以上ずれた tick には「!」が付く(ふつうのモードでも、±0.02 以上ずれたものは記録する)", () => {
+      const { run } = bufferSetup(0.977);
+      run(44); // 11秒
+      const t = getAudioDebugEntries().find((e) => e.event === "buffer-tick")!;
+      expect(t.tick!.cw).toBe(0.977);
+      expect(t.bang).toBe(true);
+      expect(formatAudioDebug()).toMatch(/^! .*buffer-tick .*c\/w=0\.977/m);
+    });
+
+    it("ふつうのモード(全記録でない)では、そろっている tick は記録しない", () => {
+      const { run } = bufferSetup();
+      run(400);
+      expect(names()).not.toContain("buffer-tick");
+    });
+
+    it("止まる・動き出す(statechange)をまたいだ tick には「窓をまたいだ」が付く", () => {
+      setAudioDebugFull(true);
+      const { run, ctx } = bufferSetup();
+      run(20); // 5秒
+      ctx.dispatchEvent(new Event("statechange"));
+      run(40, 6000); // 6秒〜16秒
+      const first = getAudioDebugEntries().find((e) => e.event === "buffer-tick")!;
+      expect(first.tick!.crossed).toBe(true);
+    });
+
+    it("約6分(1440回の timeupdate)で、約36件。ダミー由来の行で、リングが埋まらない", () => {
+      setAudioDebugFull(true);
+      const { run } = bufferSetup();
+      run(1440); // 360秒
+      expect(getAudioDebugEntries().filter((e) => e.event === "buffer-tick")).toHaveLength(36);
+      expect(getAudioDebugEntries().length).toBeLessThan(60);
+    });
+
+    it("MARK の行に、直前の tick(ctx/wall・bufferPos)が入る", () => {
+      setAudioDebugFull(true);
+      const { run, ctx } = bufferSetup();
+      run(50); // 12.5秒 → tick が1件
+      ctx.currentTime = 14;
+      markAudioDebug();
+      const text = formatAudioDebug();
+      expect(text).toMatch(/MARK .*now:\[-\] last:\[-\] lastTick:\[tick=10000ms ctx=10000ms c\/w=1 bufferPos=10\] A=off B=off method=buffer/);
+    });
+
+    it("<audio> 方式に戻ったら(method=audio)、ふつうの窓の記録に戻る", () => {
+      setAudioDebugFull(true);
+      const { audio, ctx } = setup();
+      let method = "buffer";
+      registerAudioProbe(() => ({ method, lastRebuildAt: null, bufferPosition: null }));
+      run(audio, ctx, 12, (i) => (i * 0.25) % 1, 0.95); // buffer のあいだ: 窓は記録しない
+      expect(names()).not.toContain("timeupdate");
+      method = "audio"; // fallback で、<audio> 方式に戻った
+      run(audio, ctx, 12, (i) => 10 + i * 0.25, 0.95, 5000);
+      run(audio, ctx, 12, (i) => 13 + i * 0.25, 0.95, 8000);
+      expect(names()).toContain("timeupdate");
+    });
   });
 });
