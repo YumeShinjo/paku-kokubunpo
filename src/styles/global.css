@@ -5031,6 +5031,8 @@ html[data-text-size="large"] .kotonoha-result {
   --entry-gap: 0.625rem;
   --entry-depth: 3px;
   gap: var(--entry-gap);
+  /* 「もどる」と見出しを1行にした分、上を詰める */
+  padding-top: 0.7rem;
   /* 音量ボタンは右上にあるので、下は、ボタンのために空けなくてよい(画面の下の安全な余白だけ) */
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
@@ -5062,6 +5064,32 @@ html[data-text-size="large"] .kotonoha-result {
   border: 2px solid var(--color-primary-strong);
   color: var(--color-on-primary);
   box-shadow: 0 3px 0 rgba(95, 184, 150, 0.6);
+}
+
+/* 範囲のボタンは、選ぶだけ(ラウンドは、下の「すすむ」で始まる)。選んでいるものは、色と枠・チェックで分かる */
+.kotonoha-scope-list button.is-selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary-strong);
+  box-shadow: 0 3px 0 rgba(95, 184, 150, 0.9);
+}
+
+.kotonoha-scope-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.4rem;
+  margin-right: 0.4rem;
+}
+
+.kotonoha-scope-list button .kotonoha-scope-label {
+  flex: 1;
+}
+
+/* 「すすむ」: ラウンドを始めるボタン(高さ48px以上) */
+.kotonoha-start {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1.05rem;
 }
 
 .kotonoha-scope-count {
@@ -5919,4 +5947,83 @@ ruby rt {
 .kotonoha-tab-title-earned {
   margin: 0.2rem 0 0.5rem;
   text-align: center;
+}
+
+/*
+ * 言の葉の森の入口: 説明文と「すすむ」のボタンを足しても、縦にスクロールしない(画面の高さに合わせて、場面・ボタン・余白を詰める)。
+ * 上は、「もどる」と見出しを1行に。場面(ユライとコト)・範囲のボタン・間隔は、画面の高さ(dvh)に応じて、小さくなる。
+ */
+.kotonoha-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.kotonoha-entry-head .kotonoha-title {
+  margin: 0;
+}
+
+.screen-kotonoha-entry .kotonoha-scene:not(.has-bubble) {
+  --yurai-size: clamp(3.6rem, 10.5dvh, 8rem);
+}
+
+.screen-kotonoha-entry .kotonoha-about {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.screen-kotonoha-entry .kotonoha-scope-list button {
+  min-height: clamp(2.9rem, 6.6dvh, 4.15rem);
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+}
+
+.screen-kotonoha-entry .kotonoha-start {
+  min-height: 3rem;
+}
+
+/* 文字サイズ「大」の入口: 文字が大きい分、説明文・場面・ボタンの高さを、さらに詰める */
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-about {
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scene:not(.has-bubble) {
+  --yurai-size: clamp(3rem, 9dvh, 6rem);
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scope-list button {
+  min-height: clamp(2.6rem, 6dvh, 3.5rem);
+}
+
+/* 文字サイズ「大」の入口: 吹き出し・説明・ボタンを、画面の高さによらず、詰める(「すすむ」まで、スクロールなしで入るように) */
+html[data-text-size="large"] .screen-kotonoha-entry .scene-bubble {
+  padding: 0.15rem 0.6rem 0.2rem;
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .scene-bubble-text {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-about {
+  font-size: 0.66rem;
+  line-height: 1.4;
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scope-list button {
+  min-height: 2.5rem;
+}
+
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-start,
+html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-zukan-link {
+  min-height: 2.6rem;
+}
+
+/* 文字サイズ「大」で、画面がとても低いとき(約660px以下)だけ、入口のユライとコトの一言は出さない(「すすむ」まで、スクロールなしで入るように) */
+@media (max-height: 660px) {
+  html[data-text-size="large"] .screen-kotonoha-entry .scene-bubbles {
+    display: none;
+  }
 }

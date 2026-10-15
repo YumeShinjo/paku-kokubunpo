@@ -118,7 +118,6 @@ describe("ラウンド終了の音(roundEnd)", () => {
 
     it("10問目のあと、結果が出るときに、roundEnd を1回だけ鳴らし、BGMを下げる(途中の問題では鳴らさない)", () => {
       act(() => root.render(<KotonohaPlayScreen scope="all" />));
-      click(q(".scene-next"));
       for (let i = 0; i < 10; i++) {
         click(q(".kotonoha-choices button"));
         expect(audioSpies.playSe).not.toHaveBeenCalledWith("roundEnd");

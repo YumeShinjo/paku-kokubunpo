@@ -90,7 +90,6 @@ describe("言の葉の森: 入口の説明・80まいそろったときの称号
     const missing = all[0];
     useKotonohaStore.setState({ collectedIds: all.slice(1).map((x) => x.id), missedIds: [missing.id] });
     act(() => root.render(<KotonohaPlayScreen scope="all" />));
-    click(q(".scene-next"));
     for (let i = 0; i < 10; i++) {
       // いま出ている問題を、文から引いて、正しい選択肢を押す
       const sentence = withoutRt(q(".kotonoha-sentence")!);

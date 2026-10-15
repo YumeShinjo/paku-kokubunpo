@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useKotonohaStore } from "@/app/store/kotonohaStore";
 import { useMasteryStore } from "@/app/store/masteryStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -27,10 +27,9 @@ describe("言の葉の森(画面)", () => {
   const q = <T extends Element>(selector: string) => container.querySelector<T>(selector);
   const qa = <T extends Element>(selector: string) => [...container.querySelectorAll<T>(selector)];
   const click = (el: Element | null) => act(() => (el as HTMLElement).click());
-  /** 出題の画面を開いて、ラウンド開始の一言(intro)を、タップで飛ばす */
+  /** 出題の画面を開く(すぐ最初の問題から始まる) */
   const play = (scope: "all" | "kotowaza" | "koji", key?: string) => {
     render(<KotonohaPlayScreen scope={scope} key={key} />);
-    click(q(".scene-next"));
   };
 
   beforeEach(() => {
@@ -105,8 +104,29 @@ describe("言の葉の森(画面)", () => {
       expect(q(".scene-bubble.is-yurai .scene-bubble-name")!.textContent).toBe("ユライ");
       expect(q(".scene-bubble.is-koto .scene-bubble-name")!.textContent).toBe("コト");
       expect(q(".yurai")).not.toBeNull(); // ユライ(画像がなければ、仮表示の人影)
+      // 範囲のボタンは、選ぶだけ。押しても、ラウンドは始まらない(最初は「すべて」を選んでいる)
+      expect(buttons.map((b) => b.getAttribute("aria-checked"))).toEqual(["true", "false", "false"]);
       click(buttons[1]);
+      expect(useNavigationStore.getState().screen).toEqual({ name: "kotonoha" });
+      expect(buttons.map((b) => b.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
+      expect(buttons[1].classList.contains("is-selected")).toBe(true);
+      expect(q('[data-scene="round_start_kotowaza"]')).not.toBeNull(); // 選んだ範囲の、ユライの一言
+      // 「すすむ」で、選んだ範囲で始まる
+      click(q(".kotonoha-start"));
       expect(useNavigationStore.getState().screen).toEqual({ name: "kotonohaPlay", scope: "kotowaza" });
+    });
+
+    it("「すすむ」を押さずに、時間がたっても、出題には進まない(自動で進まない)。選び直せる", () => {
+      vi.useFakeTimers();
+      render(<KotonohaScreen />);
+      const buttons = qa<HTMLButtonElement>(".kotonoha-scope-list button");
+      click(buttons[2]);
+      act(() => vi.advanceTimersByTime(10_000));
+      expect(useNavigationStore.getState().screen).toEqual({ name: "kotonoha" });
+      click(buttons[0]);
+      click(q(".kotonoha-start"));
+      expect(useNavigationStore.getState().screen).toEqual({ name: "kotonohaPlay", scope: "all" });
+      vi.useRealTimers();
     });
 
     it("戻るボタンでホームへ。未解放で直接開いても、案内だけで、ゲームは始まらない", () => {

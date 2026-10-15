@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Leaf, Lock } from "lucide-react";
+import { BookOpen, Check, Leaf, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -13,7 +13,7 @@ import { KotonohaScene } from "@/features/kotonoha/KotonohaScene";
 import { SCOPE_LABELS, questionsInScope, type KotonohaScope } from "@/features/kotonoha/selectRound";
 import { KOTONOHA_LOCKED_MESSAGE, useKotonohaUnlocked } from "@/features/kotonoha/unlock";
 import { SceneBubble, SceneBubbles } from "@/features/kotonoha/SceneBubbles";
-import { pickEntryRepeat, YURAI_SCENES, type SceneId } from "@/data/yuraiScenes";
+import { pickEntryRepeat, roundStartSceneId, YURAI_SCENES, type SceneId } from "@/data/yuraiScenes";
 
 const SCOPES: KotonohaScope[] = ["all", "kotowaza", "koji"];
 
@@ -53,6 +53,9 @@ export function KotonohaScreen() {
   const markEntered = useKotonohaStore((s) => s.markEntered);
   const setLastEntryScene = useKotonohaStore((s) => s.setLastEntryScene);
   const markEntryFirstSeen = useKotonohaStore((s) => s.markEntryFirstSeen);
+  // 出題の範囲。ボタンは「選ぶ」だけ(選んだものが分かる)。「すすむ」を押したときに、ラウンドが始まる
+  const [scope, setScope] = useState<KotonohaScope>("all");
+  const [scopeTouched, setScopeTouched] = useState(false);
   // 初回(入口の4行を、まだ最後まで見ていない)か、2回目以降か。画面を開いた時点の状態で決める。
   // 入場(enteredForest。図鑑のユライの解放)は、画面を開いたときに記録するが、初回の台詞を見終えた記録(seenEntryFirst)は、
   // 最後まで進めた・スキップしたときだけ。途中で抜けたら、次も初回の4行から出る。
@@ -77,10 +80,13 @@ export function KotonohaScreen() {
   return (
     <div className="screen screen-kotonoha screen-kotonoha-entry">
       <KotonohaBackground />
-      <BackButton onClick={() => goTo({ name: "title" })} />
-      <h2 className="kotonoha-title">
-        <Rb t="言[こと]の葉[は]の森[もり]" />
-      </h2>
+      {/* 「もどる」と見出しを、1行に並べる(説明文と「すすむ」を足しても、縦にスクロールしないよう、高さを詰める) */}
+      <div className="kotonoha-entry-head">
+        <BackButton onClick={() => goTo({ name: "title" })} />
+        <h2 className="kotonoha-title">
+          <Rb t="言[こと]の葉[は]の森[もり]" />
+        </h2>
+      </div>
       {!unlocked ? (
         <p className="kotonoha-panel" role="status">
           <Lock aria-hidden="true" size={16} className="inline-icon" />
@@ -102,24 +108,42 @@ export function KotonohaScreen() {
             />
           ) : (
             <>
-              {entry !== "entry_first" && <SceneBubbles sceneId={entry} />}
-              <ul className="kotonoha-scope-list">
-                {SCOPES.map((scope) => {
-                  const total = questionsInScope(all, scope).length;
+              {entry !== "entry_first" && !scopeTouched && <SceneBubbles sceneId={entry} />}
+              {/* 範囲を選ぶと、入口の一言のかわりに、その範囲のユライの一言が出る(まだ、ラウンドは始まらない。画面が縦に伸びない) */}
+              {scopeTouched && <SceneBubbles sceneId={roundStartSceneId(scope)} />}
+              <ul className="kotonoha-scope-list" role="radiogroup" aria-label="出題の範囲">
+                {SCOPES.map((item) => {
+                  const total = questionsInScope(all, item).length;
+                  const selected = item === scope;
                   return (
-                    <li key={scope}>
-                      <button type="button" onClick={() => goTo({ name: "kotonohaPlay", scope })}>
+                    <li key={item}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={selected ? "is-selected" : ""}
+                        onClick={() => {
+                          setScope(item);
+                          setScopeTouched(true);
+                        }}
+                      >
+                        <span className="kotonoha-scope-mark" aria-hidden="true">
+                          {selected && <Check size={18} />}
+                        </span>
                         <span className="kotonoha-scope-label">
-                          <Rb t={SCOPE_LABELS[scope]} />
+                          <Rb t={SCOPE_LABELS[item]} />
                         </span>
                         <span className="kotonoha-scope-count">
-                          {countIn(scope)} / {total}
+                          {countIn(item)} / {total}
                         </span>
                       </button>
                     </li>
                   );
                 })}
               </ul>
+              <button type="button" className="kotonoha-start" onClick={() => goTo({ name: "kotonohaPlay", scope })}>
+                すすむ
+              </button>
               {/* 図鑑の「ことのは」へ。集めた葉の数も、ここに出す(葉が0枚でも、押せる)。初回の台詞が終わってから出る */}
               <button
                 type="button"

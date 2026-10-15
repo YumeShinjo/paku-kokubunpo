@@ -14,7 +14,6 @@ import { SceneBubbles } from "@/features/kotonoha/SceneBubbles";
 import {
   COMPLETE_SCENE,
   resultSceneId,
-  roundStartSceneId,
   type CompletionKind,
 } from "@/data/yuraiScenes";
 import { completionsToShow } from "@/app/store/kotonohaStore";
@@ -24,10 +23,7 @@ import { YuraiBubble } from "@/features/kotonoha/Yurai";
 import type { MascotExpression } from "@/assets/registry";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 
-type Phase = "intro" | "question" | "explain" | "result";
-
-/** ラウンド開始の一言(intro)を、自動で終えるまでの時間。タップすれば、すぐ飛ばせる */
-export const ROUND_START_AUTO_MS = 1500;
+type Phase = "question" | "explain" | "result";
 
 /**
  * 言の葉の森の出題(1ラウンド10問)。問題 → 答える → 解説(ユライの一言) → つぎへ … → 結果。
@@ -45,19 +41,14 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
   };
   const [round, setRound] = useState(makeRound);
   const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("intro");
+  // 入口で範囲を選んで「すすむ」を押したら、すぐ最初の問題を出す(ラウンド開始の一言は、入口で、範囲を選んだときに出す)
+  const [phase, setPhase] = useState<Phase>("question");
   const [pickedId, setPickedId] = useState<string | undefined>();
   const [results, setResults] = useState<boolean[]>([]);
   const [newLeaves, setNewLeaves] = useState(0);
   // 今回のラウンドで、はじめて埋まったカテゴリ(コンプリートの台詞)。結果画面のあと、1つずつ出す
   const [completions, setCompletions] = useState<CompletionKind[]>([]);
 
-  // 範囲を選んだ直後の一言は、少しだけ見せて、自動で出題へ(タップなら、すぐ)
-  useEffect(() => {
-    if (phase !== "intro") return;
-    const timer = setTimeout(() => setPhase("question"), ROUND_START_AUTO_MS);
-    return () => clearTimeout(timer);
-  }, [phase]);
 
   const question = round[index];
   const lastCorrect = results[results.length - 1];
@@ -135,31 +126,6 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
 
   const pickedChoice = question?.choices.find((c) => c.id === pickedId);
   const correctChoice = question?.choices.find((c) => c.id === question.correctChoiceId);
-
-  if (phase === "intro") {
-    // ラウンド開始の一言。どこをタップしても、すぐ進む(「もどる」だけは、もどる)
-    return (
-      <div
-        className="screen screen-kotonoha screen-kotonoha-play"
-        data-phase="intro"
-        onClick={(e) => {
-          if (!(e.target as HTMLElement).closest(".back-button")) setPhase("question");
-        }}
-      >
-        <KotonohaBackground />
-        <div className="kotonoha-topbar">
-          <BackButton onClick={() => goTo({ name: "kotonoha" })} />
-        </div>
-        <KotonohaScene />
-        <SceneBubbles sceneId={roundStartSceneId(scope)} />
-        <div className="scene-actions">
-          <button type="button" className="scene-next" onClick={() => setPhase("question")}>
-            すすむ
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="screen screen-kotonoha screen-kotonoha-play" data-phase={phase}>

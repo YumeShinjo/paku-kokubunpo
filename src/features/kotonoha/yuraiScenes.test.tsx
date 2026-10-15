@@ -2,7 +2,7 @@ import { act } from "react";
 import { readFileSync } from "node:fs";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { KotonohaPlayScreen, ROUND_START_AUTO_MS } from "@/app/screens/KotonohaPlayScreen";
+import { KotonohaPlayScreen } from "@/app/screens/KotonohaPlayScreen";
 import { KotonohaScreen } from "@/app/screens/KotonohaScreen";
 import { completionsToShow, hasEnteredForest, newlyCompleted, useKotonohaStore } from "@/app/store/kotonohaStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
@@ -323,38 +323,20 @@ describe("言の葉の森の画面: 場面台詞", () => {
   });
 
   describe("ラウンド開始", () => {
-    it("範囲を選ぶと、まず一言(ユライとコト)。タップですぐ出題へ。「もどる」は、その場で入口へもどる", () => {
+    it("出題の画面は、すぐ最初の問題から始まる(自動で進む・どこをタップしても進む「一言」の画面は、ない)。「もどる」は、入口へもどる", () => {
       render(<KotonohaPlayScreen scope="koji" />);
-      expect(q('[data-phase="intro"]')).not.toBeNull();
-      expect(q('[data-scene="round_start_koji"]')).not.toBeNull();
-      expect(qa(".scene-bubble").map((b) => b.getAttribute("data-speaker"))).toEqual(["yurai", "koto"]);
-      expect(q(".kotonoha-choices")).toBeNull();
-      click(q('[data-phase="intro"]')); // 画面のどこをタップしても、進む
+      expect(q('[data-phase="intro"]')).toBeNull();
       expect(q('[data-phase="question"]')).not.toBeNull();
       expect(q(".kotonoha-choices")).not.toBeNull();
-
       render(<KotonohaPlayScreen scope="all" key="back" />);
       click(q(".back-button"));
       expect(useNavigationStore.getState().screen).toEqual({ name: "kotonoha" });
-      expect(q('[data-phase="question"]')).toBeNull();
     });
 
-    it("範囲ごとの場面(すべて・ことわざ・故事成語)", () => {
+    it("範囲ごとの場面(すべて・ことわざ・故事成語)の一言は、入口で、範囲を選んだときに出る", () => {
       for (const scope of ["all", "kotowaza", "koji"] as const) {
-        render(<KotonohaPlayScreen scope={scope} key={scope} />);
-        expect(q(`[data-scene="${roundStartSceneId(scope)}"]`), scope).not.toBeNull();
+        expect(YURAI_SCENES[roundStartSceneId(scope)].length, scope).toBeGreaterThan(0);
       }
-    });
-
-    it("長く待たせない: タップしなくても、1.5秒で出題へ", () => {
-      vi.useFakeTimers();
-      expect(ROUND_START_AUTO_MS).toBeLessThanOrEqual(1500);
-      render(<KotonohaPlayScreen scope="all" />);
-      expect(q('[data-phase="intro"]')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(ROUND_START_AUTO_MS - 100));
-      expect(q('[data-phase="intro"]')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(200));
-      expect(q('[data-phase="question"]')).not.toBeNull();
     });
   });
 
@@ -362,7 +344,6 @@ describe("言の葉の森の画面: 場面台詞", () => {
     let counter = 0;
     const start = (scope: "all" | "kotowaza" | "koji" = "all") => {
       render(<KotonohaPlayScreen scope={scope} key={`s${counter++}`} />);
-      click(q(".scene-next"));
     };
     /** ふりがな(rt)を除いた、画面の文字 */
     const textOf = (el: Element) => {

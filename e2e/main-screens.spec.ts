@@ -198,11 +198,13 @@ test.describe("言の葉の森(ことわざ・故事成語のミニゲーム)", 
     await expectNoHorizontalOverflow(page);
     expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
 
+    // 範囲のボタンは、選ぶだけ(選んだものが分かる)。ラウンド開始の一言は、入口に出る。「すすむ」で始まる
     await page.locator(".kotonoha-scope-list button").first().click();
-    // ラウンド開始の一言。タップですぐ出題へ(放っておいても、1.5秒ほどで進む)
+    await expect(page.locator(".kotonoha-scope-list button").first()).toHaveAttribute("aria-checked", "true");
     await expect(page.locator('[data-scene="round_start_all"] .scene-bubble')).toHaveCount(2);
     expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(0);
-    await page.locator(".scene-next").click();
+    expect((await page.locator(".kotonoha-start").boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await page.locator(".kotonoha-start").click();
     await expect(page.locator(".kotonoha-progress")).toContainText("1 / 10");
     await expect(page.locator(".kotonoha-blank")).toHaveCount(1);
     await expectNoHorizontalOverflow(page);
