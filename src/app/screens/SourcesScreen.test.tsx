@@ -10,6 +10,8 @@ import { CreditsScreen } from "./CreditsScreen";
 import { SourcesScreen } from "./SourcesScreen";
 import { TitleScreen } from "./TitleScreen";
 import { TapToStart } from "@/components/TapToStart";
+import { HowToScreen } from "./HowToScreen";
+import { SettingsScreen } from "./SettingsScreen";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -157,5 +159,35 @@ describe("くわしい出典ページ", () => {
 
   it("区分の並び: BGM → こうかおん → がぞう → フォント → ライブラリ", () => {
     expect(buildSourceGroups(assetCredits).map((g) => g.id)).toEqual(["bgm", "se", "image", "font", "library"]);
+  });
+
+  it("設定の「くわしい出典」から開ける。もどると設定に戻る", () => {
+    useNavigationStore.setState({ screen: { name: "settings" } });
+    act(() => root.render(<SettingsScreen />));
+    const button = [...container.querySelectorAll("button")].find((b) => b.textContent?.trim() === "くわしい出典")!;
+    expect(button).toBeDefined();
+    act(() => button.click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "sources", next: { name: "settings" } });
+  });
+
+  it("あそびかたの最後のカードに、出典・クレジットの案内の1文と、くわしい出典へのボタンがある。もどるとあそびかたに戻る", () => {
+    useNavigationStore.setState({ screen: { name: "howto" } });
+    act(() => root.render(<HowToScreen />));
+    const cards = [...container.querySelectorAll(".howto-card")];
+    const last = cards[cards.length - 1];
+    const clone = last.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("rt").forEach((n) => n.remove());
+    expect(clone.querySelector(".howto-action-note")!.textContent).toBe("出典・クレジットは、設定から見られます。");
+    // 最後のカードだけにある
+    expect(container.querySelectorAll(".howto-action")).toHaveLength(1);
+    act(() => (last.querySelector(".howto-action-button") as HTMLButtonElement).click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "sources", next: { name: "howto" } });
+  });
+
+  it("ホーム画面・最初の画面には、くわしい出典へのボタンを足さない", () => {
+    act(() => root.render(<TitleScreen />));
+    expect([...container.querySelectorAll("button")].some((b) => b.textContent?.includes("くわしい出典"))).toBe(false);
+    act(() => root.render(<TapToStart />));
+    expect([...container.querySelectorAll("button")].some((b) => b.textContent?.includes("くわしい出典"))).toBe(false);
   });
 });

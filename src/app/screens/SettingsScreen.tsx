@@ -124,6 +124,10 @@ export function SettingsScreen() {
       <button type="button" onClick={() => goTo({ name: "privacy", next: { name: "settings" } })}>
         プライバシーポリシー
       </button>
+      {/* 使った素材・ライブラリの、くわしい出典(クレジット画面からも開ける。ネタバレを含むので、ページの中で「ひらく」を押すまで一覧は出ない) */}
+      <button type="button" onClick={() => goTo({ name: "sources", next: { name: "settings" } })}>
+        くわしい出典
+      </button>
       {/* お問い合わせフォーム(外部のブラウザで開く) */}
       <ContactLink />
 

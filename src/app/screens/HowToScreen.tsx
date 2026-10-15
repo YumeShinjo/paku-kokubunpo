@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BookOpen, Footprints, Leaf, ListChecks, Star, TreePine, type LucideIcon } from "lucide-react";
+import { BookOpen, FileText, Footprints, Leaf, ListChecks, Star, TreePine, type LucideIcon } from "lucide-react";
 import { howToCards, howToFooter, type HowToIcon } from "@/data/howTo";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { BackButton } from "@/components/BackButton";
@@ -44,6 +44,17 @@ export function HowToScreen() {
                 <p className="howto-body">
                   <Rb t={card.body} />
                 </p>
+                {card.action && (
+                  <div className="howto-action">
+                    <p className="howto-action-note">
+                      <Rb t={card.action.note} />
+                    </p>
+                    <button type="button" className="howto-action-button" onClick={() => goTo({ name: "sources", next: { name: "howto" } })}>
+                      <FileText aria-hidden="true" size={20} />
+                      <span>{card.action.label}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </li>
           );

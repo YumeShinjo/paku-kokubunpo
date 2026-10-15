@@ -52,7 +52,17 @@ export interface CreditGroup {
   /** 種別(画像 / BGM / SE / フォント / …) */
   kind: string;
   lines: string[];
+  /** 行 → リンク先のURL。URLを載せる行(規約が、サイトへの表記を必須としているもの)だけ */
+  links?: Record<string, string>;
 }
+
+/**
+ * 規約が、決まった書式での表記(サイトのURLつき)を必須としている出典。ゲーム内のクレジットでは、この行に置きかえて出す。
+ * キーは、素材管理表の「出典」(作者・サイト名)。
+ */
+export const REQUIRED_CREDIT_LINES: Record<string, { line: string; url: string }> = {
+  ポケットサウンド: { line: "効果音:ポケットサウンド – https://pocket-se.info/", url: "https://pocket-se.info/" },
+};
 
 /** 出典「サイト名 / 作曲者名」を、「作曲者名 - サイト名」に直す。「 / 」がなければ、そのまま */
 export function formatMusicCredit(source: string): string {
@@ -77,8 +87,18 @@ export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
     const rows = credits.filter((c) => c.kind === kind);
     if (rows.length === 0) continue;
     let lines: string[];
+    const links: Record<string, string> = {};
     if (kind === "BGM" || kind === "SE") {
-      lines = unique(rows.map((c) => formatMusicCredit(c.source)));
+      lines = unique(
+        rows.map((c) => {
+          const required = REQUIRED_CREDIT_LINES[c.source.trim()];
+          if (required) {
+            links[required.line] = required.url;
+            return required.line;
+          }
+          return formatMusicCredit(c.source);
+        }),
+      );
     } else if (kind === "画像") {
       const ai = unique(rows.filter(isGeneratedByAi).map((c) => c.license));
       const others = rows.filter((c) => !isGeneratedByAi(c)).map((c) => `${withoutNote(c.name)}: ${withoutNote(c.source)}`);
@@ -86,7 +106,7 @@ export function buildCreditGroups(credits: AssetCredit[]): CreditGroup[] {
     } else {
       lines = unique(rows.map((c) => `${c.name}(${withoutNote(c.license)})`));
     }
-    groups.push({ kind, lines });
+    groups.push(Object.keys(links).length > 0 ? { kind, lines, links } : { kind, lines });
   }
   return groups;
 }
@@ -102,4 +122,7 @@ export const softwareCredits: { name: string; license: string }[] = [
   { name: "Vite / vite-plugin-pwa", license: "MIT License" },
   { name: "Zustand", license: "MIT License" },
   { name: "Firebase JS SDK", license: "Apache License 2.0" },
+  { name: "lucide-react", license: "ISC License" },
+  { name: "qrcode-generator", license: "MIT License" },
+  { name: "jsQR", license: "Apache License 2.0" },
 ];

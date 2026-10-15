@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { assetCredits, buildCreditGroups, formatMusicCredit, parseAssetCredits, withoutNote } from "./credits";
+import { assetCredits, buildCreditGroups, formatMusicCredit, parseAssetCredits, softwareCredits, withoutNote } from "./credits";
 
 const SAMPLE = `# 素材管理表
 
@@ -143,6 +143,31 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     for (const c of assetCredits) {
       expect(report, c.name).toContain(c.name);
       for (const url of c.url.match(/https?:\/\/[^\s()（）、。「」]+/g) ?? []) expect(report, `${c.name}: ${url}`).toContain(url);
+    }
+  });
+
+  it("ポケットサウンドは、規約が必須とする書式「効果音:ポケットサウンド – https://pocket-se.info/」の1行になり、リンクになる", () => {
+    const se = buildCreditGroups(assetCredits).find((g) => g.kind === "SE")!;
+    expect(se.lines).toContain("効果音:ポケットサウンド – https://pocket-se.info/");
+    expect(se.lines).not.toContain("ポケットサウンド"); // 同じ出典の行が、二重にならない
+    expect(se.links).toEqual({ "効果音:ポケットサウンド – https://pocket-se.info/": "https://pocket-se.info/" });
+    // ほかの出典の行は、これまでどおり(曲名・効果音名は出さない)
+    expect(se.lines).toContain("Springin' Sound Stock");
+    expect(buildCreditGroups(assetCredits).find((g) => g.kind === "BGM")!.links).toBeUndefined();
+  });
+
+  it("つかったソフトウェアに、lucide-react・qrcode-generator・jsQR がある(ライセンス名つき)。くわしい出典にも、同じ3つがある", () => {
+    const names = softwareCredits.map((s) => s.name);
+    expect(names).toEqual(expect.arrayContaining(["lucide-react", "qrcode-generator", "jsQR"]));
+    expect(softwareCredits.find((s) => s.name === "lucide-react")!.license).toBe("ISC License");
+    expect(softwareCredits.find((s) => s.name === "qrcode-generator")!.license).toBe("MIT License");
+    expect(softwareCredits.find((s) => s.name === "jsQR")!.license).toBe("Apache License 2.0");
+    const libraries = assetCredits.filter((c) => c.kind === "ライブラリ");
+    for (const word of ["lucide-react", "qrcode-generator", "jsQR"]) {
+      const row = libraries.find((c) => c.name.includes(word))!;
+      expect(row, word).toBeDefined();
+      expect(row.url, word).toMatch(/https?:\/\//);
+      expect(row.license, word).not.toBe("");
     }
   });
 });

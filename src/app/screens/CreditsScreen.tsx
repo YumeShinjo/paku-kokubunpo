@@ -83,7 +83,14 @@ export function CreditsScreen({
               <ul className="credits-list">
                 {group.lines.map((line) => (
                   <li key={line}>
-                    <p className="credits-asset-detail">{line}</p>
+                    {group.links?.[line] ? (
+                      // 規約で、サイトのURLつきの表記が必須の行。外のサイトへのリンクにする(高さ44px以上)
+                      <a className="credits-asset-link" href={group.links[line]} target="_blank" rel="noopener noreferrer">
+                        {line}
+                      </a>
+                    ) : (
+                      <p className="credits-asset-detail">{line}</p>
+                    )}
                   </li>
                 ))}
               </ul>

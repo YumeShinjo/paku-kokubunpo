@@ -9,6 +9,8 @@ export interface HowToCard {
   icon: HowToIcon;
   title: string;
   body: string;
+  /** カードの最後に添える、ほかの画面への案内(1文)と、そこへのボタン。本文の文数には数えない */
+  action?: { note: string; label: string };
 }
 
 export const howToCards: HowToCard[] = [
@@ -47,6 +49,8 @@ export const howToCards: HowToCard[] = [
     icon: "forest",
     title: "言[こと]の葉[は]の森[もり]",
     body: "「ことばの分かれ道」をクリアすると、言[こと]の葉[は]の森[もり]であそべるよ。ユライが案内[あんない]してくれて、ことわざ・故事成語[こじせいご]の問題[もんだい]を、1ラウンド10問[もん]あそべるよ。",
+    // いちばん最後のカードに、出典・クレジットへの案内(設定からも見られる)
+    action: { note: "出典[しゅってん]・クレジットは、設定[せってい]から見[み]られます。", label: "くわしい出典" },
   },
 ];
 

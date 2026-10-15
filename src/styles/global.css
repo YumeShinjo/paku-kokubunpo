@@ -923,6 +923,17 @@ html[data-text-size="large"] .story-textbox {
   font-size: 0.8rem;
 }
 
+/* 規約で表記が必須の行(外のサイトへのリンク)。押せる高さ(44px以上) */
+.credits-asset-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
 .credits-placeholder {
   color: var(--color-text-muted);
   border: 1px dashed var(--color-text-muted);
@@ -983,6 +994,27 @@ html[data-text-size="large"] .story-textbox {
   margin: 0;
   font-size: 0.9rem;
   overflow-wrap: anywhere;
+}
+
+/* 最後のカードの、出典・クレジットへの案内とボタン(高さ44px以上) */
+.howto-action {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-gold-line);
+}
+
+.howto-action-note {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.howto-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  width: 100%;
 }
 
 .howto-footer {
