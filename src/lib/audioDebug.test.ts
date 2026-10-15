@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  AUDIO_DEBUG_KEY,
+  clearAudioDebug,
   formatAudioDebug,
   getAudioDebugEntries,
+  getAudioDebugState,
   isAudioDebugEnabled,
   logAudioDebug,
   resetAudioDebugForTest,
+  revealAudioDebug,
+  setAudioDebugEnabled,
+  subscribeAudioDebug,
   watchAudioContext,
   watchAudioElement,
 } from "./audioDebug";
@@ -33,12 +39,57 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     vi.restoreAllMocks();
   });
 
-  it("URLに audiodebug=1 があるときだけ、有効になる", () => {
+  it("ふだん(URLにも、保存にも、指定がない)は、無効", () => {
+    resetAudioDebugForTest();
     expect(isAudioDebugEnabled()).toBe(false);
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: false });
+  });
+
+  it("URLに audiodebug=1 を付けて開くと、有効になり、端末に保存される(PWAで、URLなしで起動しても、有効のまま)", () => {
+    resetAudioDebugForTest();
     window.history.replaceState({}, "", "/?audiodebug=1");
     expect(isAudioDebugEnabled()).toBe(true);
+    expect(getAudioDebugState()).toEqual({ enabled: true, revealed: true });
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBe("1");
+    // URLなしで開き直す(ホーム画面から起動)。保存された設定で、有効になる
+    const saved = window.localStorage.getItem(AUDIO_DEBUG_KEY)!;
+    resetAudioDebugForTest();
+    window.localStorage.setItem(AUDIO_DEBUG_KEY, saved);
+    window.history.replaceState({}, "", "/");
+    expect(isAudioDebugEnabled()).toBe(true);
+  });
+
+  it("audiodebug=0 で開くと、無効に戻り、保存も消える", () => {
+    resetAudioDebugForTest();
+    window.localStorage.setItem(AUDIO_DEBUG_KEY, "1");
     window.history.replaceState({}, "", "/?audiodebug=0");
     expect(isAudioDebugEnabled()).toBe(false);
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBeNull();
+  });
+
+  it("保存(localStorage)が使えなくても、例外にならず、その回のあいだは有効にできる", () => {
+    resetAudioDebugForTest();
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    const getItem = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("SecurityError");
+    });
+    window.history.replaceState({}, "", "/?audiodebug=1");
+    expect(() => isAudioDebugEnabled()).not.toThrow();
+    expect(isAudioDebugEnabled()).toBe(true);
+    expect(() => setAudioDebugEnabled(false)).not.toThrow();
+    expect(isAudioDebugEnabled()).toBe(false);
+    setItem.mockRestore();
+    getItem.mockRestore();
+  });
+
+  it("項目の表示(revealed)だけを出しても、有効にはならない(保存もしない)", () => {
+    resetAudioDebugForTest();
+    expect(getAudioDebugState().revealed).toBe(false);
+    revealAudioDebug();
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: true });
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBeNull();
   });
 
   it("有効でないときは、何も記録せず、イベントの待ち受けもしない", () => {
@@ -50,6 +101,52 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     logAudioDebug("playBgm", "title.mp3");
     expect(add).not.toHaveBeenCalled();
     expect(getAudioDebugEntries()).toHaveLength(0);
+  });
+
+  it("あとから有効にすると、すでにある <audio> と AudioContext に、待ち受けを付ける。無効に戻すと、外して、記録も空にする", () => {
+    resetAudioDebugForTest(false);
+    const audio = fakeAudio();
+    const ctx = fakeContext();
+    watchAudioElement(audio as unknown as HTMLAudioElement);
+    watchAudioContext(ctx as unknown as AudioContext);
+    audio.dispatchEvent(new Event("ratechange"));
+    expect(getAudioDebugEntries()).toHaveLength(0);
+
+    setAudioDebugEnabled(true);
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBe("1");
+    audio.dispatchEvent(new Event("ratechange"));
+    ctx.dispatchEvent(new Event("statechange"));
+    const names = getAudioDebugEntries().map((e) => e.event);
+    expect(names).toEqual(expect.arrayContaining(["start", "audio-created", "context-created", "ratechange", "statechange"]));
+
+    setAudioDebugEnabled(false);
+    expect(getAudioDebugEntries()).toHaveLength(0); // 記録も空
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBeNull();
+    audio.dispatchEvent(new Event("ratechange"));
+    ctx.dispatchEvent(new Event("statechange"));
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(getAudioDebugEntries()).toHaveLength(0); // もう記録しない
+    expect(getAudioDebugState().enabled).toBe(false);
+  });
+
+  it("クリアすると、記録だけが空になり、有効のまま", () => {
+    logAudioDebug("a");
+    logAudioDebug("b");
+    expect(getAudioDebugEntries()).toHaveLength(2);
+    clearAudioDebug();
+    expect(getAudioDebugEntries()).toHaveLength(0);
+    expect(isAudioDebugEnabled()).toBe(true);
+  });
+
+  it("状態が変わると、購読している画面に知らせる", () => {
+    const listener = vi.fn();
+    const off = subscribeAudioDebug(listener);
+    setAudioDebugEnabled(false);
+    setAudioDebugEnabled(true);
+    expect(listener).toHaveBeenCalledTimes(2);
+    off();
+    setAudioDebugEnabled(false);
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 
   it("ratechange と statechange と visibilitychange を、状態つきで記録する", () => {

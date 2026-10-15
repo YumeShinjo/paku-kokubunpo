@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
+import { AUDIO_DEBUG_KEY, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
 import { useSettingsStore } from "@/app/store/settingsStore";
 
 const reset = vi.hoisted(() => ({
@@ -84,7 +85,7 @@ describe("設定画面: もじの おおきさ(アクセシビリティ)", () =>
   });
 });
 
-describe("設定画面: 音のログのコピー(調査用の隠しボタン)", () => {
+describe("設定画面: 音のログ(調査用。ふだんは見えない)", () => {
   let container: HTMLDivElement;
   let root: Root;
   const renderScreen = () => {
@@ -93,21 +94,114 @@ describe("設定画面: 音のログのコピー(調査用の隠しボタン)", 
     root = createRoot(container);
     act(() => root.render(<SettingsScreen />));
   };
+  const panel = () => container.querySelector(".audio-debug-panel");
+  const version = () => container.querySelector<HTMLElement>(".settings-version")!;
+  const sw = () => panel()!.querySelector<HTMLInputElement>('input[role="switch"]')!;
+
+  beforeEach(() => {
+    window.history.replaceState({}, "", "/");
+    resetAudioDebugForTest();
+  });
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
     window.history.replaceState({}, "", "/");
+    resetAudioDebugForTest();
+    vi.useRealTimers();
   });
 
-  it("ふだんは、音のログのボタンは出ない", () => {
+  it("ふだんは、音のログの項目は出ない", () => {
     renderScreen();
-    expect(container.querySelector(".audio-debug-copy")).toBeNull();
+    expect(panel()).toBeNull();
+    expect(container.textContent).not.toContain("音のログ");
   });
 
-  it("URLに ?audiodebug=1 があるときだけ、音のログをコピーするボタンが出る", () => {
+  it("URLに ?audiodebug=1 を付けて開いたあと、音のログの項目(スイッチ・コピー・クリア)が出る", () => {
     window.history.replaceState({}, "", "/?audiodebug=1");
     renderScreen();
-    expect(container.querySelector(".audio-debug-copy")?.textContent).toContain("音のログ");
+    expect(panel()).not.toBeNull();
+    expect(sw()).not.toBeNull();
+    expect([...panel()!.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["コピー", "クリア"]);
+  });
+
+  it("URLなしで開き直しても(保存されているので)出る。スイッチを切っても、その場では消えず、読み込み直すと、また見えなくなる", () => {
+    window.history.replaceState({}, "", "/?audiodebug=1");
+    renderScreen();
+    act(() => root.unmount());
+    container.remove();
+    // ホーム画面から起動(URLにパラメータなし。端末に保存された設定だけが残る)
+    const saved = window.localStorage.getItem(AUDIO_DEBUG_KEY)!;
+    resetAudioDebugForTest();
+    window.localStorage.setItem(AUDIO_DEBUG_KEY, saved);
+    window.history.replaceState({}, "", "/");
+    renderScreen();
+    expect(panel()).not.toBeNull();
+    act(() => sw().click());
+    expect(panel()).not.toBeNull();
+    expect(isAudioDebugEnabled()).toBe(false);
+    act(() => root.unmount());
+    container.remove();
+    resetAudioDebugForTest();
+    renderScreen();
+    expect(panel()).toBeNull();
+  });
+
+  it("バージョン表記を5回続けてタップすると、項目が出る(4回では出ない)。まだ、ログは、とっていない", () => {
+    vi.useFakeTimers();
+    renderScreen();
+    for (let i = 0; i < 4; i++) act(() => version().click());
+    expect(panel()).toBeNull();
+    act(() => version().click());
+    expect(panel()).not.toBeNull();
+    expect(isAudioDebugEnabled()).toBe(false);
+    expect(sw().checked).toBe(false);
+    // 切れているあいだは、コピー・クリアは押せない
+    expect([...panel()!.querySelectorAll("button")].every((b) => b.disabled)).toBe(true);
+  });
+
+  it("タップの間があくと(2秒より長く)、回数を数え直す", () => {
+    vi.useFakeTimers();
+    renderScreen();
+    for (let i = 0; i < 3; i++) act(() => version().click());
+    act(() => {
+      vi.advanceTimersByTime(2500);
+    });
+    for (let i = 0; i < 2; i++) act(() => version().click());
+    expect(panel()).toBeNull(); // 3回+2回は、続けて5回ではない
+    for (let i = 0; i < 3; i++) act(() => version().click());
+    expect(panel()).not.toBeNull();
+  });
+
+  it("スイッチを入れると、ログをとり始める(保存される)。クリアで記録だけ空になり、切ると、記録が空になる", () => {
+    vi.useFakeTimers();
+    renderScreen();
+    for (let i = 0; i < 5; i++) act(() => version().click());
+    act(() => sw().click());
+    expect(isAudioDebugEnabled()).toBe(true);
+    expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBe("1");
+    logAudioDebug("mark");
+    expect(getAudioDebugEntries().length).toBeGreaterThan(0);
+    const clear = [...panel()!.querySelectorAll("button")].find((b) => b.textContent === "クリア")!;
+    act(() => clear.click());
+    expect(getAudioDebugEntries()).toHaveLength(0);
+    expect(isAudioDebugEnabled()).toBe(true);
+    logAudioDebug("mark2");
+    act(() => sw().click());
+    expect(isAudioDebugEnabled()).toBe(false);
+    expect(getAudioDebugEntries()).toHaveLength(0);
+  });
+
+  it("コピーを押すと、記録のテキストがクリップボードに入り、件数が出る", async () => {
+    window.history.replaceState({}, "", "/?audiodebug=1");
+    renderScreen();
+    logAudioDebug("playBgm", "title.mp3");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    const copy = [...panel()!.querySelectorAll("button")].find((b) => b.textContent === "コピー")!;
+    await act(async () => copy.click());
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText.mock.calls[0][0]).toContain("playBgm");
+    expect(panel()!.textContent).toMatch(/\d+件を コピーしました/);
   });
 });
 

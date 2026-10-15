@@ -2,13 +2,18 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { TEXT_SIZES, useSettingsStore, type TextSize } from "@/app/store/settingsStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import { playSe, unlockPlayback } from "@/lib/audio";
-import { copyAudioDebug, isAudioDebugEnabled } from "@/lib/audioDebug";
-import { useState } from "react";
+import { getAudioDebugState, revealAudioDebug, subscribeAudioDebug } from "@/lib/audioDebug";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { ChevronRight } from "lucide-react";
 import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 import { ContactLink } from "@/components/ContactLink";
+import { AudioDebugPanel } from "./AudioDebugPanel";
+
+/** 音のログの項目を出すための、バージョン表記の連続タップ(回数・タップとタップの間のいちばん長い時間) */
+const VERSION_TAP_COUNT = 5;
+const VERSION_TAP_GAP_MS = 2000;
 
 /** 文字の大きさの、ボタンに出す呼び名 */
 const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "小", standard: "標準", large: "大" };
@@ -28,9 +33,19 @@ export function SettingsScreen() {
     reloadApp(); // 読み込み直して、メモリ上のデータも最初の状態にする
   }
 
-  // 音のログのコピー(URLに ?audiodebug=1 を付けて開いたときだけ出る、調査用の隠しボタン)
-  const audioDebug = isAudioDebugEnabled();
-  const [audioDebugCopied, setAudioDebugCopied] = useState<"idle" | "ok" | "ng">("idle");
+  // 音のログの項目: ふだんは出さない。?audiodebug=1 で開いたあと、または、バージョン表記を5回続けてタップしたあとだけ出る
+  const audioDebugRevealed = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState).revealed;
+  const versionTaps = useRef({ count: 0, last: 0 });
+  function handleVersionTap() {
+    const now = Date.now();
+    const taps = versionTaps.current;
+    taps.count = now - taps.last <= VERSION_TAP_GAP_MS ? taps.count + 1 : 1;
+    taps.last = now;
+    if (taps.count >= VERSION_TAP_COUNT) {
+      taps.count = 0;
+      revealAudioDebug();
+    }
+  }
 
   const resetGuides = useTutorialStore((s) => s.resetGuides);
   const guidesPending = useTutorialStore((s) => s.seenGuides.length === 0);
@@ -166,18 +181,13 @@ export function SettingsScreen() {
           {/* お問い合わせフォーム(外部のブラウザで開く) */}
           <ContactLink className="settings-row" />
         </div>
-        <p className="settings-version">v{__APP_VERSION__}</p>
+        {/* バージョン表記。5回続けてタップすると、「音のログ」の項目が出る(調査用。押せるようには見せない) */}
+        <p className="settings-version" onClick={handleVersionTap}>
+          v{__APP_VERSION__}
+        </p>
       </section>
 
-      {audioDebug && (
-        <button
-          type="button"
-          className="audio-debug-copy"
-          onClick={() => void copyAudioDebug().then((ok) => setAudioDebugCopied(ok ? "ok" : "ng"))}
-        >
-          {audioDebugCopied === "ok" ? "音のログを コピーしました" : audioDebugCopied === "ng" ? "コピーできませんでした" : "音のログを コピー"}
-        </button>
-      )}
+      {audioDebugRevealed && <AudioDebugPanel />}
 
       {/* データの初期化は、いちばん下に、ほかと離して置く(うっかり押さないように) */}
       <div className="settings-reset">

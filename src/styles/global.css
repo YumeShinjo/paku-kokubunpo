@@ -3261,10 +3261,23 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 }
 
 .settings-version {
+  position: relative;
   margin: 0;
   font-size: 0.7rem;
   color: var(--color-text-muted);
   text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* バージョン表記(5回続けてタップの場所)の当たり判定は、見た目を変えずに、下の余白へ広げて44px以上にする */
+.settings-version::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -0.2rem;
+  bottom: -1.6rem;
 }
 
 /* 初期化は、いちばん下に、ほかと離して置く */
