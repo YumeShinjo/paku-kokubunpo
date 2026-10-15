@@ -3167,7 +3167,7 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 /* 同じ表記の語を見分ける番号(①②)。対象の語のカードの中で、語のあとに小さく添える(品詞名などの答えは出さない、ただの目印) */
 .target-mark {
   margin-left: 0.15em;
-  font-size: 0.8em;
+  font-size: 1em;
   font-weight: bold;
   color: var(--color-primary-strong);
 }
