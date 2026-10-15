@@ -171,3 +171,86 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     }
   });
 });
+
+describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", () => {
+  const byName = (part: string) => assetCredits.find((c) => c.name.includes(part))!;
+
+  it("効果音: くらげ工匠・効果音工房・VSQ plus+・ポケットサウンドの入手元と、規約の要点", () => {
+    for (const name of ["hit02", "one23"]) {
+      const row = byName(name);
+      expect(row.url, name).toContain("http://www.kurage-kosho.info/");
+      expect(row.url.match(/https?:\/\/\S+/g), `${name}: 直リンクは載せない(サイトのトップだけ)`).toEqual(["http://www.kurage-kosho.info/"]);
+      expect(row.url, name).toContain(`${name}.mp3`); // ファイル名だけ
+      for (const word of ["商用・非商用可", "加工可", "クレジットは不要", "フリー効果音素材 くらげ工匠", "再配布は禁止", "直リンク"]) expect(row.license, `${name}: ${word}`).toContain(word);
+    }
+    const cancel = byName("se_cancel15");
+    expect(cancel.url).toBe("https://umipla.com/soundeffect/4388");
+    for (const word of ["個人・サークル", "報告・クレジットは不要", "再配布は禁止", "Content ID", "法人"]) expect(cancel.license, word).toContain(word);
+    const vsq = byName("VSQ_JINGLE");
+    expect(vsq.url).toBe("https://vsq.co.jp/plus/wordpress/wp-content/uploads/2021/07/VSQ_JINGLE_0067_Otoboke_01.mp3");
+    for (const word of ["ゲームへの利用可", "クレジットは任意", "単体で頒布することは禁止"]) expect(vsq.license, word).toContain(word);
+    const holy = byName("holy1");
+    expect(holy.url).toContain("https://pocket-se.info/archives/412/");
+    for (const word of ["クレジット表記か、サイトへのリンクが必須", "教育機関でリンクが困難な場合は免除", "効果音：ポケットサウンド – https://pocket-se.info/", "直リンクは禁止"]) expect(holy.license, word).toContain(word);
+  });
+
+  it("Springin' の効果音には、Sound Stockのガイドラインが適用され、アプリ本体の規約は混ぜない", () => {
+    for (const name of ["正解4", "jingle_23", "衝撃", "ジングル21"]) {
+      const row = byName(name);
+      expect(row.license, name).toContain("https://www.springin.org/sound-stock/guideline/");
+      expect(row.license, name).toContain("Springin'アプリ本体の利用規約");
+      expect(row.license, name).toContain("効果音素材の規約ではないので、この台帳には含めない");
+    }
+  });
+
+  it("BGM: zippyの3曲(FANBOXの規約)・EigHt(利用規約)の条件", () => {
+    for (const name of ["始まりの村", "星降る丘", "The Forgotten Girl"]) {
+      const row = byName(name);
+      for (const word of ["2024-09-18公開", "【フリーBGM】の表記がある曲のみ二次利用可", "ゲームへの利用可", "キー変更・ピッチ変更は禁止", "著作権法第35条", "音楽：zippy（https://www.youtube.com/@zippysound）"]) expect(row.license, `${name}: ${word}`).toContain(word);
+    }
+    const eight = byName("凍てつく世界の果て");
+    for (const word of ["2024-03-22公開", "ゲームへの利用可", "音楽：EigHt", "Content ID登録は禁止", "完全なオリジナルとして公開・販売することは不可", "著作権法第35条", "要確認"]) expect(eight.license, word).toContain(word);
+  });
+
+  it("画像の生成: LoRA・Illustrious-XL・sd-webui-forge-classic・Gemini を、記載のページごとに分けて書く", () => {
+    const lora = byName("Chibi Lerasigma");
+    expect(lora.url).toContain("https://civitai.com/models/966828/chibi-lerasigma-228-style");
+    expect(lora.url).toContain("https://civarchive.com/models/966828");
+    for (const word of ["Fair AI Public License 1.0-SD", "権利を主張しない", "Pony", "削除された"]) expect(lora.license, word).toContain(word);
+    const ill = byName("Illustrious-XL");
+    expect(ill.url).toBe("https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0");
+    expect(ill.license).toContain("Hugging Faceのモデルページ");
+    expect(ill.license).toContain("creativeml-openrail-m");
+    expect(ill.license).toContain("CivitAI側の表記は、Fair AI Public License 1.0-SD");
+    const forge = byName("sd-webui-forge-classic");
+    expect(forge.url).toBe("https://github.com/Haoming02/sd-webui-forge-classic");
+    expect(forge.license).toContain("AGPL-3.0");
+    const gemini = byName("Gemini(");
+    expect(gemini.url).toContain("https://support.google.com/gemini/answer/16625148?hl=ja");
+    expect(gemini.license).toContain("要確認(ユーザー記入)");
+  });
+
+  it("タイトルロゴ: 制作のサービス・イラスト・フォントの行があり、ゲーム内のクレジットには出ない", () => {
+    const names = ["Vサムネ", "Photopea", "肉球のアイコン3", "葉っぱアイコン", "あかずきんポップ", "M+ FONTS", "Monomaniac One"];
+    for (const name of names) {
+      const row = byName(name);
+      expect(row.kind, name).toBe("制作素材");
+      expect(row.url, name).toMatch(/https?:\/\//);
+    }
+    expect(byName("Vサムネ").license).toContain("素材そのものの配布・再配布は禁止");
+    expect(byName("Photopea").license).toContain("制作物は、すべて制作者のもの");
+    expect(byName("肉球のアイコン3").license).toContain("アイコンやフォントのジェネレーターの素材にすることも禁止");
+    expect(byName("肉球のアイコン3").url).toContain("https://icooon-mono.com/12783-");
+    expect(byName("葉っぱアイコン").url).toContain("https://icooon-mono.com/13591-");
+    expect(byName("あかずきんポップ").url).toBe("https://flopdesign.booth.pm/items/1748058");
+    expect(byName("あかずきんポップ").license).toContain("Copyright(c) 2018 M+ FONTS PROJECT");
+    expect(byName("Monomaniac One").license).toContain("SIL Open Font License, Version 1.1");
+    const logo = byName("タイトルロゴ");
+    expect(logo.license).toContain("単体で配布しない");
+    expect(logo.usage).toContain("Vサムネ・Photopeaで制作し、ICOON MONOのイラストを加工");
+    // ゲーム内のクレジットの表記は、これまでどおり(制作素材は出ない。ロゴの行は「ロゴ: 制作者による制作」のまま)
+    const game = buildCreditGroups(assetCredits).flatMap((g) => g.lines).join("\n");
+    for (const word of names) expect(game, word).not.toContain(word);
+    expect(game).toContain("制作者による制作");
+  });
+});
