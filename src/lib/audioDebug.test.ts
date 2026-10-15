@@ -424,7 +424,7 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     run(audio, ctx, 8, (i) => 10 + i * 0.25, 0.977); // ctx だけが 0.977 倍
     const row = formatAudioDebug().split("\n").find((l) => l.includes(" timeupdate "))!;
     expect(row).toMatch(
-      /^! \d\d:\d\d:\d\d\.\d{3} timeupdate ctx=running ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 outLat=0\.012 baseLat=0\.005 win=2000ms audio=2000ms ctx=1954ms a\/w=1 c\/w=0\.977 a\/c=1\.024 span=2000ms n=1 a\/w=\[1\.\.1\] c\/w=\[0\.977\.\.0\.977\]$/,
+      /^! \d\d:\d\d:\d\d\.\d{3} timeupdate ctx=running ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 session=n\/a outLat=0\.012 baseLat=0\.005 win=2000ms audio=2000ms ctx=1954ms a\/w=1 c\/w=0\.977 a\/c=1\.024 span=2000ms n=1 a\/w=\[1\.\.1\] c\/w=\[0\.977\.\.0\.977\]$/,
     );
   });
 
@@ -443,7 +443,7 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     logAudioDebug("playBgm", "title.mp3");
     const text = formatAudioDebug();
     expect(text).toMatch(/^audiodebug /);
-    expect(text).toMatch(/\d\d:\d\d:\d\d\.\d{3} playBgm ctx=suspended ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 note=title\.mp3/);
+    expect(text).toMatch(/\d\d:\d\d:\d\d\.\d{3} playBgm ctx=suspended ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 session=n\/a note=title\.mp3/);
   });
 
   it("定期的な処理(setInterval・requestAnimationFrame)は使わない", () => {

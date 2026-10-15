@@ -99,6 +99,8 @@ export interface AudioDebugEntry {
   paused: boolean | null;
   readyState: number | null;
   networkState: number | null;
+  /** navigator.audioSession.type(iOS 16.4以降のSafari。対応していなければ "n/a") */
+  session: string;
   /** AudioContext の出力の遅れ(秒)。対応していなければ省略 */
   outputLatency?: number;
   baseLatency?: number;
@@ -233,6 +235,16 @@ function bgmName(audio: HTMLAudioElement | null): string | null {
   return src.split("?")[0].split("/").pop() ?? null;
 }
 
+/** navigator.audioSession.type(対応していなければ "n/a") */
+function audioSessionType(): string {
+  try {
+    const type = (navigator as unknown as { audioSession?: { type?: string } }).audioSession?.type;
+    return typeof type === "string" ? type : "n/a";
+  } catch {
+    return "n/a";
+  }
+}
+
 const num = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
 
 type Extra = Partial<Pick<AudioDebugEntry, "win" | "bang" | "span" | "mark" | "note">>;
@@ -250,6 +262,7 @@ function push(event: string, extra?: Extra): void {
     paused: audioRef ? audioRef.paused : null,
     readyState: audioRef ? audioRef.readyState : null,
     networkState: audioRef ? audioRef.networkState : null,
+    session: audioSessionType(),
     ...extra,
   };
   // 出力の遅れ(対応していれば。Safari などでは未対応のことがある)
@@ -576,6 +589,7 @@ export function formatAudioDebug(list: readonly AudioDebugEntry[] = entries): st
       `paused=${fmt(e.paused)}`,
       `ready=${fmt(e.readyState)}`,
       `net=${fmt(e.networkState)}`,
+      `session=${e.session}`,
     ];
     if (e.outputLatency !== undefined) parts.push(`outLat=${e.outputLatency}`);
     if (e.baseLatency !== undefined) parts.push(`baseLat=${e.baseLatency}`);
