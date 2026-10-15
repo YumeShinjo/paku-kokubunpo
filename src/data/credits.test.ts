@@ -22,6 +22,7 @@ describe("素材管理表(docs/ASSET_CREDITS.md)の読み込み", () => {
         license: "商用可",
         usage: "タイトル画面",
         url: "",
+        summary: "",
       },
     ]);
   });
@@ -37,7 +38,7 @@ describe("素材管理表(docs/ASSET_CREDITS.md)の読み込み", () => {
   });
 });
 
-const credit = (name: string, kind: string, source: string, license: string) => ({ name, kind, source, license, usage: "使用箇所", url: "" });
+const credit = (name: string, kind: string, source: string, license: string) => ({ name, kind, source, license, usage: "使用箇所", url: "", summary: "" });
 
 describe("ゲーム内クレジットの表示(ネタバレ防止のため簡略化)", () => {
   it("出典が「サイト名 / 作曲者名」なら「作曲者名 - サイト名」に直す。それ以外はそのまま", () => {

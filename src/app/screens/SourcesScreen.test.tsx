@@ -4,7 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { assetCredits } from "@/data/credits";
 import { COURSE_PROOF_TEXT } from "@/data/courseProof";
-import { buildSourceGroups, requiredCredits, splitUrlCell } from "@/data/sources";
+import { buildSourceGroups, splitUrlCell } from "@/data/sources";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { CreditsScreen } from "./CreditsScreen";
 import { SourcesScreen } from "./SourcesScreen";
@@ -118,7 +118,7 @@ describe("くわしい出典ページ", () => {
     act(() => (container.querySelector(".sources-open") as HTMLButtonElement).click());
     expect(container.querySelector(".sources-open")).toBeNull();
     const headings = [...container.querySelectorAll(".sources-section h3")].map((h) => h.textContent);
-    expect(headings).toEqual(expect.arrayContaining(["BGM(音楽)", "こうかおん", "がぞう(と、画像をつくったAI・ツール・素材)", "フォント", "アイコン・ライブラリ"]));
+    expect(headings).toEqual(["BGM", "効果音", "画像", "制作素材", "ソフトウェア"]);
     const text = container.textContent ?? "";
     const shown = assetCredits.filter((c) => ["BGM", "SE", "画像", "生成AIモデル", "制作素材", "フォント", "ライブラリ"].includes(c.kind));
     expect(shown.length).toBe(assetCredits.length);
@@ -135,15 +135,47 @@ describe("くわしい出典ページ", () => {
     expect(text).toContain("要確認");
   });
 
-  it("表記が必要な素材(ポケットサウンド・CC BY の曲)が、指定の書式で、先頭に出る", () => {
+  it("表記が必須の素材(ポケットサウンド・Prairie4)だけに、小さな「表記必須」の印が付く。区分の見出し・説明の文章(「表記が必要・希望」など)は、ない", () => {
     act(() => root.render(<SourcesScreen next={{ name: "title" }} />));
     act(() => (container.querySelector(".sources-open") as HTMLButtonElement).click());
-    const first = container.querySelector(".sources-required-list")!.textContent ?? "";
-    expect(first).toContain("効果音：ポケットサウンド – https://pocket-se.info/");
-    expect(first).toContain("CC BY 4.0");
-    expect(first).toContain("フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058");
-    expect(requiredCredits.map((r) => r.basis)).toEqual(["必須", "必須", "希望"]); // 規約で必要なもの2つと、作者の希望1つ
-    expect(first).toContain("作者の希望");
+    const marked = [...container.querySelectorAll(".sources-item")].filter((li) => li.querySelector(".sources-badge"));
+    expect(marked.map((li) => li.querySelector(".sources-name")!.textContent)).toEqual([expect.stringContaining("Prairie4"), "holy1"]);
+    expect(container.querySelectorAll(".sources-badge")).toHaveLength(2);
+    expect(container.querySelector(".sources-badge")!.textContent).toBe("表記必須");
+    // ポケットサウンドの行の要点に、指定の書式がある。あかずきんポップの行にも、作者が希望する書式がある
+    expect(container.textContent).toContain("効果音：ポケットサウンド – https://pocket-se.info/");
+    expect(container.textContent).toContain("フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058");
+    // 説明の文章・必要/希望の区分は、出さない
+    for (const text of ["表記が必要・希望", "このアプリで使った"]) expect(container.querySelector(".screen-sources")!.textContent, text).not.toContain(text);
+    expect(container.querySelector(".sources-required-list")).toBeNull();
+    expect(container.querySelector(".sources-lead")).toBeNull();
+  });
+
+  it("1つの素材の行には、名前・作者・入手元(リンク)・条件の要点(1行)の4つだけ。使った場所・ライセンスの長い説明は、出さない", () => {
+    act(() => root.render(<SourcesScreen next={{ name: "title" }} />));
+    act(() => (container.querySelector(".sources-open") as HTMLButtonElement).click());
+    for (const item of container.querySelectorAll(".sources-item")) {
+      expect(item.querySelectorAll(".sources-name"), item.textContent!).toHaveLength(1);
+      expect(item.querySelectorAll(".sources-by")).toHaveLength(1);
+      expect(item.querySelectorAll(".sources-links")).toHaveLength(1);
+      expect(item.querySelectorAll(".sources-summary")).toHaveLength(1);
+      expect(item.querySelector("dl"), "説明の定義リスト").toBeNull();
+      expect(item.querySelector(".sources-summary")!.textContent!.length, item.textContent!).toBeGreaterThan(0);
+    }
+    // 要点は、ふつうの行(長い規約の全文ではない)。台帳の全素材に、要点がある
+    for (const c of assetCredits) expect(c.summary.length, c.name).toBeGreaterThan(0);
+    for (const c of assetCredits) expect(c.summary.length, c.name).toBeLessThanOrEqual(130);
+  });
+
+  it("独立した画面: 言の葉の森の部品・クラスの中に入っていない。もどるで、開いた元の画面へ戻る", () => {
+    useNavigationStore.setState({ screen: { name: "sources", next: { name: "howto" } } });
+    act(() => root.render(<SourcesScreen next={{ name: "howto" }} />));
+    const screen = container.querySelector(".screen-sources")!;
+    expect(screen.closest(".screen-kotonoha")).toBeNull();
+    expect(screen.className).not.toContain("kotonoha");
+    expect(screen.parentElement).toBe(container); // ほかの画面の中ではなく、画面そのもの
+    act(() => (container.querySelector(".back-button") as HTMLButtonElement).click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "howto" });
   });
 
   it("リンクは、タップできる大きさ(高さ44px以上)で、ボタンは3rem以上", () => {
@@ -159,8 +191,8 @@ describe("くわしい出典ページ", () => {
     expect(splitUrlCell("なし(自作)")).toEqual({ urls: [], note: "なし(自作)" });
   });
 
-  it("区分の並び: BGM → こうかおん → がぞう → フォント → ライブラリ", () => {
-    expect(buildSourceGroups(assetCredits).map((g) => g.id)).toEqual(["bgm", "se", "image", "font", "library"]);
+  it("区分の並び: BGM → 効果音 → 画像 → 制作素材 → ソフトウェア", () => {
+    expect(buildSourceGroups(assetCredits).map((g) => g.id)).toEqual(["bgm", "se", "image", "material", "software"]);
   });
 
   it("設定の「くわしい出典」から開ける。もどると設定に戻る", () => {

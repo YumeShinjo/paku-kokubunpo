@@ -85,7 +85,8 @@ test.describe("くわしい出典", () => {
     expect(await page.locator(".sources-item").count()).toBeGreaterThan(40);
     await expect(page.locator(".screen-sources")).toContainText("禁忌の詠唱");
     await expect(page.locator('a.sources-link[href="https://youtu.be/AdWxKyHYQM0"]')).toHaveCount(1);
-    await expect(page.locator(".sources-required-list")).toContainText("効果音：ポケットサウンド – https://pocket-se.info/");
+    await expect(page.locator(".sources-badge")).toHaveCount(2); // 表記必須の印(ポケットサウンド・Prairie4)
+    await expect(page.locator(".screen-sources")).toContainText("効果音：ポケットサウンド – https://pocket-se.info/");
     await expectNoHorizontalOverflow(page);
     expect(await smallTapTargets(page)).toEqual([]);
     await expectProofVisible(page, ".sources-proof");

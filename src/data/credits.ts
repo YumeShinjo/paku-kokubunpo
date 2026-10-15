@@ -14,6 +14,8 @@ export interface AssetCredit {
   usage: string;
   /** 入手元URL(6列目。なければ空)。分からないものは「要確認」と書いてある */
   url: string;
+  /** 条件の要点(7列目。1行。「くわしい出典」に出す。「【表記必須】」で始まるものは、表記が必須の素材) */
+  summary: string;
 }
 
 const isSeparatorCell = (cell: string) => /^:?-{2,}:?$/.test(cell);
@@ -30,10 +32,10 @@ export function parseAssetCredits(markdown: string): AssetCredit[] {
       .split("|")
       .map((c) => c.trim());
     if (cells.length < 5) continue;
-    const [name, kind, source, license, usage, url = ""] = cells;
+    const [name, kind, source, license, usage, url = "", summary = ""] = cells;
     if (cells.every(isSeparatorCell) || name === "素材名" || name === "") continue;
     if (/^[(（]例[)）]/.test(name)) continue;
-    credits.push({ name, kind, source, license, usage, url });
+    credits.push({ name, kind, source, license, usage, url, summary });
   }
   return credits;
 }
