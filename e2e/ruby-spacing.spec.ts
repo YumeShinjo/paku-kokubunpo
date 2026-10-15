@@ -151,6 +151,7 @@ test.describe("ふりがなの間隔と行間", () => {
 
   test("WebKit(iPhoneのSafariと同じエンジン): Chromiumと同じ寸法になる(WebKitが入っているときだけ)", async () => {
     test.skip(!WEBKIT_INSTALLED, "WebKit が入っていない(npx playwright install webkit)ので、飛ばす");
+    test.setTimeout(60_000); // WebKit は、ほかのテストと同時に動くと遅くなることがある
     const browser = await webkit.launch();
     try {
       const context = await browser.newContext({ baseURL: "http://localhost:5183", viewport: { width: 360, height: 740 }, deviceScaleFactor: 3 });

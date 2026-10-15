@@ -183,6 +183,7 @@ test.describe("仕分け(ドラッグ式)を、連続してドラッグしても
 
   test("WebKit(iPhoneのSafariと同じエンジン)・マウス: 10回連続(WebKitが入っているときだけ)", async () => {
     test.skip(!WEBKIT_INSTALLED, "WebKit が入っていない(npx playwright install webkit)ので、飛ばす");
+    test.setTimeout(60_000); // WebKit は、ほかのテストと同時に動くと遅くなることがある
     const browser = await webkit.launch();
     try {
       const context = await browser.newContext({ baseURL: "http://localhost:5183", viewport: { width: 375, height: 667 } });
