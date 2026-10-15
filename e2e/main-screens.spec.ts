@@ -33,6 +33,22 @@ test.describe("タイトル画面", () => {
     await expect(page).toHaveScreenshot("title.png");
   });
 
+  test("コトの絵をマウスでクリックすると、吹き出しの一言が替わる(見えないボタンが、絵の上にある)", async ({ page }) => {
+    await startApp(page);
+    const box = (await page.locator(".title-koto-tap").boundingBox())!;
+    const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    // コトの絵の中心にあるのは、見えないボタン(絵の画像ではない)
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains("title-koto-tap"), center)).toBe(true);
+    const before = await page.locator(".title-bubble-text").innerText();
+    let changed = false;
+    for (let i = 0; i < 4 && !changed; i++) {
+      await page.mouse.click(center.x, center.y);
+      await page.waitForTimeout(150);
+      changed = (await page.locator(".title-bubble-text").innerText()) !== before;
+    }
+    expect(changed, "クリックしても、吹き出しが替わらない").toBe(true);
+  });
+
   test("左上の「タイトルへもどる」で最初の画面へ戻り、タップでまたホーム画面へ(ホーム → 最初の画面 → ホーム)", async ({ page }) => {
     await startApp(page);
     const historyBefore = await page.evaluate(() => window.history.length);
