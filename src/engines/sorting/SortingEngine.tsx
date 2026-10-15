@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SortingQuestion } from "@/data/schema";
 import type { Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
 import { PosChip } from "@/components/PosChip";
 import { TargetText } from "@/components/TargetText";
-import { targetOnly } from "@/data/targetText";
+import { duplicateTargetMarks, targetOnly } from "@/data/targetText";
 import { findPartOfSpeech } from "@/data/partOfSpeech";
 import { Rb } from "@/components/Rb";
 
@@ -158,6 +158,8 @@ export function SortingEngine({ question, onAnswer }: Props) {
    */
   function beginPress(itemId: string, x: number, y: number) {
     if (submittedRef.current) return;
+  /** 同じ表記の語のカード(例: 「ある」が2枚)に付ける番号。配置したあとも、カゴの中・ドラッグ中・結果に、同じ番号が残る */
+  const marks = useMemo(() => duplicateTargetMarks(question.items), [question.items]);
     pressRef.current = { itemId, startX: x, startY: y, active: false };
   }
 
@@ -248,7 +250,10 @@ export function SortingEngine({ question, onAnswer }: Props) {
         <Ruby text={target} />
       </span>
     ) : (
-      <Ruby text={item.text} />
+      <>
+        <Ruby text={item.text} />
+        {mark && <span className="target-mark">{mark}</span>}
+      </>
     );
   }
 
@@ -277,7 +282,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onPointerCancel={handlePointerCancel}
         onClick={() => handleItemClick(item.id)}
       >
-        {compact ? renderCompact(item) : <TargetText text={item.text} />}
+        {compact ? renderCompact(item) : <TargetText text={item.text} mark={marks.get(item.id)} />}
         {submitted && (isCorrect ? " ◎" : " ×")}
       </button>
     );
@@ -285,9 +290,11 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   const unplaced = question.items.filter((item) => !placements[item.id]);
   const draggedItem = drag ? question.items.find((item) => item.id === drag.itemId) : undefined;
+    const mark = marks.get(item.id);
 
   return (
     <div className="engine engine-sorting" ref={rootRef}>
+        {mark && <span className="target-mark">{mark}</span>}
       <p className="engine-prompt">
         <Ruby text={question.instruction} />
       </p>
@@ -343,7 +350,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
             return (
               <li key={item.id} className={isCorrect ? "correct" : "incorrect"}>
                 <p className="sorting-result-item">
-                  <TargetText text={item.text} />
+                  <TargetText text={item.text} mark={marks.get(item.id)} />
                   {" → "}
                   {isCorrect && findPartOfSpeech(item.correctCategoryId) ? (
                     // 正解が確定したあとなので、品詞の色をつけてよい(5・7章)

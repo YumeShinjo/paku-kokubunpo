@@ -3164,6 +3164,14 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   pointer-events: none;
 }
 
+/* 同じ表記の語を見分ける番号(①②)。対象の語のカードの中で、語のあとに小さく添える(品詞名などの答えは出さない、ただの目印) */
+.target-mark {
+  margin-left: 0.15em;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: var(--color-primary-strong);
+}
+
 /* 仕分けゲームの対象の語(文中の「」でくくられていた部分)。カード風の背景で目立たせる */
 .target-card {
   display: inline-block;

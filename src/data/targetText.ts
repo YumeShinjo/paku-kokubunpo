@@ -41,6 +41,30 @@ export function splitTargets(text: RubyText): Piece[] {
 }
 
 
+/** 番号の記号。同じ表記の語は、ふつう2〜3個。10個を超える場合は、(11)のような丸なしの番号にする */
+const CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩";
+
+/**
+ * 仕分けの問題で、対象の語(「」の内側)が同じ表記のカードが複数あるとき(例: 「ある」が連体詞と動詞で2枚)に、
+ * カードを見分けるための番号を返す。同じ表記が1つだけの語には、番号を付けない。
+ * 番号は、問題の項目の並びの順(①②…)。品詞名などの答えのヒントにならない、ただの目印。
+ * 戻り値は、項目id → 番号の記号。
+ */
+export function duplicateTargetMarks(items: { id: string; text: RubyText }[]): Map<string, string> {
+  const keyOf = (text: RubyText) => (targetOnly(text) ?? text).map((seg) => seg.text).join("");
+  const groups = new Map<string, string[]>();
+  for (const item of items) {
+    const key = keyOf(item.text);
+    groups.set(key, [...(groups.get(key) ?? []), item.id]);
+  }
+  const marks = new Map<string, string>();
+  for (const ids of groups.values()) {
+    if (ids.length < 2) continue;
+    ids.forEach((id, i) => marks.set(id, CIRCLED[i] ?? `(${i + 1})`));
+  }
+  return marks;
+}
+
 /**
  * 文の中の対象の語(「」の内側)だけを取り出す。複数あれば順に並べる。対象がなければ null。
  * カゴの中やドラッグ中の小さな表示に使う(文全体は長く、カゴが大きくなったり、ドラッグ中に折り返したりするため)。
