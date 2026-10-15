@@ -3153,6 +3153,28 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   cursor: grab;
 }
 
+/* 1回目に合っていて、固定したカード(2回目は動かせない) */
+.sorting-item.is-locked {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.sorting-lock {
+  margin-left: 0.2em;
+  vertical-align: -0.1em;
+}
+
+/* 1回目に外したときの、短い案内(答えや品詞名は出さない) */
+.sorting-retry-note {
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid var(--color-gold-line);
+  border-radius: 8px;
+  background: #fff6e0;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
 .sorting-item.is-dragging {
   opacity: 0.35;
 }

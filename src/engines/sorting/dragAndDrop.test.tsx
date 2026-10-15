@@ -141,7 +141,10 @@ describe("仕分け: ドラッグ&ドロップ", () => {
   it("答え合わせのあとは、ドラッグしても動かない(単語もカゴも押せない)", () => {
     drag(chip("走る"), 150); // 間違い: 動詞を名詞のカゴへ
     drag(chip("山"), 150);
-    act(() => buttons().find((b) => b.textContent?.includes("こたえる"))!.click());
+    const submit = () => act(() => buttons().find((b) => b.textContent?.includes("こたえる"))!.click());
+    submit(); // 1回目: 外したカードが戻る(合っている「山」は固定)
+    drag(chip("走る"), 150); // 2回目も外す
+    submit(); // 確定
     for (const b of buttons()) expect(b.disabled).toBe(true);
     drag(chip("走る"), 40);
     expect(basketTexts("c2")).toEqual(["走る ×", "山 ◎"]);

@@ -1,4 +1,4 @@
-import type { Question } from "@/data/schema";
+import type { Question, SortingQuestion } from "@/data/schema";
 
 /**
  * 4エンジン共通の正誤判定ロジック(5章: 判定ロジックとUI基盤は共通化する)。
@@ -12,6 +12,11 @@ export type Answer =
   | { engine: "assembly"; order: string[] }
   /** choice: 選んだchoiceId(文中タップ表示のときは、タップした文節のid) */
   | { engine: "choice"; choiceId: string };
+
+/** 仕分け: 項目ごとの正誤(項目id → 正しいカゴに入っているか)。まだ入れていない項目は、誤り */
+export function judgeSortingItems(question: SortingQuestion, placements: Record<string, string>): Record<string, boolean> {
+  return Object.fromEntries(question.items.map((item) => [item.id, placements[item.id] === item.correctCategoryId]));
+}
 
 export function judgeAnswer(question: Question, answer: Answer): boolean {
   if (question.engine !== answer.engine) {

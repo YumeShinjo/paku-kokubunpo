@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Lock } from "lucide-react";
 import type { SortingQuestion } from "@/data/schema";
-import type { Answer } from "@/engines/core/judge";
+import { judgeSortingItems, type Answer } from "@/engines/core/judge";
 import { Ruby } from "@/components/Ruby";
 import { PosChip } from "@/components/PosChip";
 import { TargetText } from "@/components/TargetText";
@@ -48,6 +49,14 @@ export function SortingEngine({ question, onAnswer }: Props) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [drag, setDrag] = useState<DragState | null>(null);
+  /**
+   * 1回だけやり直せる。1回目に1枚でも外したら、外したカードだけをカゴから戻し、合っているカードは固定する(lockedIds)。
+   * 2回目の「こたえる」で確定する。解答(onAnswer)は、確定のときに1回だけ、1回目の入れ方で通知する
+   * (星・正答率・ボス戦のライフは、「1回目が全問正解か」で決まる)。画面の結果(◎×と解説)は、確定したときの入れ方で出す。
+   */
+  const [lockedIds, setLockedIds] = useState<string[]>([]);
+  const [retryWrongCount, setRetryWrongCount] = useState(0);
+  const firstPlacementsRef = useRef<Record<string, string> | null>(null);
 
   const submittedRef = useRef(false); // 再描画を待たずに続けて押されても、最初の1回だけにする
   /** 押した単語と開始位置。DRAG_THRESHOLD_PX を超えて動いたら active(ドラッグ中)になる */
@@ -169,7 +178,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
   }
 
   function selectItem(itemId: string) {
-    if (submitted) return;
+    if (submitted || lockedIds.includes(itemId)) return;
     setSelectedItemId(itemId);
   }
 
@@ -185,7 +194,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
    * Touch Events で扱い、Pointer Events のほうは指(pointerType === "touch")を無視する(二重に処理しない)。
    */
   function beginPress(itemId: string, x: number, y: number) {
-    if (submittedRef.current) return;
+    if (submittedRef.current || lockedIds.includes(itemId)) return; // 確定した(固定の)カードは動かせない
     // 前の押下の「離した」が届かないまま、次の押下が始まったとき(ウィンドウの外で離した・切り替えなど)も、前のドラッグの表示を残さない
     if (pressRef.current?.active) {
       stopAutoScroll();
@@ -275,11 +284,24 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   function handleSubmit() {
     if (submittedRef.current) return; // 二重に判定しない
-    submittedRef.current = true;
-    setSubmitted(true);
     stopAutoScroll();
     setDrag(null);
-    onAnswer({ engine: "sorting", placements });
+    setSelectedItemId(null);
+    const first = firstPlacementsRef.current;
+    const results = judgeSortingItems(question, placements);
+    const wrongIds = question.items.filter((item) => !results[item.id]).map((item) => item.id);
+    if (first === null && wrongIds.length > 0) {
+      // 1回目に外した: 外したカードだけを戻し、合っているカードは固定して、もう1回(答えや品詞名は出さない)
+      firstPlacementsRef.current = { ...placements };
+      setLockedIds(question.items.filter((item) => results[item.id]).map((item) => item.id));
+      setPlacements(Object.fromEntries(Object.entries(placements).filter(([id]) => results[id])));
+      setRetryWrongCount(wrongIds.length);
+      return;
+    }
+    // 確定: 全問正解の1回目、または2回目。解答は、1回目の入れ方で、1回だけ通知する
+    submittedRef.current = true;
+    setSubmitted(true);
+    onAnswer({ engine: "sorting", placements: first ?? placements });
   }
 
   const categoryLabel = (categoryId: string) =>
@@ -307,14 +329,16 @@ export function SortingEngine({ question, onAnswer }: Props) {
     const placedCategory = placements[item.id];
     const isCorrect = placedCategory === item.correctCategoryId;
     const resultClass = submitted ? (isCorrect ? "correct" : "incorrect") : "";
+    const locked = !submitted && lockedIds.includes(item.id);
     return (
       <button
         key={item.id}
         type="button"
         data-item-id={item.id}
-        disabled={submitted}
+        disabled={submitted || locked}
         className={[
           "sorting-item",
+          locked ? "is-locked" : "",
           selectedItemId === item.id ? "selected" : "",
           drag?.itemId === item.id ? "is-dragging" : "",
           resultClass,
@@ -330,6 +354,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onClick={() => handleItemClick(item.id)}
       >
         {compact ? renderCompact(item) : <TargetText text={item.text} mark={marks.get(item.id)} />}
+        {locked && <Lock aria-label="確定" className="sorting-lock" size={12} />}
         {submitted && (isCorrect ? " ◎" : " ×")}
       </button>
     );
@@ -343,6 +368,12 @@ export function SortingEngine({ question, onAnswer }: Props) {
       <p className="engine-prompt">
         <Ruby text={question.instruction} />
       </p>
+
+      {retryWrongCount > 0 && !submitted && (
+        <p className="sorting-retry-note" role="status">
+          あと{retryWrongCount}まい ちがうよ。もういちど、えらんでみよう!
+        </p>
+      )}
 
       <div className="sorting-items" aria-label="まだ 入れていない言葉">
         {unplaced.map((item) => renderItem(item))}
