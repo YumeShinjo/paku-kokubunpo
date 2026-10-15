@@ -47,6 +47,18 @@ describe("同じ表記のカードに付ける番号(①②)", () => {
     expect(marks.has("c")).toBe(false);
   });
 
+  it("random を渡すと、番号の付け方が入れかわる(番号の順が、答えの手がかりにならない)。付く番号の集まりは同じ", () => {
+    const orders = new Set<string>();
+    for (let seed = 1; seed <= 12; seed++) {
+      let x = seed;
+      const random = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+      const marks = duplicateTargetMarks(aru.items, random);
+      expect([...marks.values()].sort()).toEqual(["①", "②"]);
+      orders.add([...marks.entries()].map(([id, mark]) => `${id}${mark}`).join(","));
+    }
+    expect(orders.size).toBe(2); // ①②が入れかわる2通りが、どちらも出る
+  });
+
   describe("画面: 文の中・カゴの中・ドラッグ中・結果に、同じ番号が残る", () => {
     let container: HTMLDivElement;
     let root: Root;

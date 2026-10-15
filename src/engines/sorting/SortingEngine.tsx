@@ -159,7 +159,8 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   const allPlaced = question.items.every((item) => placements[item.id]);
   /** 同じ表記の語のカード(例: 「ある」が2枚)に付ける番号。配置したあとも、カゴの中・ドラッグ中・結果に、同じ番号が残る */
-  const marks = useMemo(() => duplicateTargetMarks(question.items), [question.items]);
+  // 問題を開くたびに、番号の付け方をシャッフルする(番号の順が、答えの手がかりにならないように)
+  const marks = useMemo(() => duplicateTargetMarks(question.items, Math.random), [question.items]);
 
   function placeItem(itemId: string, categoryId: string) {
     if (submittedRef.current) return;

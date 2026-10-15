@@ -47,10 +47,10 @@ const CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩";
 /**
  * 仕分けの問題で、対象の語(「」の内側)が同じ表記のカードが複数あるとき(例: 「ある」が連体詞と動詞で2枚)に、
  * カードを見分けるための番号を返す。同じ表記が1つだけの語には、番号を付けない。
- * 番号は、問題の項目の並びの順(①②…)。品詞名などの答えのヒントにならない、ただの目印。
+ * 番号は、①②…の目印だけ(品詞名などの答えのヒントは出さない)。random を渡さなければ、問題の項目の並びの順に付ける。
  * 戻り値は、項目id → 番号の記号。
  */
-export function duplicateTargetMarks(items: { id: string; text: RubyText }[]): Map<string, string> {
+export function duplicateTargetMarks(items: { id: string; text: RubyText }[], random?: () => number): Map<string, string> {
   const keyOf = (text: RubyText) => (targetOnly(text) ?? text).map((seg) => seg.text).join("");
   const groups = new Map<string, string[]>();
   for (const item of items) {
@@ -60,7 +60,13 @@ export function duplicateTargetMarks(items: { id: string; text: RubyText }[]): M
   const marks = new Map<string, string>();
   for (const ids of groups.values()) {
     if (ids.length < 2) continue;
-    ids.forEach((id, i) => marks.set(id, CIRCLED[i] ?? `(${i + 1})`));
+    // random を渡すと、番号の付け方を、問題を開くたびにシャッフルする(「①は、いつも動詞」のように、番号が答えの手がかりにならないように)
+    const order = [...ids];
+    if (random) for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    order.forEach((id, i) => marks.set(id, CIRCLED[i] ?? `(${i + 1})`));
   }
   return marks;
 }
