@@ -130,9 +130,36 @@ export function SortingEngine({ question, onAnswer }: Props) {
     };
   }, []);
 
+  // 取りこぼしの安全策(ウィンドウ全体): 要素の外で離した・別のウィンドウに切り替えた・右クリックなどで、
+  // 「離した」「中断した」の合図が、カードに届かなかったときも、押したままの状態(ドラッグ中の表示)を残さない
+  useEffect(() => {
+    const release = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
+      pressHandlersRef.current.endPress(event.clientX, event.clientY);
+    };
+    const abort = () => pressHandlersRef.current.cancelPress();
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") abort();
+    };
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", abort);
+    window.addEventListener("blur", abort);
+    window.addEventListener("contextmenu", abort);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", abort);
+      window.removeEventListener("blur", abort);
+      window.removeEventListener("contextmenu", abort);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   pressHandlersRef.current = { beginPress, movePress, endPress, cancelPress };
 
   const allPlaced = question.items.every((item) => placements[item.id]);
+  /** 同じ表記の語のカード(例: 「ある」が2枚)に付ける番号。配置したあとも、カゴの中・ドラッグ中・結果に、同じ番号が残る */
+  const marks = useMemo(() => duplicateTargetMarks(question.items), [question.items]);
 
   function placeItem(itemId: string, categoryId: string) {
     if (submittedRef.current) return;
@@ -158,8 +185,11 @@ export function SortingEngine({ question, onAnswer }: Props) {
    */
   function beginPress(itemId: string, x: number, y: number) {
     if (submittedRef.current) return;
-  /** 同じ表記の語のカード(例: 「ある」が2枚)に付ける番号。配置したあとも、カゴの中・ドラッグ中・結果に、同じ番号が残る */
-  const marks = useMemo(() => duplicateTargetMarks(question.items), [question.items]);
+    // 前の押下の「離した」が届かないまま、次の押下が始まったとき(ウィンドウの外で離した・切り替えなど)も、前のドラッグの表示を残さない
+    if (pressRef.current?.active) {
+      stopAutoScroll();
+      setDrag(null);
+    }
     pressRef.current = { itemId, startX: x, startY: y, active: false };
   }
 
@@ -212,7 +242,19 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
     if (event.pointerType === "touch") return;
+    // 主ボタンが、もう押されていない(離した合図を取りこぼした)のに動いている: カードが、カーソルに付いたまま
+    // 「引っかかって」動かなくなるのを防ぐため、ここで終わらせる(離した位置に入れる)
+    if (pressRef.current && (event.buttons & 1) === 0) {
+      endPress(event.clientX, event.clientY);
+      return;
+    }
     movePress(event.clientX, event.clientY);
+  }
+
+  /** 取りこぼしの安全策: キャプチャを失った(要素が入れ替わった・ウィンドウの外へ出たなど)とき、押したままの状態を残さない */
+  function handleLostPointerCapture(event: React.PointerEvent<HTMLElement>) {
+    if (event.pointerType === "touch") return;
+    if (pressRef.current) cancelPress();
   }
 
   function handlePointerUp(event: React.PointerEvent<HTMLElement>) {
@@ -245,9 +287,11 @@ export function SortingEngine({ question, onAnswer }: Props) {
   /** 小さな表示(カゴの中・ドラッグ中): 対象の語だけをカードで出す。対象がない(単語だけの)ときは、そのまま */
   function renderCompact(item: SortingItem) {
     const target = targetOnly(item.text);
+    const mark = marks.get(item.id);
     return target ? (
       <span className="target-card">
         <Ruby text={target} />
+        {mark && <span className="target-mark">{mark}</span>}
       </span>
     ) : (
       <>
@@ -280,6 +324,8 @@ export function SortingEngine({ question, onAnswer }: Props) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
+        onLostPointerCapture={handleLostPointerCapture}
+        onDragStart={(e) => e.preventDefault()} // ブラウザ標準のドラッグ(文字・画像を引きずる動き)が割り込まないように
         onClick={() => handleItemClick(item.id)}
       >
         {compact ? renderCompact(item) : <TargetText text={item.text} mark={marks.get(item.id)} />}
@@ -290,11 +336,9 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
   const unplaced = question.items.filter((item) => !placements[item.id]);
   const draggedItem = drag ? question.items.find((item) => item.id === drag.itemId) : undefined;
-    const mark = marks.get(item.id);
 
   return (
     <div className="engine engine-sorting" ref={rootRef}>
-        {mark && <span className="target-mark">{mark}</span>}
       <p className="engine-prompt">
         <Ruby text={question.instruction} />
       </p>

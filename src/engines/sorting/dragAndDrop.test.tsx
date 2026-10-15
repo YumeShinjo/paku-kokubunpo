@@ -41,7 +41,7 @@ describe("仕分け: ドラッグ&ドロップ", () => {
 
   function pointer(el: Element, type: "pointerdown" | "pointermove" | "pointerup", x: number, y = 300) {
     act(() => {
-      el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+      el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, buttons: type === "pointerup" ? 0 : 1 }));
     });
   }
 
@@ -346,5 +346,80 @@ describe("仕分け: ドラッグ&ドロップ", () => {
     expect(submit.classList.contains("answer-submit")).toBe(true);
     expect(container.querySelector(".sorting-categories")?.contains(submit)).toBe(false);
   });
-});
 
+  describe("取りこぼしの安全策(カードがカーソルに「引っかかって」動かなくなるのを防ぐ)", () => {
+    it("ウィンドウの外で離したなど、カードに「離した」が届かなくても、ウィンドウ全体で受け取って、ドラッグを終える(離した位置のカゴに入る)", () => {
+      const el = chip("走る");
+      pointer(el, "pointerdown", 50);
+      pointer(el, "pointermove", 60);
+      expect(container.querySelector(".sorting-ghost")).not.toBeNull();
+      // カードではなく、ウィンドウに届いた「離した」
+      act(() => {
+        window.dispatchEvent(new MouseEvent("pointerup", { bubbles: true, clientX: 40, clientY: 300, button: 0, buttons: 0 }));
+      });
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+      expect(basketTexts("c1")).toEqual(["走る"]);
+    });
+
+    it("「離した」を取りこぼしても、ボタンが離れた状態の動き(buttons=0)を見たら、その位置で終える(カードがカーソルに付いたままにならない)", () => {
+      const el = chip("山");
+      pointer(el, "pointerdown", 50);
+      pointer(el, "pointermove", 60);
+      act(() => {
+        el.dispatchEvent(new MouseEvent("pointermove", { bubbles: true, clientX: 150, clientY: 300, buttons: 0 }));
+      });
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+      expect(basketTexts("c2")).toEqual(["山"]);
+      // そのあと動かしても、ゴーストは出ない
+      act(() => {
+        el.dispatchEvent(new MouseEvent("pointermove", { bubbles: true, clientX: 20, clientY: 300, buttons: 0 }));
+      });
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+    });
+
+    it("別のウィンドウに切り替えた(blur)・右クリック(contextmenu)・押下の中断(pointercancel)では、ドラッグをやめる(入れずに、もとの場所)", () => {
+      for (const type of ["blur", "contextmenu", "pointercancel"]) {
+        const el = chip("走る");
+        pointer(el, "pointerdown", 50);
+        pointer(el, "pointermove", 70);
+        expect(container.querySelector(".sorting-ghost"), type).not.toBeNull();
+        act(() => {
+          window.dispatchEvent(new Event(type));
+        });
+        expect(container.querySelector(".sorting-ghost"), type).toBeNull();
+        expect(poolTexts(), type).toEqual(["走る", "山"]);
+      }
+    });
+
+    it("前のドラッグの「離した」が届かないまま、次のカードを押しても、前のゴーストが残らず、次のドラッグができる", () => {
+      const first = chip("走る");
+      pointer(first, "pointerdown", 50);
+      pointer(first, "pointermove", 70);
+      const second = chip("山");
+      pointer(second, "pointerdown", 50);
+      expect(container.querySelector(".sorting-ghost")).toBeNull();
+      pointer(second, "pointermove", 60);
+      pointer(second, "pointermove", 150);
+      pointer(second, "pointerup", 150);
+      expect(basketTexts("c2")).toEqual(["山"]);
+    });
+
+    it("ブラウザ標準のドラッグ(dragstart)は止める", () => {
+      const el = chip("走る");
+      const event = new Event("dragstart", { bubbles: true, cancelable: true });
+      act(() => {
+        el.dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it("連続して何度ドラッグしても、毎回カゴに入る(入れる → 別のカゴへ入れ直す → もう一度)", () => {
+      for (let i = 0; i < 6; i++) {
+        drag(chip("走る"), i % 2 === 0 ? 40 : 150);
+        expect(container.querySelector(".sorting-ghost")).toBeNull();
+        expect(basketTexts(i % 2 === 0 ? "c1" : "c2")).toEqual(["走る"]);
+        expect(basketTexts(i % 2 === 0 ? "c2" : "c1")).not.toContain("走る");
+      }
+    });
+  });
+});
