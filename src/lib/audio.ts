@@ -1,5 +1,5 @@
 import { useSettingsStore } from "@/app/store/settingsStore";
-import { findAudio, seAssetName } from "@/assets/registry";
+import { findSeAudio } from "@/assets/registry";
 
 /**
  * BGM/SE再生の実体(9章: モバイル音声自動再生制約への対応)。
@@ -103,6 +103,8 @@ export type SeKind =
   | "incorrect"
   | "clear"
   | "subBossClear"
+  /** 小ボスの撃破(浄化)。7エリアの小ボス戦と、「先へすすむ」の場面で鳴る。称号の授与などは subBossClear のまま */
+  | "subBossPurify"
   | "lastBossClear"
   | "tap"
   | "pageUnlock"
@@ -123,6 +125,7 @@ const TONE_PARAMS: Record<
   clear: { freq: 660, duration: 0.4, type: "triangle" },
   roundEnd: { freq: 660, duration: 0.4, type: "triangle" },
   subBossClear: { freq: 440, duration: 0.55, type: "square" },
+  subBossPurify: { freq: 440, duration: 0.55, type: "square" },
   pageUnlock: { freq: 990, duration: 0.3, type: "triangle" },
   // マスコットまわり(6・13章)。素材が届くまでは、上がっていく仮の音
   growth: { freq: 523, endFreq: 1047, duration: 0.5, type: "triangle" },
@@ -147,7 +150,7 @@ export async function preloadSeFiles(): Promise<void> {
   sePreloadStarted = true;
   await Promise.all(
     SE_KINDS.map(async (kind) => {
-      const url = findAudio(seAssetName(kind));
+      const url = findSeAudio(kind);
       if (!url) return;
       try {
         const response = await fetch(url);
@@ -527,7 +530,7 @@ export function duckBgm(ms: number): void {
 }
 
 /** 長めの効果音(演出の音)。これが鳴り終わるまで次の演出の音を待たせる(重ねない)ため、再生中を覚えておく */
-const LONG_SE = new Set<SeKind>(["clear", "roundEnd", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]);
+const LONG_SE = new Set<SeKind>(["clear", "roundEnd", "subBossClear", "subBossPurify", "lastBossClear", "growth", "pageUnlock", "bonus"]);
 let seBusyUntil = 0;
 
 /** 演出の効果音が鳴り終わるまでの残り時間(ミリ秒)。鳴っていなければ 0 */

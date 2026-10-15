@@ -13,6 +13,8 @@ export const introStoryId = (areaId: string) => `${areaId}-intro`;
 export const subBossIntroStoryId = (areaId: string) => `${areaId}-subboss-intro`;
 export const subBossClearStoryId = (areaId: string) => `${areaId}-subboss-clear`;
 export const areaClearStoryId = (areaId: string) => `${areaId}-area-clear`;
+/** 小ボスに負け続けたあと、「先へすすむ」を選んだときの、コトの助太刀の短い場面(このあと、ふつうの撃破後の流れに合流する) */
+export const subBossAssistStoryId = (areaId: string) => `${areaId}-subboss-assist`;
 
 /** 小ボス撃破のあと、続けて流す真相究明(王座の間) */
 export const truthStoryId = (areaId: string) => `${areaId}-truth`;

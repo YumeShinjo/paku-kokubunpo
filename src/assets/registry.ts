@@ -175,3 +175,13 @@ export function findBgm(scene: BgmScene): BgmTrack | undefined {
 
 /** 効果音のファイル。src/assets/audio/se/<種類>.mp3 など(種類は audio.ts の SeKind) */
 export const seAssetName = (kind: string) => `se/${kind}`;
+
+/**
+ * 専用のファイルがない効果音の種類は、代わりに、ほかの種類のファイルを指す(新しい音を用意して、同じ名前で置けば、そちらが鳴る)。
+ * subBossPurify(小ボス撃破)は、当面、subBossClear のファイルを使う。
+ */
+export const SE_FILE_FALLBACK: Record<string, string> = { subBossPurify: "subBossClear" };
+
+/** 効果音の種類の実ファイルのURL。専用のファイルがなければ、代わりの種類のファイル。どちらもなければ undefined */
+export const findSeAudio = (kind: string): string | undefined =>
+  findAudio(seAssetName(kind)) ?? (SE_FILE_FALLBACK[kind] ? findAudio(seAssetName(SE_FILE_FALLBACK[kind])) : undefined);

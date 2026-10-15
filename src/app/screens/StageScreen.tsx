@@ -4,9 +4,10 @@ import { getStage } from "@/data/stages";
 import { areas } from "@/data/areas";
 import { stageTitleText } from "@/data/areaText";
 import { buildStageSession } from "@/features/quiz/buildSession";
-import { bossHpMax, bossLabel } from "@/features/quiz/bossRules";
+import { ASSIST_AFTER_LOSSES, BOSS_LIFE_BONUS_MAX, BOSS_LIVES, bossHpMax, bossLabel, bossLivesFor } from "@/features/quiz/bossRules";
 import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { buildPostClearScreen } from "@/features/story/storyFlow";
+import { subBossAssistStoryId } from "@/features/story/storyIds";
 import { syncScore } from "@/features/ranking/scoreSync";
 import { syncMastery } from "@/features/mastery/masterySync";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
@@ -32,6 +33,10 @@ const SCORE_PER_QUESTION = 10;
 export function StageScreen({ areaId, stageId }: { areaId: string; stageId: string }) {
   const goTo = useNavigationStore((s) => s.goTo);
   const markStageCleared = useProgressStore((s) => s.markStageCleared);
+  const markStageAssisted = useProgressStore((s) => s.markStageAssisted);
+  const recordBossLoss = useProgressStore((s) => s.recordBossLoss);
+  // このボスに負けた回数(保存している)。負けるたびに、次の挑戦のライフが1ふえる(最大+4)
+  const bossLosses = useProgressStore((s) => s.bossLosses[stageId] ?? 0);
   const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
   const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
   const growTo = useMascotStore((s) => s.growTo);
@@ -50,6 +55,16 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [justClearedArea, setJustClearedArea] = useState(false);
+  // 負けた直後の再挑戦か(「ライフが 1 ふえたよ!」の一言を出し分ける)
+  const [lifeJustIncreased, setLifeJustIncreased] = useState(false);
+  const maxLives = bossLivesFor(isBoss ? bossLosses : 0);
+  const lifeBonus = maxLives - BOSS_LIVES;
+  const lifeNote =
+    lifeBonus <= 0
+      ? undefined
+      : lifeJustIncreased && bossLosses <= BOSS_LIFE_BONUS_MAX
+        ? `ライフが 1 ふえたよ!(ぜんぶで ${maxLives}つ)`
+        : `ライフが ${lifeBonus} ふえているよ!(ぜんぶで ${maxLives}つ)`;
   // 小ボス戦は、戦闘に入ったとき、説明のポップアップの先頭に「○○が あらわれた!」を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
   const [appearName] = useState(() => (stage?.type === "subBoss" && restored === null ? areas.find((a) => a.id === areaId)?.subBossName : undefined));
 
@@ -59,6 +74,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     // 「もう少し」のときも、次は新しい出題になるので、保存した途中経過は消す
     clearSession();
     if (isBoss && !r.bossDefeated) {
+      recordBossLoss(stageId); // 負けた回数をふやす(次の挑戦のライフがふえる。クリアすると消える)
       setResult(r);
       return;
     }
@@ -77,7 +93,29 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     setResult(r);
   }
 
+  /**
+   * 「先へすすむ」(小ボスで、同じボスに2回以上負けたとき): コトの助太刀の短い場面を入れて、ふつうの撃破後の流れに合流する。
+   * 助けてもらったクリアとして記録する(クリア扱い。得点・正答率・星には数えない。あとで自力で勝てば、通常のクリアに上書きされる)。
+   */
+  function assist() {
+    if (!stage || stage.type !== "subBoss") return;
+    clearSession();
+    markStageAssisted(stageId);
+    let clearedArea = false;
+    if (isAreaCleared(areaId)) {
+      growTo((areas.find((a) => a.id === areaId)?.order ?? 0) + 1);
+      pushToast("growth");
+      clearedArea = true;
+    }
+    goTo({
+      name: "story",
+      eventId: subBossAssistStoryId(areaId),
+      next: buildPostClearScreen({ areaId, stageType: stage.type, justClearedArea: clearedArea, hasSeen }),
+    });
+  }
+
   function retry() {
+    setLifeJustIncreased(true);
     clearSession();
     setQuestions(buildStageSession(stageId, areaId));
     setResult(null);
@@ -88,7 +126,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   // 成長・図鑑ページ解放の知らせは、ここでは出さない(マップに戻ってから、通知として1つずつ出る)。
   useEffect(() => {
     if (!cleared) return;
-    const kind = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossClear";
+    const kind = stage?.type === "normal" ? "clear" : stage?.type === "lastBoss" ? "lastBossClear" : "subBossPurify";
     playSe(kind);
     duckBgm(seDurationMs(kind)); // 達成音が聞こえるよう、鳴っているあいだBGMを下げる
   }, [cleared, stage?.type]);
@@ -108,8 +146,10 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   }
 
   if (result && isBoss && !result.bossDefeated) {
+    // 小ボスで、同じボスに2回以上負けたときだけ、「先へすすむ」を出す(ラスボスには出さない)
+    const showAssist = stage.type === "subBoss" && bossLosses >= ASSIST_AFTER_LOSSES;
     return (
-      <div className="screen screen-stage-result">
+      <div className="screen screen-stage-result screen-boss-loss">
         <MascotFace expression="sad" size="large" />
         <h2>{result.lifeOut ? "ライフが なくなっちゃった…" : "もう少し!"}</h2>
         <p>
@@ -124,12 +164,21 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
         <p>
           {result.correctCount} / {result.answered} もん せいかい(ボスのHP のこり {result.hpLeft})
         </p>
-        <button type="button" onClick={retry}>
-          もういちどちょうせん
-        </button>
-        <button type="button" onClick={() => goTo({ name: "stageSelect", areaId })}>
-          ステージせんたくへ
-        </button>
+        <div className="stage-result-actions">
+          <div className={`stage-result-main${showAssist ? " has-assist" : ""}`}>
+            <button type="button" className="stage-result-primary" onClick={retry}>
+              もういちど
+            </button>
+            {showAssist && (
+              <button type="button" className="stage-result-secondary" onClick={assist}>
+                先へすすむ
+              </button>
+            )}
+          </div>
+          <button type="button" className="stage-result-back" onClick={() => goTo({ name: "stageSelect", areaId })}>
+            もどる
+          </button>
+        </div>
       </div>
     );
   }
@@ -180,6 +229,8 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
       areaId={areaId}
       questions={questions}
       appear={attempt === 0 ? appearName : undefined}
+      maxLives={isBoss ? maxLives : undefined}
+      lifeNote={lifeNote}
       stageTitle={rb(stageTitleText(stage))}
       boss={
         isBoss && label

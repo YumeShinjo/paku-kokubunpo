@@ -69,12 +69,23 @@ describe("ラウンド終了の音(roundEnd)", () => {
     }
   });
 
-  it("本編のステージクリア・ボス撃破の音は、変えない(clear / subBossClear / lastBossClear のまま)", () => {
+  it("本編のステージクリア・ボス撃破の音: 通常は clear、ラスボスは lastBossClear、小ボスの撃破は専用の subBossPurify。称号の授与は、subBossClear のまま", () => {
     const source = readFileSync("src/app/screens/StageScreen.tsx", "utf-8");
     expect(source).toContain('"clear"');
     expect(source).toContain('"lastBossClear"');
-    expect(source).toContain('"subBossClear"');
+    expect(source).toContain('"subBossPurify"');
+    expect(source).not.toContain('"subBossClear"');
     expect(source).not.toContain("roundEnd");
+    expect(readFileSync("src/app/screens/EndingResultScreen.tsx", "utf-8")).toContain('playSe("subBossClear")');
+  });
+
+  it("小ボス撃破の専用の種類 subBossPurify がある。専用のファイルがなければ、subBossClear のファイルを指す", async () => {
+    const { SE_KINDS } = await import("@/lib/audio");
+    const { findSeAudio, SE_FILE_FALLBACK } = await import("@/assets/registry");
+    expect(SE_KINDS).toContain("subBossPurify");
+    expect(SE_FILE_FALLBACK.subBossPurify).toBe("subBossClear");
+    // 専用のファイル(se/subBossPurify)が置かれていなければ、subBossClear のファイルと同じ
+    if (!findAudio("se/subBossPurify")) expect(findSeAudio("subBossPurify")).toBe(findAudio("se/subBossClear"));
   });
 
   it("roundEnd は、ステージクリア音と同じく、長めの効果音(次の演出を待たせる)で、効果音の長さを持つ", () => {

@@ -9,6 +9,7 @@ import { areaBackgroundName, areaPurifyGateStageId, isSubBossPurifiedIn, subBoss
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { playSe } from "@/lib/audio";
 import type { Screen } from "@/app/store/navigationStore";
 
 /**
@@ -25,6 +26,9 @@ import type { Screen } from "@/app/store/navigationStore";
 const scaleStyle = (scale: number | undefined): CSSProperties | undefined =>
   scale === undefined || scale === 1 ? undefined : ({ "--portrait-scale": scale } as CSSProperties);
 
+/** 「先へすすむ」の場面で、ボスが浄化される行(0始まり。3行目の、ボスの「……!」) */
+const ASSIST_PURIFY_LINE = 2;
+
 export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }) {
   const goTo = useNavigationStore((s) => s.goTo);
   const isStageCleared = useProgressStore((s) => s.isStageCleared);
@@ -32,6 +36,9 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
   const recordChoice = useStoryStore((s) => s.recordChoice);
   const event = useMemo(() => getStoryEvent(eventId), [eventId]);
   const [lineIndex, setLineIndex] = useState(0);
+  // 「先へすすむ」の場面(コトの助太刀): 3行目(ボスの「……!」)から、ボスと背景が浄化後の姿になる
+  const assistAreaId = eventId.endsWith("-subboss-assist") ? eventId.split("-")[0] : undefined;
+  const assistPurified = assistAreaId !== undefined && lineIndex >= ASSIST_PURIFY_LINE;
 
   function finish() {
     markSeen(eventId);
@@ -52,15 +59,23 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
+  // 助太刀の場面で、ボスが浄化されるところ(3行目)で、小ボス撃破の効果音を鳴らす
+  useEffect(() => {
+    if (assistAreaId !== undefined && lineIndex === ASSIST_PURIFY_LINE) playSe("subBossPurify");
+  }, [assistAreaId, lineIndex]);
+
   if (!event || event.lines.length === 0) return null;
 
   const line = event.lines[lineIndex];
   // 背景は、イベントidの先頭(エリアid)の背景素材。なければ従来の単色グラデーション。
   // エリアの関門(小ボス。王座の間だけラスボス)を撃破していれば通常、していなければ荒れた姿(data/bosses.ts参照)。
   const backgroundAreaId = eventId.split("-")[0];
-  const backgroundCleared = isStageCleared(areaPurifyGateStageId(backgroundAreaId));
+  const backgroundCleared =
+    assistAreaId !== undefined
+      ? assistPurified && backgroundAreaId !== "ohzaNoMa" // 王座の間は、ラスボスを倒すまで、荒れた背景のまま
+      : isStageCleared(areaPurifyGateStageId(backgroundAreaId));
   const backgroundUrl = findImage(
-    IMAGE.background(areaBackgroundName(backgroundAreaId, backgroundCleared, eventId)),
+    IMAGE.background(areaBackgroundName(backgroundAreaId, backgroundCleared, assistAreaId !== undefined ? undefined : eventId)),
   );
   // 王様の台詞のときは王様の立ち絵(素材があれば)。取り憑かれた姿/浄化後で出し分ける。
   const kingUrl = findImage(
@@ -73,7 +88,8 @@ export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }
   // 小ボスの台詞のときは、そのボスの立ち絵(素材があれば)。撃破後は浄化後の姿に切り替える(data/bosses.ts参照)。
   const bossAreaId = subBossAreaOf(line.speaker);
   const bossPurified =
-    bossAreaId !== undefined && isSubBossPurifiedIn(eventId, bossAreaId, isStageCleared(`${bossAreaId}-subboss`));
+    bossAreaId !== undefined &&
+    (assistAreaId !== undefined ? assistPurified : isSubBossPurifiedIn(eventId, bossAreaId, isStageCleared(`${bossAreaId}-subboss`)));
   const bossUrl = bossAreaId
     ? findImage(bossPurified ? IMAGE.subBossPurified(bossAreaId) : IMAGE.subBoss(bossAreaId))
     : undefined;

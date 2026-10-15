@@ -57,6 +57,10 @@ interface Props {
    * 別の「あらわれた」だけの画面は挟まない)。最初の挑戦だけに渡す(途中からの再開・「もう少し」の再挑戦では渡さない)
    */
   appear?: string;
+  /** ボス戦のライフの最大値(負けた回数に応じて、BOSS_LIVES からふえる。省略すると BOSS_LIVES) */
+  maxLives?: number;
+  /** 説明のポップアップに添える、ライフがふえたことの一言(「ライフが 1 ふえたよ!」など) */
+  lifeNote?: string;
   /** 画面上部に出す見出し(自由練習の単元名など) */
   heading?: RubyText;
   /** ステージ全体のテーマ名。出題形式が混ざるステージの、冒頭の説明に使う */
@@ -92,6 +96,8 @@ export function QuizPlayer({
   questions,
   boss,
   appear,
+  maxLives = BOSS_LIVES,
+  lifeNote,
   heading,
   stageTitle,
   onComplete,
@@ -115,13 +121,13 @@ export function QuizPlayer({
   const [maxCombo, setMaxCombo] = useState(resume?.maxCombo ?? 0);
   const [hp, setHp] = useState(resume?.hp ?? boss?.hpMax ?? 0);
   // ボス戦のプレイヤーのライフ(誤答で1減り、0でそのステージを最初からやり直す)
-  const [lives, setLives] = useState(resume?.lives ?? BOSS_LIVES);
+  const [lives, setLives] = useState(resume?.lives ?? maxLives);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
   // ステージの冒頭の説明(出題形式の呼び名と場面)は、ステージを始めたときに1度だけ、ポップアップで出す(途中からの再開では出さない)
-  const [intro] = useState(() => buildStageIntro(areaId, questions, boss, stageTitle));
+  const [intro] = useState(() => buildStageIntro(areaId, questions, boss, stageTitle, maxLives));
   const [introOpen, setIntroOpen] = useState(() => resume === undefined && intro !== null);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   // 直前と同じ文言・演出を連続で出さないための記憶(再描画は不要なので ref)
@@ -273,9 +279,9 @@ export function QuizPlayer({
           <p className="hp-text">
             HP {hp} / {boss.hpMax}
           </p>
-          <p className="player-lives" role="img" aria-label={`ライフ ${lives} / ${BOSS_LIVES}`}>
+          <p className="player-lives" role="img" aria-label={`ライフ ${lives} / ${maxLives}`}>
             <span aria-hidden="true">
-              {Array.from({ length: BOSS_LIVES }, (_, i) =>
+              {Array.from({ length: maxLives }, (_, i) =>
                 i < lives ? (
                   <Heart key={i} className="life-icon" size="1em" fill="currentColor" />
                 ) : (
@@ -467,6 +473,11 @@ export function QuizPlayer({
             <p className="engine-flavor-situation">
               <Ruby text={intro.message} />
             </p>
+            {boss && lifeNote && (
+              <p className="boss-life-note" role="status">
+                {lifeNote}
+              </p>
+            )}
             <button type="button" className="feedback-next" onClick={() => setIntroOpen(false)}>
               {boss ? "たたかう!" : "はじめる"}
             </button>

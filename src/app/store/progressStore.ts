@@ -12,7 +12,19 @@ import { getStage, getStagesForArea } from "@/data/stages";
 interface ProgressState {
   clearedStageIds: string[];
   totalScore: number;
+  /**
+   * ボス戦(小ボス・ラスボス)で負けた回数(ステージid → 回数)。負けるたびに、次の挑戦のライフが1ふえる(最大+4。bossRules.ts)。
+   * クリアすると、そのボスの回数は消える。以前の保存データ(この項目がない)は、空として読む
+   */
+  bossLosses: Record<string, number>;
+  /** 「助けてもらった」クリアのステージid(小ボスのみ)。clearedStageIds にも入る。あとで自力で勝つと、ここから外れる */
+  assistedStageIds: string[];
   markStageCleared: (stageId: string, scoreGained: number) => void;
+  /** ボス戦に負けた回数を1つふやす。ふやしたあとの回数を返す */
+  recordBossLoss: (stageId: string) => number;
+  /** 「助けてもらった」クリアにする(クリア扱い。得点は足さない) */
+  markStageAssisted: (stageId: string) => void;
+  isStageAssisted: (stageId: string) => boolean;
   isStageCleared: (stageId: string) => boolean;
   /**
    * 挑戦できるステージか。エリアが解放されていて(isAreaUnlocked)、かつ解放条件(Stage.requires)を満たしていること。
@@ -36,13 +48,30 @@ export const useProgressStore = create<ProgressState>()(
     (set, get) => ({
       clearedStageIds: [],
       totalScore: 0,
+      bossLosses: {},
+      assistedStageIds: [],
+      // 自力でクリアしたとき: 助けてもらった印を消して、通常のクリアに上書きする。負けた回数も消す
       markStageCleared: (stageId, scoreGained) =>
         set((s) => ({
           clearedStageIds: s.clearedStageIds.includes(stageId)
             ? s.clearedStageIds
             : [...s.clearedStageIds, stageId],
           totalScore: s.totalScore + scoreGained,
+          assistedStageIds: s.assistedStageIds.filter((id) => id !== stageId),
+          bossLosses: Object.fromEntries(Object.entries(s.bossLosses).filter(([id]) => id !== stageId)),
         })),
+      recordBossLoss: (stageId) => {
+        const next = (get().bossLosses[stageId] ?? 0) + 1;
+        set((s) => ({ bossLosses: { ...s.bossLosses, [stageId]: next } }));
+        return next;
+      },
+      markStageAssisted: (stageId) =>
+        set((s) => ({
+          clearedStageIds: s.clearedStageIds.includes(stageId) ? s.clearedStageIds : [...s.clearedStageIds, stageId],
+          assistedStageIds: s.assistedStageIds.includes(stageId) ? s.assistedStageIds : [...s.assistedStageIds, stageId],
+          bossLosses: Object.fromEntries(Object.entries(s.bossLosses).filter(([id]) => id !== stageId)),
+        })),
+      isStageAssisted: (stageId) => get().assistedStageIds.includes(stageId),
       isStageCleared: (stageId) => get().clearedStageIds.includes(stageId),
       isStageUnlocked: (stageId) => {
         const stage = getStage(stageId);
@@ -67,6 +96,19 @@ export const useProgressStore = create<ProgressState>()(
         return stages.length > 0 && stages.every((s) => get().isStageCleared(s.id));
       },
     }),
-    { name: "paku-kokubunpo:progress", storage: safeJSONStorage },
+    {
+      name: "paku-kokubunpo:progress",
+      storage: safeJSONStorage,
+      // 以前の保存データには、bossLosses・assistedStageIds がない。ないときは空、壊れた値のときも空として読む
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<ProgressState>;
+        const losses: Record<string, number> = {};
+        if (p.bossLosses && typeof p.bossLosses === "object") {
+          for (const [id, n] of Object.entries(p.bossLosses)) if (Number.isInteger(n) && n > 0 && n < 1000) losses[id] = n;
+        }
+        const assisted = Array.isArray(p.assistedStageIds) ? p.assistedStageIds.filter((id): id is string => typeof id === "string") : [];
+        return { ...current, ...p, bossLosses: losses, assistedStageIds: assisted };
+      },
+    },
   ),
 );

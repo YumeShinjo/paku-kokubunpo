@@ -1,4 +1,4 @@
-import { Check, Crown, Lock, Play, User } from "lucide-react";
+import { Check, Crown, HandHelping, Lock, Play, User } from "lucide-react";
 import { areas } from "@/data/areas";
 import { findImage } from "@/assets/registry";
 import { stageNodePortraitName } from "@/features/stageSelect/stageNodePortrait";
@@ -27,6 +27,7 @@ import { BackButton } from "@/components/BackButton";
 export function StageSelectScreen({ areaId }: { areaId: string }) {
   const goTo = useNavigationStore((s) => s.goTo);
   const isStageCleared = useProgressStore((s) => s.isStageCleared);
+  const isStageAssisted = useProgressStore((s) => s.isStageAssisted);
   const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
   const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
   const hasSeen = useStoryStore((s) => s.hasSeen);
@@ -97,6 +98,12 @@ export function StageSelectScreen({ areaId }: { areaId: string }) {
                       <span className="stage-cleared-mark">
                         <Check aria-hidden="true" size={14} />
                         クリア済み
+                      </span>
+                    )}
+                    {cleared && isStageAssisted(stage.id) && (
+                      <span className="stage-assisted-mark">
+                        <HandHelping aria-hidden="true" size={14} />
+                        たすけてもらった
                       </span>
                     )}
                     {isNext && <span className="stage-next-chip">つぎは ここ</span>}

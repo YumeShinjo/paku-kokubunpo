@@ -3215,6 +3215,85 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 }
 
 /* 小ボス戦に入ったときの、説明ポップアップの先頭のメッセージ(「○○が あらわれた!」) */
+/* 再挑戦のときの、ライフがふえたことの一言(説明のポップアップの中) */
+.boss-life-note {
+  margin: 0.3rem 0 0;
+  font-weight: bold;
+  text-align: center;
+  color: var(--color-primary-strong);
+}
+
+/*
+ * 負けた画面は、文字サイズ「大」でも、縦にスクロールしないで、ボタンまで1画面に収まるように、少し詰める
+ * (コトの絵を小さく、行の間隔・余白を狭く)。
+ */
+.screen-boss-loss {
+  gap: 0.5rem;
+  padding-bottom: 4rem;
+}
+
+.screen-boss-loss .mascot-face {
+  --mascot-size: 6rem;
+}
+
+.screen-boss-loss h2,
+.screen-boss-loss p {
+  margin: 0;
+}
+
+/* 負けた画面のボタン: 「もういちど」(主)と「先へすすむ」(副)を横に並べて同じ幅に。「もどる」は、その下に、平らに置く */
+.stage-result-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.stage-result-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.stage-result-main.has-assist {
+  grid-template-columns: 1fr 1fr;
+}
+
+.stage-result-main button {
+  min-height: 3rem;
+  padding-inline: 0.4rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.stage-result-secondary {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-line);
+}
+
+/* 「もどる」: 平らなボタン(枠・影なし。文字だけ)。押せる高さは48px以上 */
+.stage-result-back {
+  min-height: 3rem;
+  padding-inline: 1.5rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  text-decoration: underline;
+}
+
+/* ステージ選択の、「助けてもらった」クリアの小さな印 */
+.stage-assisted-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 .boss-appear-message {
   font-size: 1.5rem;
   font-weight: bold;

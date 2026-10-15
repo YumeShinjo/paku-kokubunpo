@@ -28,3 +28,17 @@ export function bossHpMax(pickCount: number): number {
 
 /** ボス戦でのプレイヤーのライフ。誤答で1減り、0になったらそのステージを最初からやり直す */
 export const BOSS_LIVES = 5;
+
+/**
+ * 連敗の救済: 負けるたびに、次の挑戦のライフが1ふえる。ふえるのは最大4(ライフは、最大で 5 + 4 = 9)。
+ * 負けた回数は、ステージごとに保存し(progressStore の bossLosses)、クリアすると消える。
+ */
+export const BOSS_LIFE_BONUS_MAX = 4;
+
+/** このステージの、いまのライフの最大値(負けた回数に応じて、BOSS_LIVES からふえる) */
+export function bossLivesFor(losses: number): number {
+  return BOSS_LIVES + Math.min(BOSS_LIFE_BONUS_MAX, Math.max(0, Math.floor(losses)));
+}
+
+/** 「先へすすむ」を出す、負けた回数(小ボスで、同じボスに2回以上負けたとき) */
+export const ASSIST_AFTER_LOSSES = 2;

@@ -1,9 +1,11 @@
 import { rb } from "@/data/ruby";
+import { areas } from "@/data/areas";
 import type { CharacterPosition, MascotForm, StoryEvent, StoryLine } from "./schema";
 import {
   areaClearStoryId,
   endingChoiceStoryId,
   epilogueStoryId,
+  subBossAssistStoryId,
   introStoryId,
   lastBossClearStoryId,
   lastBossIntroStoryId,
@@ -446,7 +448,24 @@ export const storyEvents: StoryEvent[] = [
   },
 ];
 
-const eventsById = new Map(storyEvents.map((e) => [e.id, e]));
+/**
+ * 小ボスに負け続けたあとの、「先へすすむ」の場面(コトの助太刀)。小ボスのいる全エリアに、同じ形で用意する。
+ * 思い出の再生などの一覧(storyEvents)には入れない(撃破後の場面と重ならないよう、getStoryEvent で引くだけ)。
+ * 3行目(ボスの「……!」)から、ボスの立ち絵と背景が浄化後の姿になる(StoryScreen)。
+ */
+const assistEvents: StoryEvent[] = areas
+  .filter((area) => area.subBossName !== undefined)
+  .map((area) => ({
+    id: subBossAssistStoryId(area.id),
+    lines: [
+      koto("だいじょうぶ! あとは コトに まかせて!"),
+      koto("ことばの力を ぜんぶ こめて……えいっ!"),
+      line(area.subBossName, "……!"),
+      koto("やった! もとにもどったよ。いっしょに がんばってくれて ありがとう!"),
+    ],
+  }));
+
+const eventsById = new Map([...storyEvents, ...assistEvents].map((e) => [e.id, e]));
 
 export function getStoryEvent(id: string): StoryEvent | undefined {
   return eventsById.get(id);
