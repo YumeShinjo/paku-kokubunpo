@@ -2,16 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AUDIO_DEBUG_FULL_KEY,
   AUDIO_DEBUG_KEY,
+  AUDIO_EXPERIMENT_KEYS,
   clearAudioDebug,
   formatAudioDebug,
   getAudioDebugEntries,
   getAudioDebugState,
   isAudioDebugEnabled,
+  isExperimentOn,
   logAudioDebug,
   markAudioDebug,
+  registerAudioProbe,
   resetAudioDebugForTest,
   revealAudioDebug,
   setAudioDebugEnabled,
+  setAudioExperiment,
   setAudioDebugFull,
   subscribeAudioDebug,
   watchAudioContext,
@@ -57,14 +61,14 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
   it("ふだん(URLにも、保存にも、指定がない)は、無効", () => {
     resetAudioDebugForTest();
     expect(isAudioDebugEnabled()).toBe(false);
-    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: false, full: false });
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: false, full: false, rebuild: false, buffer: false });
   });
 
   it("URLに audiodebug=1 を付けて開くと、有効になり、端末に保存される(PWAで、URLなしで起動しても、有効のまま)", () => {
     resetAudioDebugForTest();
     window.history.replaceState({}, "", "/?audiodebug=1");
     expect(isAudioDebugEnabled()).toBe(true);
-    expect(getAudioDebugState()).toEqual({ enabled: true, revealed: true, full: false });
+    expect(getAudioDebugState()).toEqual({ enabled: true, revealed: true, full: false, rebuild: false, buffer: false });
     expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBe("1");
     // URLなしで開き直す(ホーム画面から起動)。保存された設定で、有効になる
     const saved = window.localStorage.getItem(AUDIO_DEBUG_KEY)!;
@@ -103,7 +107,7 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     resetAudioDebugForTest();
     expect(getAudioDebugState().revealed).toBe(false);
     revealAudioDebug();
-    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: true, full: false });
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: true, full: false, rebuild: false, buffer: false });
     expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBeNull();
   });
 
@@ -219,20 +223,53 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     expect(rows()).toHaveLength(0);
   });
 
-  it("timeupdate(全記録): そろっていても、すべての窓を、約2秒ごとに1件ずつ記録する。「!」は付かない", () => {
+  it("timeupdate(全記録): そろっている窓は、約10秒ごと(窓5つ)に1件へ間引く。間引いた行には、その間の a/w・c/w の最大と最小を添える。「!」は付かない", () => {
     setAudioDebugFull(true);
     const { audio, ctx } = setup();
-    run(audio, ctx, 24, (i) => 10 + i * 0.25 + (i % 2 === 0 ? 0.007 : -0.007)); // 1000ms〜7000ms = 窓は、3つ
+    // 1回ごとに、audio.currentTime が ±7ms ゆらぐ。30秒(約2秒の窓が15個)
+    run(audio, ctx, 120, (i) => 10 + i * 0.25 + (i % 2 === 0 ? 0.007 : -0.007));
     const list = rows();
-    expect(list).toHaveLength(3);
+    expect(list).toHaveLength(3); // 15個の窓 → 5つごとに1件
     for (const e of list) {
       expect(e.bang).toBe(false);
       expect(e.win!.wallMs).toBe(2000);
-      expect(e.win!.aw).toBeGreaterThan(0.99);
-      expect(e.win!.aw).toBeLessThan(1.01);
-      expect(e.win!.cw).toBe(1);
-      expect(e.win!.crossed).toBe(false);
+      expect(e.span).toMatchObject({ windows: 5, ms: 10000 });
+      expect(e.span!.awMin).toBeGreaterThan(0.99);
+      expect(e.span!.awMax).toBeLessThan(1.01);
+      expect(e.span!.awMin).toBeLessThanOrEqual(e.span!.awMax);
+      expect(e.span!.cwMin).toBe(1);
+      expect(e.span!.cwMax).toBe(1);
     }
+    expect(formatAudioDebug()).toMatch(/span=10000ms n=5 a\/w=\[[\d.]+?\.\.[\d.]+\] c\/w=\[1\.\.1\]/);
+  });
+
+  it("timeupdate(全記録): ±0.01 以上ずれた窓は、間引かずに記録する(「!」)。間引いた窓のずれも、その行の span の最大・最小に入る", () => {
+    setAudioDebugFull(true);
+    const { audio, ctx } = setup();
+    // ふつうの窓が1つ(1〜3秒)のあと、audio が 1.05 倍の窓が1つ(3〜5秒)
+    run(audio, ctx, 8, (i) => 10 + i * 0.25);
+    run(audio, ctx, 7, (i) => 12 + (i + 1) * 0.25 * 1.05, 1, 3250);
+    const list = rows();
+    expect(list).toHaveLength(1);
+    expect(list[0].bang).toBe(true);
+    expect(list[0].win!.aw).toBe(1.05);
+    expect(list[0].span).toMatchObject({ windows: 2, awMin: 1, awMax: 1.05, cwMin: 1, cwMax: 1 });
+    // 記録したあとは、まとめ直し(次の行には、ずれた窓は入らない)
+    run(audio, ctx, 80, (i) => 14 + (i + 1) * 0.25, 1, 5250);
+    const next = rows()[1];
+    expect(next.span!.awMax).toBeLessThan(1.01);
+  });
+
+  it("出来事(statechange・pause・playing・waiting・seeking・visibilitychange・MARK・rebuild)は、全記録でも、間引かず、すべて記録する", () => {
+    setAudioDebugFull(true);
+    const { audio, ctx } = setup();
+    for (const name of ["pause", "playing", "waiting", "seeking"]) audio.dispatchEvent(new Event(name));
+    ctx.dispatchEvent(new Event("statechange"));
+    document.dispatchEvent(new Event("visibilitychange"));
+    markAudioDebug();
+    logAudioDebug("rebuild", "test");
+    const names = getAudioDebugEntries().map((e) => e.event);
+    for (const n of ["pause", "playing", "waiting", "seeking", "statechange", "visibilitychange", "MARK", "rebuild"]) expect(names, n).toContain(n);
   });
 
   it("timeupdate: audio の時計だけが速い(1.2倍)と、a/w と a/c がずれて、「!」が付く。c/w は 1.0", () => {
@@ -272,10 +309,10 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
   it("窓をまたいだ印: statechange(止まる・動き出す)・一時停止・裏に回る/戻る をまたいだ窓には、crossed が付く。次の窓には付かない", () => {
     setAudioDebugFull(true);
     const { audio, ctx } = setup();
-    run(audio, ctx, 3, (i) => 10 + i * 0.25); // 窓の途中
+    run(audio, ctx, 3, (i) => 10 + i * 0.25, 0.95); // 窓の途中(ctx がずれていて、全記録でも、記録される窓にする)
     ctx.state = "interrupted";
     ctx.dispatchEvent(new Event("statechange"));
-    run(audio, ctx, 12, (i) => 10 + (i + 4) * 0.25, 1, 2000);
+    run(audio, ctx, 12, (i) => 10 + (i + 4) * 0.25, 0.95, 2000);
     const list = rows();
     expect(list[0].win!.crossed).toBe(true);
     expect(list[list.length - 1].win!.crossed).toBe(false);
@@ -286,11 +323,11 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
       wall = 1000;
       setAudioDebugFull(true);
       const second = setup();
-      run(second.audio, second.ctx, 3, (i) => 10 + i * 0.25); // 窓の途中(1000〜1750ms)
+      run(second.audio, second.ctx, 3, (i) => 10 + i * 0.25, 0.95); // 窓の途中(1000〜1750ms)
       if (name === "pause") second.audio.dispatchEvent(new Event("pause"));
       else if (name === "visibilitychange") document.dispatchEvent(new Event("visibilitychange"));
       else window.dispatchEvent(new Event(name));
-      run(second.audio, second.ctx, 12, (i) => 10 + (i + 4) * 0.25, 1, 2000);
+      run(second.audio, second.ctx, 12, (i) => 10 + (i + 4) * 0.25, 0.95, 2000);
       expect(rows()[0].win!.crossed, name).toBe(true);
     }
   });
@@ -300,15 +337,16 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     const { audio, ctx } = setup();
     audio.loop = true;
     audio.duration = 86;
-    run(audio, ctx, 12, (i) => (84.5 + i * 0.25) % 86); // 窓のとちゅうで、86秒の曲の終わりから先頭へ戻る
-    expect(rows()[0].win).toMatchObject({ aw: 1, crossed: false });
+    run(audio, ctx, 12, (i) => (84.5 + i * 0.25) % 86, 0.95); // 窓のとちゅうで、86秒の曲の終わりから先頭へ戻る(ctx をずらして、記録される窓にする)
+    expect(rows()[0].win).toMatchObject({ aw: 1, crossed: false, looped: true }); // 「ループ」の印が付く
+    expect(formatAudioDebug()).toMatch(/ ループ/);
 
     resetAudioDebugForTest(true);
     wall = 1000;
     setAudioDebugFull(true);
     const second = setup();
-    run(second.audio, second.ctx, 12, (i) => (i === 4 ? 3 : 10 + i * 0.25)); // loop でないのに巻き戻った(シークなど)
-    expect(rows()[0].win!.crossed).toBe(true);
+    run(second.audio, second.ctx, 12, (i) => (i === 4 ? 3 : 10 + i * 0.25), 0.95); // loop でないのに巻き戻った(シークなど)
+    expect(rows()[0].win).toMatchObject({ crossed: true, looped: false });
   });
 
   it("各行に、曲の名前・paused・readyState・networkState を記録する。ハッシュ付きのファイル名も、そのまま。無音の準備用の曲は「(無音)」", () => {
@@ -377,28 +415,25 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     expect(window.localStorage.getItem(AUDIO_DEBUG_FULL_KEY)).toBeNull();
   });
 
-  it("ログの書式(例): 「!」・時刻・イベント・状態・出力の遅れ・窓の測定・窓をまたいだ印が、1行にそろう", () => {
+  it("ログの書式(例): 「!」・時刻・イベント・状態・出力の遅れ・窓の測定・span が、1行にそろう", () => {
     setAudioDebugFull(true);
     const audio = fakeAudio();
     const ctx = fakeContext("running", { outputLatency: 0.012, baseLatency: 0.005 });
     watchAudioContext(ctx as unknown as AudioContext);
     watchAudioElement(audio as unknown as HTMLAudioElement);
-    run(audio, ctx, 8, (i) => 10 + i * 0.25);
-    run(audio, ctx, 8, (i) => 12.5 + i * 0.25 * 1.1, 0.977, 3000);
-    const lines = formatAudioDebug().split("\n");
-    const row = lines.find((l) => l.includes(" timeupdate "))!;
+    run(audio, ctx, 8, (i) => 10 + i * 0.25, 0.977); // ctx だけが 0.977 倍
+    const row = formatAudioDebug().split("\n").find((l) => l.includes(" timeupdate "))!;
     expect(row).toMatch(
-      /^\d\d:\d\d:\d\d\.\d{3} timeupdate ctx=running ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 outLat=0\.012 baseLat=0\.005 win=2000ms audio=2000ms ctx=2000ms a\/w=1 c\/w=1 a\/c=1$/,
+      /^! \d\d:\d\d:\d\d\.\d{3} timeupdate ctx=running ctxRate=44100 rate=1 defRate=1 bgm=title-abc123\.mp3 paused=false ready=4 net=1 outLat=0\.012 baseLat=0\.005 win=2000ms audio=2000ms ctx=1954ms a\/w=1 c\/w=0\.977 a\/c=1\.024 span=2000ms n=1 a\/w=\[1\.\.1\] c\/w=\[0\.977\.\.0\.977\]$/,
     );
-    expect(lines.some((l) => l.startsWith("! "))).toBe(true);
   });
 
-  it("記録は500件までで、古いものから消える", () => {
-    for (let i = 0; i < 620; i++) logAudioDebug("mark", String(i));
+  it("記録は2000件までで、古いものから消える", () => {
+    for (let i = 0; i < 2100; i++) logAudioDebug("mark", String(i));
     const list = getAudioDebugEntries();
-    expect(list).toHaveLength(500);
-    expect(list[list.length - 1].note).toBe("619");
-    expect(list[0].note).toBe("120");
+    expect(list).toHaveLength(2000);
+    expect(list[list.length - 1].note).toBe("2099");
+    expect(list[0].note).toBe("100");
   });
 
   it("テキストにすると、1件1行で、時刻・イベント・状態・再生速度が入る", () => {
@@ -420,5 +455,37 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     audio.dispatchEvent(new Event("timeupdate"));
     expect(interval).not.toHaveBeenCalled();
     expect(raf).not.toHaveBeenCalled();
+  });
+  it("実験A・Bのスイッチ: ふだんはオフ。保存される。ログが無効なあいだは、保存されていても、働かない(isExperimentOn)", () => {
+    expect(getAudioDebugState()).toMatchObject({ rebuild: false, buffer: false });
+    expect(isExperimentOn("rebuild")).toBe(false);
+    setAudioExperiment("rebuild", true);
+    setAudioExperiment("buffer", true);
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.rebuild)).toBe("1");
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.buffer)).toBe("1");
+    expect(isExperimentOn("rebuild")).toBe(true);
+    expect(isExperimentOn("buffer")).toBe(true);
+    setAudioDebugEnabled(false); // ログを切ると、実験は働かない(スイッチは、残る)
+    expect(isExperimentOn("rebuild")).toBe(false);
+    expect(isExperimentOn("buffer")).toBe(false);
+    expect(getAudioDebugState()).toMatchObject({ rebuild: true, buffer: true });
+    setAudioDebugEnabled(true);
+    expect(isExperimentOn("buffer")).toBe(true);
+    setAudioExperiment("buffer", false);
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.buffer)).toBeNull();
+  });
+
+  it("MARK の行に、スイッチA・Bの状態・再生方式・最後の rebuild の時刻・buffer のときの曲の中の位置を足す", () => {
+    setAudioExperiment("rebuild", true);
+    registerAudioProbe(() => ({ method: "buffer", lastRebuildAt: Date.UTC(2026, 9, 15, 12, 34, 56, 789), bufferPosition: 12.345 }));
+    setup();
+    markAudioDebug();
+    const text = formatAudioDebug();
+    expect(text).toMatch(/MARK .*A=on B=off method=buffer lastRebuild=12:34:56\.789 bufferPos=12\.345/);
+    expect(text).toMatch(/now:\[-\] last:\[-\] A=on/); // buffer 方式のときは、audio の時計の窓は出さない
+    registerAudioProbe(null);
+    clearAudioDebug();
+    markAudioDebug();
+    expect(formatAudioDebug()).toMatch(/A=on B=off method=audio lastRebuild=-$/m);
   });
 });

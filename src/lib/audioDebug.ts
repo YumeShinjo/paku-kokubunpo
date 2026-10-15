@@ -16,12 +16,23 @@
  *   wallΔ = performance.now の進み(実際に経った時間) / audioΔ = audio.currentTime の進み(プレーヤー側の時計) /
  *   ctxΔ = audioContext.currentTime の進み(実際の出力に近い、AudioContext側の時計)
  * そこから、audio/wall・ctx/wall・audio/ctx の3つの比を出す。ふつうは、どれかが 1.0 から ±0.02 以上ずれた窓だけ記録し、
- * 「全記録」のときは、すべての窓(約2秒ごとに1件)を記録する。どれかの比が 1.0 から ±0.01 以上ずれた行には、先頭に「!」を付ける。
+ * 「全記録」のときは、窓を、約10秒ごとに1件へ間引いて記録する(間引いた行には、それまでの a/w・c/w の最大値と最小値を添える)。
+ * ただし、どれかの比が 1.0 から ±0.01 以上ずれた窓(先頭に「!」を付ける)と、止まる・動き出す・裏に回るなどの出来事は、間引かず、すべて記録する。
  * 窓が、止まる・動き出す(statechange)・裏に回る/戻る・一時停止・シークをまたいだときは、その行に「窓をまたいだ」と印を付ける。
- * 記録は、メモリ上の500件までのリング(古いものから消える)。
+ * 記録は、メモリ上の2000件までのリング(古いものから消える)。全記録で約3時間ぶん。
+ *
+ * このファイルは、ピッチ異常の対策を試す2つのスイッチ(実験A・B)の状態も持つ(どちらも、ふだんはオフ。端末に保存する):
+ *  - A「復帰したら audio 要素を作り直す」/ B「BGMを AudioBuffer で鳴らす」。中身は、lib/audio.ts と lib/bgmBuffer.ts
+ *  - スイッチは、音のログが有効なときだけ見える。ログが無効なあいだは、保存されていても、働かない(isExperimentOn)
  */
 
-const MAX_ENTRIES = 500;
+const MAX_ENTRIES = 2000;
+/**
+ * 全記録のとき、ふつうの窓(比が 1.0 から ±0.01 以内)は、この時間(ミリ秒)ぶんたまるごとに、1件へ間引く(約2秒の窓が、約5つで1件)。
+ * 比が ±0.01 以上ずれた窓と、statechange / visibilitychange / pause / playing / waiting / seeking / MARK / rebuild などは、間引かず、すべて記録する。
+ * 約10秒ごと1件 + リング2000件で、約3時間ぶんが残る。
+ */
+const THIN_MS = 9000;
 /** 比が 1.0 からこれ以上ずれた窓は、ふつうのモードでも記録する */
 const RATIO_TOLERANCE = 0.02;
 /** 比が 1.0 からこれ以上ずれた行には、先頭に「!」を付ける(あとで探しやすくする) */
@@ -38,6 +49,12 @@ const MAX_GAP_MS = 1500;
 export const AUDIO_DEBUG_KEY = "paku-kokubunpo:audiodebug";
 /** 「全記録」(すべての窓を記録する)を端末に保存するキー(値は "1") */
 export const AUDIO_DEBUG_FULL_KEY = "paku-kokubunpo:audiodebug-full";
+/** 実験A・Bのスイッチを端末に保存するキー(値は "1") */
+export const AUDIO_EXPERIMENT_KEYS = {
+  rebuild: "paku-kokubunpo:audiodebug-rebuild",
+  buffer: "paku-kokubunpo:audiodebug-buffer",
+} as const;
+export type AudioExperiment = keyof typeof AUDIO_EXPERIMENT_KEYS;
 
 /** 約2秒の窓で測った、3つの時計の進みと、3つの比(測れないものは null) */
 export interface AudioDebugWindow {
@@ -52,6 +69,20 @@ export interface AudioDebugWindow {
   ac: number | null;
   /** 窓が、止まる・動き出す・裏に回る/戻る・一時停止・シークなどをまたいだ(比の信頼性が低い) */
   crossed: boolean;
+  /** 窓が、ループのつなぎ目(曲の終わりから先頭へ戻るところ)をまたいだ */
+  looped: boolean;
+}
+
+/** 間引いた窓も含めた、a/w・c/w の最大値と最小値(c/w が測れなかったときは null) */
+export interface AudioDebugSpan {
+  /** 何個の窓を、まとめたか */
+  windows: number;
+  /** まとめた窓の、wallΔ の合計(ミリ秒) */
+  ms: number;
+  awMin: number;
+  awMax: number;
+  cwMin: number | null;
+  cwMax: number | null;
 }
 
 export interface AudioDebugEntry {
@@ -75,6 +106,8 @@ export interface AudioDebugEntry {
   win?: AudioDebugWindow;
   /** どれかの比が 1.0 から ±0.01 以上ずれている(先頭に「!」) */
   bang?: boolean;
+  /** 全記録で、前に記録した行から、この行までの窓の、a/w・c/w の最大値と最小値(間引かれた窓のずれも分かる) */
+  span?: AudioDebugSpan;
   /** 「いま高い」ボタン(MARK)を押した瞬間の値 */
   mark?: {
     wallNow: number;
@@ -84,6 +117,8 @@ export interface AudioDebugEntry {
     current: AudioDebugWindow | null;
     /** 直前に終わった窓の測定 */
     last: AudioDebugWindow | null;
+    /** 実験A・Bのスイッチの状態・再生方式・最後の rebuild の時刻(ミリ秒。なければ null)・buffer 方式のときの曲の中の位置(秒) */
+    experiment: { rebuild: boolean; buffer: boolean; method: string; lastRebuildAt: number | null; bufferPosition: number | null };
   };
   /** その他の補足(曲のファイル名など) */
   note?: string;
@@ -97,6 +132,10 @@ export interface AudioDebugState {
   revealed: boolean;
   /** 全記録: すべての窓を記録する(端末に保存される) */
   full: boolean;
+  /** 実験A: 復帰したら audio 要素を作り直す(端末に保存される。ログが有効なときだけ働く) */
+  rebuild: boolean;
+  /** 実験B: BGMを AudioBuffer で鳴らす(端末に保存される。ログが有効なときだけ働く) */
+  buffer: boolean;
 }
 
 const entries: AudioDebugEntry[] = [];
@@ -140,7 +179,7 @@ function urlFlag(): "1" | "0" | null {
 
 function current(): AudioDebugState {
   if (state) return state;
-  if (typeof window === "undefined") return (state = { enabled: false, revealed: false, full: false });
+  if (typeof window === "undefined") return (state = { enabled: false, revealed: false, full: false, rebuild: false, buffer: false });
   const flag = urlFlag();
   let enabled = readFlag(AUDIO_DEBUG_KEY);
   if (flag === "1") {
@@ -150,7 +189,13 @@ function current(): AudioDebugState {
     enabled = false;
     writeFlag(AUDIO_DEBUG_KEY, false);
   }
-  state = { enabled, revealed: enabled, full: readFlag(AUDIO_DEBUG_FULL_KEY) };
+  state = {
+    enabled,
+    revealed: enabled,
+    full: readFlag(AUDIO_DEBUG_FULL_KEY),
+    rebuild: readFlag(AUDIO_EXPERIMENT_KEYS.rebuild),
+    buffer: readFlag(AUDIO_EXPERIMENT_KEYS.buffer),
+  };
   return state;
 }
 
@@ -162,6 +207,12 @@ function setState(next: AudioDebugState): void {
 /** いま有効か */
 export function isAudioDebugEnabled(): boolean {
   return current().enabled;
+}
+
+/** 実験のスイッチが、働いているか(ログが有効で、スイッチがオン)。ログが無効なあいだは、スイッチがオンでも、働かない */
+export function isExperimentOn(name: AudioExperiment): boolean {
+  const now = current();
+  return now.enabled && now[name];
 }
 
 /** 設定画面が、表示を決めるための状態(useSyncExternalStore の getSnapshot。変わるまで、同じ値を返す) */
@@ -184,7 +235,7 @@ function bgmName(audio: HTMLAudioElement | null): string | null {
 
 const num = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
 
-type Extra = Partial<Pick<AudioDebugEntry, "win" | "bang" | "mark" | "note">>;
+type Extra = Partial<Pick<AudioDebugEntry, "win" | "bang" | "span" | "mark" | "note">>;
 
 function push(event: string, extra?: Extra): void {
   const ctx = ctxRef;
@@ -228,9 +279,26 @@ interface Sampler {
   crossed: boolean;
   /** 直前に終わった窓 */
   last: AudioDebugWindow | null;
+  /** 窓が、ループのつなぎ目をまたいだ */
+  looped: boolean;
+  /** 全記録で、まだ記録していない窓の、最大・最小(間引いた窓のずれを、次に記録する行へ添えるため) */
+  span: AudioDebugSpan;
 }
 
-const newSampler = (): Sampler => ({ started: false, baseWall: 0, baseCtx: null, audioAcc: 0, lastWall: 0, lastPos: 0, crossed: false, last: null });
+const newSpan = (): AudioDebugSpan => ({ windows: 0, ms: 0, awMin: Infinity, awMax: -Infinity, cwMin: null, cwMax: null });
+
+function addToSpan(span: AudioDebugSpan, win: AudioDebugWindow): void {
+  span.windows += 1;
+  span.ms += win.wallMs;
+  span.awMin = Math.min(span.awMin, win.aw);
+  span.awMax = Math.max(span.awMax, win.aw);
+  if (win.cw !== null) {
+    span.cwMin = span.cwMin === null ? win.cw : Math.min(span.cwMin, win.cw);
+    span.cwMax = span.cwMax === null ? win.cw : Math.max(span.cwMax, win.cw);
+  }
+}
+
+const newSampler = (): Sampler => ({ started: false, baseWall: 0, baseCtx: null, audioAcc: 0, lastWall: 0, lastPos: 0, crossed: false, last: null, looped: false, span: newSpan() });
 let sampler: Sampler = newSampler();
 
 /** 窓を、止まる・動き出す・裏に回る/戻る・一時停止・シークがまたいだ、という印を付ける */
@@ -254,6 +322,7 @@ function measure(wall: number, audioAcc: number, ctxNow: number | null): AudioDe
     cw: ctxMs === null ? null : ratio3(ctxMs, wallMs),
     ac: ctxMs === null ? null : ratio3(audioMs, ctxMs),
     crossed: sampler.crossed,
+    looped: sampler.looped,
   };
 }
 
@@ -319,14 +388,16 @@ function attachAudio(audio: HTMLAudioElement): void {
       const ctxNow = num(ctxRef?.currentTime) ?? null;
       const s = sampler;
       if (!s.started) {
-        Object.assign(s, { started: true, baseWall: wall, baseCtx: ctxNow, audioAcc: 0, lastWall: wall, lastPos: pos, crossed: false });
+        Object.assign(s, { started: true, baseWall: wall, baseCtx: ctxNow, audioAcc: 0, lastWall: wall, lastPos: pos, crossed: false, looped: false });
         return;
       }
       let delta = pos - s.lastPos;
       if (delta < 0) {
         // ループで巻き戻った(曲の長さを足して続ける)。それ以外の巻き戻し(シークなど)は、進んでいないことにして、またいだ印を付ける
-        if (audio.loop && Number.isFinite(audio.duration)) delta += audio.duration;
-        else {
+        if (audio.loop && Number.isFinite(audio.duration)) {
+          delta += audio.duration;
+          s.looped = true; // ループのつなぎ目をまたいだ窓(つなぎ目のすき間があると、この窓の a/w が乱れる)
+        } else {
           delta = 0;
           s.crossed = true;
         }
@@ -340,9 +411,19 @@ function attachAudio(audio: HTMLAudioElement): void {
       const win = measure(wall, s.audioAcc, ctxNow);
       if (win) {
         s.last = win;
-        if (current().full || offBy(win, RATIO_TOLERANCE)) push("timeupdate", { win, bang: offBy(win, BANG_TOLERANCE) });
+        const bang = offBy(win, BANG_TOLERANCE);
+        if (current().full) {
+          // 全記録: ふつうの窓は、約10秒ぶんたまるごとに1件へ間引く。ずれた窓(!)は、すべて記録する。どちらの行にも、それまでの最大・最小を添える
+          addToSpan(s.span, win);
+          if (bang || s.span.ms >= THIN_MS) {
+            push("timeupdate", { win, bang, span: s.span });
+            s.span = newSpan();
+          }
+        } else if (offBy(win, RATIO_TOLERANCE)) {
+          push("timeupdate", { win, bang });
+        }
       }
-      Object.assign(s, { baseWall: wall, baseCtx: ctxNow, audioAcc: 0, crossed: false });
+      Object.assign(s, { baseWall: wall, baseCtx: ctxNow, audioAcc: 0, crossed: false, looped: false });
     },
     { signal },
   );
@@ -411,6 +492,28 @@ export function setAudioDebugFull(on: boolean): void {
   setState({ ...now, full: on });
 }
 
+/** 実験A・Bのスイッチを切り替える(端末に保存する) */
+export function setAudioExperiment(name: AudioExperiment, on: boolean): void {
+  const now = current();
+  if (now[name] === on) return;
+  writeFlag(AUDIO_EXPERIMENT_KEYS[name], on);
+  setState({ ...now, [name]: on });
+}
+
+/** MARK に足す、再生まわりの情報を返す関数(lib/audio.ts が登録する。audioDebug から audio.ts を読むと、ぐるぐる参照になるため) */
+export interface AudioProbe {
+  /** 再生方式: "audio"(<audio> 要素)か "buffer"(AudioBuffer) */
+  method: string;
+  /** 最後に <audio> 要素を作り直した時刻(ミリ秒)。なければ null */
+  lastRebuildAt: number | null;
+  /** buffer 方式のとき、曲の中の位置(秒)。それ以外は null */
+  bufferPosition: number | null;
+}
+let probe: (() => AudioProbe) | null = null;
+export function registerAudioProbe(fn: (() => AudioProbe) | null): void {
+  probe = fn;
+}
+
 /**
  * 「いま高い」ボタン: 押した瞬間の、3つの時計・各比・出力の遅れ・ctx の状態とサンプルレート・曲の名前を、「MARK」の行で記録する。
  * 有効でなければ、何もしない(false)。
@@ -423,7 +526,20 @@ export function markAudioDebug(): boolean {
   // いまの窓の、ここまでの進み(最後の timeupdate までの進みに、いまの位置までを足す)
   const pending = audioRef && sampler.started ? Math.max(0, audioRef.currentTime - sampler.lastPos) : 0;
   const currentWin = measure(wall, sampler.audioAcc + pending, ctxNow);
-  push("MARK", { mark: { wallNow: Math.round(wall * 10) / 10, audioTime, ctxTime: ctxNow, current: currentWin, last: sampler.last } });
+  const info = probe ? probe() : { method: "audio", lastRebuildAt: null, bufferPosition: null };
+  const now = current();
+  // buffer 方式のときは、<audio> は鳴っていない(止まっている)ので、audio の時計の窓は、意味がない(ctx の時計と、曲の中の位置だけを見る)
+  const windows = info.method !== "buffer";
+  push("MARK", {
+    mark: {
+      wallNow: Math.round(wall * 10) / 10,
+      audioTime,
+      ctxTime: ctxNow,
+      current: windows ? currentWin : null,
+      last: windows ? sampler.last : null,
+      experiment: { rebuild: now.rebuild, buffer: now.buffer, ...info },
+    },
+  });
   return true;
 }
 
@@ -442,7 +558,7 @@ const fmt = (n: number | boolean | string | null | undefined): string => (n === 
 
 /** 窓の測定を、1行ぶんの文字にする */
 function formatWindow(w: AudioDebugWindow): string {
-  return `win=${w.wallMs}ms audio=${w.audioMs}ms ctx=${fmt(w.ctxMs)}ms a/w=${w.aw} c/w=${fmt(w.cw)} a/c=${fmt(w.ac)}${w.crossed ? " 窓をまたいだ" : ""}`;
+  return `win=${w.wallMs}ms audio=${w.audioMs}ms ctx=${fmt(w.ctxMs)}ms a/w=${w.aw} c/w=${fmt(w.cw)} a/c=${fmt(w.ac)}${w.crossed ? " 窓をまたいだ" : ""}${w.looped ? " ループ" : ""}`;
 }
 
 /** 記録を、コピーできるテキストにする(1件1行。先頭に、件数などの情報) */
@@ -464,11 +580,21 @@ export function formatAudioDebug(list: readonly AudioDebugEntry[] = entries): st
     if (e.outputLatency !== undefined) parts.push(`outLat=${e.outputLatency}`);
     if (e.baseLatency !== undefined) parts.push(`baseLat=${e.baseLatency}`);
     if (e.win) parts.push(formatWindow(e.win));
+    if (e.span) {
+      const sp = e.span;
+      parts.push(`span=${sp.ms}ms n=${sp.windows} a/w=[${sp.awMin}..${sp.awMax}] c/w=[${fmt(sp.cwMin)}..${fmt(sp.cwMax)}]`);
+    }
     if (e.mark) {
       const m = e.mark;
       parts.push(`wall=${m.wallNow} audioT=${fmt(m.audioTime)} ctxT=${fmt(m.ctxTime)}`);
       parts.push(m.current ? `now:[${formatWindow(m.current)}]` : "now:[-]");
       parts.push(m.last ? `last:[${formatWindow(m.last)}]` : "last:[-]");
+      const x = m.experiment;
+      parts.push(
+        `A=${x.rebuild ? "on" : "off"} B=${x.buffer ? "on" : "off"} method=${x.method} lastRebuild=${x.lastRebuildAt === null ? "-" : time(x.lastRebuildAt)}${
+          x.bufferPosition === null ? "" : ` bufferPos=${x.bufferPosition}`
+        }`,
+      );
     }
     if (e.note) parts.push(`note=${e.note}`);
     return parts.join(" ");
@@ -476,7 +602,7 @@ export function formatAudioDebug(list: readonly AudioDebugEntry[] = entries): st
   return [
     `audiodebug ${new Date().toISOString()}`,
     `開始: ${startedAt ? new Date(startedAt).toISOString() : "-"} / 件数: ${list.length}(最大${MAX_ENTRIES}件。古いものから消える) / 全記録: ${current().full ? "あり" : "なし"}`,
-    `win は、約${RATIO_WINDOW_MS / 1000}秒の窓。a/w=audio÷wall・c/w=ctx÷wall・a/c=audio÷ctx(audio=audio.currentTime、ctx=AudioContext.currentTime、wall=performance.now の進み)。ふつうは、どれかが 1.0 から ±${RATIO_TOLERANCE} 以上ずれた窓だけ記録(全記録は、すべての窓)。「!」は ±${BANG_TOLERANCE} 以上`,
+    `win は、約${RATIO_WINDOW_MS / 1000}秒の窓。a/w=audio÷wall・c/w=ctx÷wall・a/c=audio÷ctx(audio=audio.currentTime、ctx=AudioContext.currentTime、wall=performance.now の進み)。ふつうは、どれかが 1.0 から ±${RATIO_TOLERANCE} 以上ずれた窓だけ記録。全記録は、約${THIN_MS / 1000 + 1}秒ごとに1件へ間引き(span=その間の a/w・c/w の最大と最小)、「!」(±${BANG_TOLERANCE} 以上ずれた窓)と出来事は間引かない`,
     ...lines,
   ].join("\n");
 }
@@ -497,10 +623,13 @@ export function resetAudioDebugForTest(enabled?: boolean): void {
   try {
     window.localStorage.removeItem(AUDIO_DEBUG_KEY);
     window.localStorage.removeItem(AUDIO_DEBUG_FULL_KEY);
+    window.localStorage.removeItem(AUDIO_EXPERIMENT_KEYS.rebuild);
+    window.localStorage.removeItem(AUDIO_EXPERIMENT_KEYS.buffer);
   } catch {
     // 無視
   }
-  state = enabled === undefined ? null : { enabled, revealed: enabled, full: false };
+  probe = null;
+  state = enabled === undefined ? null : { enabled, revealed: enabled, full: false, rebuild: false, buffer: false };
 }
 
 /** 記録のテキストを、クリップボードへコピーする。コピーできたか(true)を返す */
