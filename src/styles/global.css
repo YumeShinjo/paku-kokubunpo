@@ -3216,10 +3216,13 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   padding: 0.5rem 0.4rem;
   font-size: 0.95rem;
   line-height: 1.25;
+  /* 折り返すときは、単語(空白)のところで。「せつめ|い」のように、単語の途中で切らない */
+  word-break: keep-all;
 }
 
 .settings-note-line {
   font-size: 0.8rem;
+  word-break: keep-all; /* 折り返すときは、「→」のところで */
 }
 
 /* このアプリについて: 縦に4行。右端に、進む(>)か、外のサイト(↗)の印 */
