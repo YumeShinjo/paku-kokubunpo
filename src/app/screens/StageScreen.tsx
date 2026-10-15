@@ -12,7 +12,6 @@ import { syncMastery } from "@/features/mastery/masterySync";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useToastStore } from "@/app/store/toastStore";
 import { MascotFace } from "@/features/mascot/Mascot";
-import { BossEncounter } from "@/features/quiz/BossEncounter";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
@@ -51,8 +50,8 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [justClearedArea, setJustClearedArea] = useState(false);
-  // 小ボス戦は、出題の前に「○○が あらわれた!」の画面を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
-  const [encounterPending, setEncounterPending] = useState(() => stage?.type === "subBoss" && restored === null);
+  // 小ボス戦は、戦闘に入ったとき、説明のポップアップの先頭に「○○が あらわれた!」を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
+  const [appearName] = useState(() => (stage?.type === "subBoss" && restored === null ? areas.find((a) => a.id === areaId)?.subBossName : undefined));
 
   const cleared = result !== null && (!isBoss || result.bossDefeated);
 
@@ -175,25 +174,12 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     );
   }
 
-  const subBossName = areas.find((a) => a.id === areaId)?.subBossName;
-  if (encounterPending && isBoss && label && subBossName) {
-    return (
-      <BossEncounter
-        areaId={areaId}
-        bossName={subBossName}
-        label={label}
-        title={stageTitleText(stage)}
-        hpMax={bossHpMax(questions.length)}
-        onStart={() => setEncounterPending(false)}
-      />
-    );
-  }
-
   return (
     <QuizPlayer
       key={attempt}
       areaId={areaId}
       questions={questions}
+      appear={attempt === 0 ? appearName : undefined}
       stageTitle={rb(stageTitleText(stage))}
       boss={
         isBoss && label

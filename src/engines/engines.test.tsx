@@ -279,4 +279,47 @@ describe("QuizPlayer: 続けて届いた同じ問題の解答は、ボスのHP�
     });
     expect(container.querySelector(".hp-text")?.textContent).toContain("4 / 5");
   });
+
+  it("小ボス戦に入ると、説明のポップアップの先頭に「○○が あらわれた!」が出て、「たたかう!」で閉じると、そのまま出題に入る(別の画面は挟まない)", async () => {
+    const { QuizPlayer } = await import("@/features/quiz/QuizPlayer");
+    render(
+      <QuizPlayer
+        areaId="kotobaNoIchiba"
+        questions={[choiceQuestion]}
+        boss={{ label: "小ボス", title: "テスト", hpMax: 1, type: "subBoss" }}
+        appear="メイ"
+        onComplete={vi.fn()}
+      />,
+    );
+    const message = container.querySelector(".boss-appear-message");
+    expect(message?.textContent).toBe("メイが あらわれた!");
+    expect(message?.getAttribute("role")).toBe("status");
+    // 説明のポップアップの中にあり、戦闘の画面(ボスのパネル・HPゲージ)も、すでに出ている
+    expect(container.querySelector(".stage-intro .boss-appear-message")).not.toBeNull();
+    expect(container.querySelector(".boss-panel")).not.toBeNull();
+    expect(container.querySelector(".hp-gauge")).not.toBeNull();
+    const fight = [...container.querySelectorAll("button")].find((b) => b.textContent === "たたかう!")!;
+    act(() => fight.click());
+    expect(container.querySelector(".boss-appear-message")).toBeNull();
+    expect(container.querySelector('[data-testid="engine"]')).not.toBeNull();
+  });
+
+  it("再開・「もう少し」の再挑戦(appear を渡さない)では、「あらわれた!」を出さない", async () => {
+    const { QuizPlayer } = await import("@/features/quiz/QuizPlayer");
+    render(
+      <QuizPlayer
+        areaId="kotobaNoIchiba"
+        questions={[choiceQuestion]}
+        boss={{ label: "小ボス", title: "テスト", hpMax: 1, type: "subBoss" }}
+        onComplete={vi.fn()}
+      />,
+    );
+    expect(container.querySelector(".boss-appear-message")).toBeNull();
+  });
+
+  it("通常ステージ(boss なし)では、appear を渡しても出さない", async () => {
+    const { QuizPlayer } = await import("@/features/quiz/QuizPlayer");
+    render(<QuizPlayer areaId="kotobaNoIchiba" questions={[choiceQuestion]} appear="メイ" onComplete={vi.fn()} />);
+    expect(container.querySelector(".boss-appear-message")).toBeNull();
+  });
 });

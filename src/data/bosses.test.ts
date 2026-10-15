@@ -91,3 +91,17 @@ describe("小ボスの話者名からエリアidを引く(subBossAreaOf)", () =>
     expect(subBossAreaOf(undefined)).toBeUndefined();
   });
 });
+
+describe("小ボスの登場メッセージ(「○○が あらわれた!」)", () => {
+  it("すべての小ボスの名前で、ネタバレ禁止語(ラスボス・王様・ヴェルバルト・コレット・王女)を含まない", async () => {
+    const { areas } = await import("./areas");
+    const names = areas.map((a) => a.subBossName).filter((n): n is string => n !== undefined);
+    expect(names.length).toBeGreaterThanOrEqual(7);
+    for (const name of names) {
+      const message = `${name}が あらわれた!`;
+      for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(message, name).not.toContain(word);
+      // 名前は、ひらがな・カタカナだけで書けるので、ふりがなは要らない
+      expect(/[一-鿿]/.test(name), `${name} に漢字がある(ふりがなが必要)`).toBe(false);
+    }
+  });
+});

@@ -3186,21 +3186,13 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   box-shadow: 0 2px 0 rgba(75, 58, 46, 0.25);
 }
 
-/* 小ボス戦の始まりの画面(「○○が あらわれた!」) */
-.screen-boss-encounter {
-  align-items: center;
-  text-align: center;
-}
-
-.boss-encounter-panel .boss-portrait {
-  width: min(16rem, 70vw);
-  height: min(16rem, 70vw);
-}
-
-.boss-encounter-message {
-  font-size: 1.6rem;
+/* 小ボス戦に入ったときの、説明ポップアップの先頭のメッセージ(「○○が あらわれた!」) */
+.boss-appear-message {
+  font-size: 1.5rem;
   font-weight: bold;
-  margin: 0.4rem 0;
+  line-height: 1.4;
+  margin: 0 0 0.5rem;
+  text-align: center;
   animation: reveal-in 0.5s ease-out both;
 }
 
@@ -3216,7 +3208,7 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boss-encounter-message {
+  .boss-appear-message {
     animation: none;
   }
 }

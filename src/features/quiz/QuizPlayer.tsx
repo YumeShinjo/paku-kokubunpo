@@ -52,6 +52,11 @@ interface Props {
   questions: Question[];
   /** 指定するとボス戦(HPゲージ付き)になる。3章: ゲージは演出のみで、プレイヤー側は被ダメージなし */
   boss?: { label: string; title: string; hpMax: number; type: "subBoss" | "lastBoss" };
+  /**
+   * ボスの名前。指定すると、戦闘の冒頭の説明ポップアップの先頭に「○○が あらわれた!」を出す(そのまま戦闘に入る。
+   * 別の「あらわれた」だけの画面は挟まない)。最初の挑戦だけに渡す(途中からの再開・「もう少し」の再挑戦では渡さない)
+   */
+  appear?: string;
   /** 画面上部に出す見出し(自由練習の単元名など) */
   heading?: RubyText;
   /** ステージ全体のテーマ名。出題形式が混ざるステージの、冒頭の説明に使う */
@@ -86,6 +91,7 @@ export function QuizPlayer({
   areaId,
   questions,
   boss,
+  appear,
   heading,
   stageTitle,
   onComplete,
@@ -450,6 +456,11 @@ export function QuizPlayer({
       {introOpen && intro && (
         <div className="feedback-overlay stage-intro-overlay">
           <div role="dialog" aria-label="ステージのせつめい" className="feedback stage-intro">
+            {boss && appear && (
+              <p className="boss-appear-message" role="status">
+                {appear}が あらわれた!
+              </p>
+            )}
             <p className="engine-flavor-label">
               <Ruby text={intro.title} />
             </p>
