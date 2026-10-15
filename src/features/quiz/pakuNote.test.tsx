@@ -62,7 +62,7 @@ describe("最初の正解のポップアップの「パクっと」の説明(初
     expect(useTutorialStore.getState().seenGuides).not.toContain("paku");
   });
 
-  it("設定の「そうさの せつめいを もういちど 見る」(ガイドのリセット)で、もう一度出る", () => {
+  it("設定の「そうさの せつめい」(ガイドのリセット)で、もう一度出る", () => {
     useTutorialStore.setState({ seenGuides: ["choice", "paku"] });
     play();
     answer(true);

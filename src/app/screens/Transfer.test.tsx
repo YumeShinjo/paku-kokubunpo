@@ -37,9 +37,9 @@ describe("引き継ぎの画面", () => {
 
   it("せっていから、「つくる」「いれる」の2つの画面へ進める", () => {
     const { container, done } = mount(<SettingsScreen />);
-    act(() => byText(container, "ひきつぎコードを つくる").click());
+    act(() => byText(container, "つくる").click());
     expect(useNavigationStore.getState().screen.name).toBe("transferIssue");
-    act(() => byText(container, "ひきつぎコードを いれる").click());
+    act(() => byText(container, "いれる").click());
     expect(useNavigationStore.getState().screen.name).toBe("transferRestore");
     done();
   });

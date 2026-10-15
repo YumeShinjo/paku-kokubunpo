@@ -64,7 +64,7 @@ describe("あそびかた画面", () => {
     expect(useNavigationStore.getState().screen).toEqual({ name: "title" });
   });
 
-  it("ホーム画面の右上の「あそびかた」ボタンと、設定の「あそびかたを 見る」から開ける", () => {
+  it("ホーム画面の右上の「あそびかた」ボタンと、設定の「あそびかた」から開ける", () => {
     act(() => root.render(<TitleScreen />));
     const entry = container.querySelector<HTMLButtonElement>("button.title-howto")!;
     expect(entry.getAttribute("aria-label")).toBe("あそびかた");
@@ -73,7 +73,7 @@ describe("あそびかた画面", () => {
 
     useNavigationStore.setState({ screen: { name: "settings" } });
     act(() => root.render(<SettingsScreen />));
-    const settingsButton = [...container.querySelectorAll("button")].find((b) => b.textContent?.includes("あそびかたを"))!;
+    const settingsButton = [...container.querySelectorAll("button")].find((b) => b.textContent === "あそびかた")!;
     act(() => settingsButton.click());
     expect(useNavigationStore.getState().screen).toEqual({ name: "howto" });
   });

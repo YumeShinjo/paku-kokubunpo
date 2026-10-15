@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
+import { useSettingsStore } from "@/app/store/settingsStore";
 
 const reset = vi.hoisted(() => ({
   resetAllData: vi.fn(async () => ({ removedKeys: [], ranking: "not-joined" as const })),
@@ -107,5 +108,79 @@ describe("設定画面: 音のログのコピー(調査用の隠しボタン)", 
     window.history.replaceState({}, "", "/?audiodebug=1");
     renderScreen();
     expect(container.querySelector(".audio-debug-copy")?.textContent).toContain("音のログ");
+  });
+});
+
+describe("設定画面: 見出しで分けた並び(おと・つかいかた・ひきつぎコード・このアプリについて)", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  const text = (e: Element) => (e.textContent ?? "").replace(/\s+/g, "");
+  const button = (label: string) => [...container.querySelectorAll("button")].find((b) => text(b) === label)!;
+
+  beforeEach(() => {
+    useNavigationStore.setState({ screen: { name: "settings" } });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => root.render(<SettingsScreen />));
+  });
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("見出しが、上から順に5つ(もじの おおきさ・おと・つかいかた・ひきつぎコード・このアプリについて)。初期化は、いちばん下", () => {
+    const heads = [...container.querySelectorAll(".settings-heading")].map((h) => text(h));
+    expect(heads).toEqual(["もじのおおきさ", "おと", "つかいかた", "ひきつぎコードきしゅへんこうのとき", "このアプリについて"]);
+    const screen = container.querySelector(".screen-settings")!;
+    expect(screen.lastElementChild!.classList.contains("settings-reset")).toBe(true);
+  });
+
+  it("おと: スライダー2つ(BGM・こうかおん)、「ためす」は、こうかおんのスライダーと同じ行、ミュートはスイッチ", () => {
+    const sliders = container.querySelectorAll('input[type="range"]');
+    expect(sliders).toHaveLength(2);
+    const seRow = container.querySelector(".settings-slider-row")!;
+    expect(seRow.querySelector('input[type="range"]')).not.toBeNull();
+    expect(text(seRow.querySelector("button")!)).toBe("ためす");
+    const sw = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
+    expect(sw.type).toBe("checkbox");
+    expect(sw.closest("label")!.textContent).toContain("ミュート"); // ラベルごと、行ぜんたいが押せる
+  });
+
+  it("つかいかた・ひきつぎコード: 横に2つずつ並べるボタン(あそびかた/そうさの せつめい、つくる/いれる)", () => {
+    const pairs = [...container.querySelectorAll(".settings-pair")].map((p) => [...p.querySelectorAll("button")].map(text));
+    expect(pairs).toEqual([
+      ["あそびかた", "そうさのせつめい"],
+      ["つくる", "いれる"],
+    ]);
+    // ふりがな(rt)をのぞいた文字が、1行の説明になっている
+    const note = container.querySelector(".settings-note-line")!.cloneNode(true) as HTMLElement;
+    note.querySelectorAll("rt").forEach((rt) => rt.remove());
+    expect(text(note)).toBe("古い端末で「つくる」→新しい端末で「いれる」");
+  });
+
+  it("このアプリについて: プライバシーポリシー・くわしい出典・クレジット・お問い合わせの4行(縦)と、バージョン表記", () => {
+    const rows = [...container.querySelectorAll(".settings-links > *")];
+    expect(rows.map((r) => text(r).replace("(新しいタブで、お問い合わせフォームを開きます)", ""))).toEqual(["プライバシーポリシー", "くわしい出典", "クレジット", "お問い合わせ"]);
+    expect(rows[3].tagName).toBe("A"); // お問い合わせは、外のサイトへのリンク
+    expect(container.querySelector(".settings-version")!.textContent).toMatch(/^v\d/);
+  });
+
+  it("クレジット・くわしい出典・プライバシーポリシーは、設定から開いて、もどると設定に戻る", () => {
+    act(() => button("クレジット").click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "credits", next: { name: "settings" } });
+    act(() => button("くわしい出典").click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "sources", next: { name: "settings" } });
+    act(() => button("プライバシーポリシー").click());
+    expect(useNavigationStore.getState().screen).toEqual({ name: "privacy", next: { name: "settings" } });
+  });
+
+  it("ミュートのスイッチで、ミュートが切り替わる", () => {
+    const sw = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
+    const before = useSettingsStore.getState().muted;
+    act(() => sw.click());
+    expect(useSettingsStore.getState().muted).toBe(!before);
+    act(() => sw.click());
+    expect(useSettingsStore.getState().muted).toBe(before);
   });
 });
