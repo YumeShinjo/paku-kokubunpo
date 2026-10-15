@@ -52,6 +52,31 @@ BGMの音量は、`stage`(-7.6)が最も大きく、`talk`(-16.1)が最も小さ
 - **ホームのBGM(`title.mp3`)の特徴**: 96kbps の CBR。LAVC(ffmpeg)でエンコードされ、先頭に Info ヘッダーがあり、フレーム数(3290)が実際の数と一致する。ID3v2.4 のタグが 6119 バイト付いている(音声データではない)。
   ループ再生(`audio.loop = true`)の継ぎ目には、エンコーダ遅延(576サンプル)と末尾の余白(576サンプル)ぶん、約26msの無音が入りうる(ピッチには関係しない、つなぎ目の小さな間)。
 
+### BGMの再生方式(曲ごと。2026-10-16)
+
+曲ごとに、2つの方式のどちらで鳴らすかを決めている(`src/lib/bgmPolicy.ts`)。
+
+- **buffer**: fetch → decodeAudioData(曲の直前に1回)→ AudioBufferSourceNode(loop)。実機のログで、アプリの切り替えからの復帰・約10分の連続再生でも、ピッチも時計も正常だった
+- **audio**: `<audio>` 要素 → MediaElementSource → GainNode(これまでの方式)
+- **基準**: デコード後のメモリ(長さ × 44100 × 2チャンネル × 4バイト)が **36MiB 以下なら buffer**、超えたら audio(長い曲は、メモリが大きいので、audio のまま)。上限は `BUFFER_MAX_BYTES`(bgmPolicy.ts)。長さが分からない曲は audio
+- 導入曲つきの2曲は、2曲とも buffer のときだけ buffer。音量補正(audioLevels)・フェード・ミュート・裏に回ったときの停止と復帰は、どちらの方式でも同じ経路(同じ GainNode)
+- 設定の「音のログ」(`?audiodebug=1` かバージョン表記を5回タップ)の「B無効」をオンにすると、すべて audio 方式(不具合のときの逃げ道)
+- 長さは `src/assets/audioLevels.ts` の `AUDIO_DURATION_SEC`。曲を差し替えたら、書き換える(テストが、置かれているMP3の実際の長さと照らす)
+
+| ファイル | 長さ(秒) | デコード後のメモリ(MiB) | 方式 |
+| --- | --- | --- | --- |
+| `title.mp3` | 85.94 | 28.9 | buffer |
+| `explore-intro.mp3` | 81.97 | 27.6 | buffer |
+| `explore.mp3` | 87.72 | 29.5 | buffer |
+| `stage.mp3` | 71.34 | 24.0 | buffer |
+| `subBoss.mp3` | 182.67 | 61.5 | audio |
+| `lastBoss.mp3` | 173.11 | 58.2 | audio |
+| `truth-intro.mp3` | 78.05 | 26.3 | buffer |
+| `truth.mp3` | 75.08 | 25.3 | buffer |
+| `ending.mp3` | 205.48 | 69.1 | audio |
+| `talk.mp3` | 104.33 | 35.1 | buffer |
+| `kotonoha.mp3` | 168.28 | 56.6 | audio |
+
 ## 効果音(`src/assets/audio/se/`)
 
 | ファイル(`SeKind`) | 鳴る場面(イベント) | 素材(台帳の名前 / 提供元) | 出典の状況 | 長さ(秒) | 音量(LUFS) | ピーク(dBFS) |

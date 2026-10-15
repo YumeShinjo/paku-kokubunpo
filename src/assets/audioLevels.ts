@@ -35,6 +35,25 @@ export const AUDIO_MEASURED: Readonly<Record<string, { lufs: number; peak: numbe
   "se/pageUnlock": { lufs: -9.1, peak: 0.0 },
 };
 
+/**
+ * BGMの長さ(秒)。MP3の全フレームのヘッダーから測った値(docs/AUDIO_INVENTORY.md。2026-10-15)。
+ * lib/bgmPolicy.ts が、これと「デコード後のメモリ」から、曲ごとの再生方式(AudioBuffer か <audio> か)を決める。
+ * 素材を差し替えたら、同じ名前で、長さを書き換える(表にない曲は、<audio> 方式で鳴らす)。
+ */
+export const AUDIO_DURATION_SEC: Readonly<Record<string, number>> = {
+  "bgm/title": 85.94,
+  "bgm/explore-intro": 81.97,
+  "bgm/explore": 87.72,
+  "bgm/stage": 71.34,
+  "bgm/subBoss": 182.67,
+  "bgm/lastBoss": 173.11,
+  "bgm/truth-intro": 78.05,
+  "bgm/truth": 75.08,
+  "bgm/ending": 205.48,
+  "bgm/talk": 104.33,
+  "bgm/kotonoha": 168.28,
+};
+
 /** BGMの、そろえる音量(LUFS) */
 export const BGM_TARGET_LUFS = -16;
 /** 効果音の、ピークの上限(dBFS) */

@@ -9,7 +9,7 @@
  *   src/assets/images/mascot/base.png(または .webp / .jpg など)に対応する。
  */
 
-import { AUDIO_GAIN_DB, dbToGain } from "./audioLevels";
+import { AUDIO_DURATION_SEC, AUDIO_GAIN_DB, dbToGain } from "./audioLevels";
 
 const IMAGE_EXTS = ["webp", "png", "jpg", "jpeg", "gif", "svg"];
 const AUDIO_EXTS = ["mp3", "m4a", "ogg", "wav"];
@@ -196,6 +196,13 @@ export function bgmGainForUrl(url: string | null | undefined): number {
   if (!url) return 1;
   for (const [name, indexed] of audioIndex) if (indexed === url) return dbToGain(AUDIO_GAIN_DB[name] ?? 0);
   return 1;
+}
+
+/** BGMのファイル(URL)の長さ(秒)。素材ごとの測定値(audioLevels.ts)。表にないものは undefined */
+export function bgmDurationForUrl(url: string | null | undefined): number | undefined {
+  if (!url) return undefined;
+  for (const [name, indexed] of audioIndex) if (indexed === url) return AUDIO_DURATION_SEC[name];
+  return undefined;
 }
 
 /** 効果音の種類の実ファイルのURL。専用のファイルがなければ、代わりの種類のファイル。どちらもなければ undefined */
