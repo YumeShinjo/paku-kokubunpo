@@ -209,7 +209,10 @@ describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", 
       for (const word of ["2024-09-18公開", "【フリーBGM】の表記がある曲のみ二次利用可", "ゲームへの利用可", "キー変更・ピッチ変更は禁止", "著作権法第35条", "音楽：zippy（https://www.youtube.com/@zippysound）"]) expect(row.license, `${name}: ${word}`).toContain(word);
     }
     const eight = byName("凍てつく世界の果て");
-    for (const word of ["2024-03-22公開", "ゲームへの利用可", "音楽：EigHt", "Content ID登録は禁止", "完全なオリジナルとして公開・販売することは不可", "著作権法第35条", "要確認"]) expect(eight.license, word).toContain(word);
+    for (const word of ["2024-03-22公開", "ゲームへの利用可", "音楽：EigHt", "Content ID登録は禁止", "完全なオリジナルとして公開・販売することは不可", "著作権法第35条", "https://eight-novel.fanbox.cc/posts/7647818", "https://www.youtube.com/@eightchann"]) expect(eight.license, word).toContain(word);
+    expect(eight.license).not.toContain("要確認");
+    expect(eight.url).toContain("https://www.youtube.com/@eightchann");
+    expect(eight.url).toContain("https://eight-novel.fanbox.cc/posts/7647818");
   });
 
   it("画像の生成: LoRA・Illustrious-XL・sd-webui-forge-classic・Gemini を、記載のページごとに分けて書く", () => {
@@ -227,7 +230,8 @@ describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", 
     expect(forge.license).toContain("AGPL-3.0");
     const gemini = byName("Gemini(");
     expect(gemini.url).toContain("https://support.google.com/gemini/answer/16625148?hl=ja");
-    expect(gemini.license).toContain("要確認(ユーザー記入)");
+    for (const word of ["https://policies.google.com/terms", "Google won't claim ownership", "Your content remains yours", "AI生成であることを開示する", "誤認させることは禁止"]) expect(gemini.license, word).toContain(word);
+    expect(gemini.license).not.toContain("要確認(ユーザー記入)");
   });
 
   it("タイトルロゴ: 制作のサービス・イラスト・フォントの行があり、ゲーム内のクレジットには出ない", () => {
@@ -252,5 +256,21 @@ describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", 
     const game = buildCreditGroups(assetCredits).flatMap((g) => g.lines).join("\n");
     for (const word of names) expect(game, word).not.toContain(word);
     expect(game).toContain("制作者による制作");
+  });
+
+  it("要確認の解消(2026-10-15の続き): ゆっくりしよ・アイリッシュ的なBGM_2・あかずきんポップ・M+ FONTS", () => {
+    const yukkuri = byName("ゆっくりしよ");
+    expect(yukkuri.name).toBe("ゆっくりしよ"); // 副題は削除
+    expect(yukkuri.url).toContain("https://nyalpacabgm.com/terms-of-use/");
+    for (const word of ["個人・法人、商用・非商用を問わず利用可", "ゲームや、販売する創作物への利用も許諾", "クレジット表記は不要", "Content ID", "再許諾・転売", "明示の記載はない"]) expect(yukkuri.license, word).toContain(word);
+    expect(yukkuri.license).not.toContain("要確認");
+    expect(byName("爽やかなアイリッシュ").name).toBe("爽やかなアイリッシュ的なBGM_2(2021年リミックス版)");
+    expect(byName("爽やかなアイリッシュ").license).not.toContain("要確認");
+    const akazukin = byName("あかずきんポップ");
+    expect(akazukin.license).toContain("オーナー以外には非公開と表示された");
+    expect(akazukin.license).toContain("docs/license-snapshots/");
+    const mplus = byName("M+ FONTS(");
+    expect(mplus.license).toContain("SIL Open Font License, Version 1.1");
+    expect(mplus.url).toContain("https://github.com/coz-m/MPLUS_FONTS");
   });
 });

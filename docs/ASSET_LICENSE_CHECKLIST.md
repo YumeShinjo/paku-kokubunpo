@@ -22,10 +22,10 @@
 | --- | --- | --- |
 | 禁忌の詠唱・千年の内緒話(Hareno) | https://youtu.be/AdWxKyHYQM0 / https://youtu.be/CGjkJKXqgHY | 無料・商用可・ゲーム可。二次配布・販売と、権利を主張する行為は禁止(制作者が確認) |
 | 始まりの村・星降る丘・The Forgotten Girl(zippy) | https://booth.pm/ja/items/6114595 / https://booth.pm/ja/items/6114577 / https://www.youtube.com/watch?v=ZBIg90S5vaI | FANBOXの「フリーBGM 利用規約」(2024-09-18公開)。【フリーBGM】の表記がある曲のみ二次利用可(3曲とも表記ありと、制作者が確認)。ゲーム可。フェード・カット・音量調整・エフェクトは可、キー・ピッチ変更は禁止。クレジット任意。教育機関は著作権法第35条に準ずる |
-| 凍てつく世界の果て(EigHt) | https://www.youtube.com/watch?v=FZ2dtOAPe5U | 「利用規約」(2024-03-22公開)。ゲーム可。著作表記は任意。配信サービス・Content ID登録は禁止。完全なオリジナルとしての公開・販売は不可。教育機関は第35条に準ずる |
+| 凍てつく世界の果て(EigHt) | https://www.youtube.com/watch?v=FZ2dtOAPe5U ・チャンネル https://www.youtube.com/@eightchann ・規約 https://eight-novel.fanbox.cc/posts/7647818 | 「利用規約」(2024-03-22公開)。ゲーム可。著作表記は任意。配信サービス・Content ID登録は禁止。完全なオリジナルとしての公開・販売は不可。教育機関は第35条に準ずる |
 | Prairie4(PeriTune) | https://peritune.com/blog/2019/03/01/prairie4/ | **CC BY 4.0(表示が必要)**。商用可 |
-| 爽やかなアイリッシュ的なBGM(OpenTracks) | https://opentracks.com/bgm/play1840.html | OpenTracksのライセンス。クレジット不要 |
-| ゆっくりしよ(にゃるぱかBGM工房) | https://booth.pm/ja/items/7674668 | クレジット不要・商用可 |
+| 爽やかなアイリッシュ的なBGM_2(2021年リミックス版。OpenTracks) | https://opentracks.com/bgm/play1840.html | OpenTracksのライセンス。クレジット不要 |
+| ゆっくりしよ(にゃるぱかBGM工房) | https://booth.pm/ja/items/7674668 ・規約 https://nyalpacabgm.com/terms-of-use/ | 個人・法人、商用・非商用可。ゲーム・販売する創作物への利用も許諾。通常はクレジット不要。禁止: 楽曲をDLできる状態にすること、Content ID・配信サービスへの登録、再許諾・転売。教育・授業は明示の記載なし(ゲームへの組み込みは許諾された用途) |
 
 ### 画像の生成と制作のツール・素材
 
@@ -34,11 +34,11 @@
 | LoRA「Chibi Lerasigma 228 style」(Ticovca) | https://civitai.com/models/966828/chibi-lerasigma-228-style (削除されたという調査結果あり)・アーカイブ https://civarchive.com/models/966828 | Fair AI Public License 1.0-SD(CivitAIの表記)。生成画像には権利を主張しない。ベースモデルの表示は Pony |
 | Illustrious-XL v2.0 | https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0 | Hugging Faceのlicense欄は creativeml-openrail-m。CivitAI側の表記は Fair AI Public License 1.0-SD(別のページの記載として分けて書いた) |
 | sd-webui-forge-classic | https://github.com/Haoming02/sd-webui-forge-classic | AGPL-3.0(ソフトのライセンス。生成画像のライセンスではない) |
-| Gemini | https://support.google.com/gemini/answer/16625148?hl=ja | ページは「生成 AI の使用禁止に関するポリシー」。生成物の扱いは書かれていない → **要確認(ユーザー記入)** |
+| Gemini | https://policies.google.com/terms (規約) | 生成したコンテンツの所有権をGoogleは主張しない(Your content remains yours)。商用利用の可否・表示義務の明記はない。生成AIのコンテンツを人間が作ったと誤認させることは禁止なので、AI生成であることを開示する |
 | Vサムネ(ロゴの制作) | https://vsamune.com/ | 報告・クレジット不要。生成物は商用・非商用可。素材そのものの再配布は禁止 |
 | Photopea(ロゴの制作) | https://www.photopea.com/ | 制作物は制作者のもの。表記不要 |
 | ICOON MONO(肉球のアイコン3・葉っぱアイコン。TopeconHeroes) | https://icooon-mono.com/ ほか(くわしくは台帳) | 連絡不要・無料・アプリへの組み込み可・加工可。再配布・ジェネレーターの素材・販売サイトでの販売は禁止。商標登録は控える |
-| あかずきんポップ(ロゴのフォント。FLOPDESIGN) | https://flopdesign.booth.pm/items/1748058 | 商用・非商用可、埋め込み可。M+ FONTS派生。クレジットは**作者の希望**(必須ではない) |
+| あかずきんポップ(ロゴのフォント。FLOPDESIGN) | https://flopdesign.booth.pm/items/1748058 (2026-10-15にオーナー以外には非公開と表示) | 商用・非商用可、埋め込み可。M+ FONTS派生。クレジットは**作者の希望**(必須ではない)。条件は、ダウンロードしたときの規約の文面に基づく(保存した文面は docs/license-snapshots/ に、制作者が追加) |
 | Monomaniac One(ロゴのフォント) | https://fonts.google.com/specimen/Monomaniac+One | SIL Open Font License 1.1(Copyright 2020 The Monomaniac Project Authors) |
 
 ### クレジットの表記が必要・希望されている素材
@@ -49,12 +49,8 @@
 
 ### 要確認(残っているもの)
 
-- **Gemini**: 生成物の利用範囲・商用利用の可否・表示の義務は、指定のページには書かれていない(ユーザー記入)
-- **あかずきんポップ**: 作者のBOOTHのページが、2026-10-15 に開くと、オーナー以外には非公開と表示される(条件は、制作者が確認した内容を書いた)
-- **M+ FONTS**: 公式のページには「SIL Open Font License」とあるが、バージョンの表記がない(1.1と見られる)
-- **EigHt**: 規約ページのURLと、チャンネルのURL(提示がない。条件は、制作者が確認した内容を書いた)
-- **ゆっくりしよ**: BOOTHでの題名は「ゆっくりしよ」で、台帳の副題と違う(同じ曲か)
-- **爽やかなアイリッシュ的なBGM_2**: 曲名の「_2」が、OpenTracksのページの2つ目のバージョン(2021年のリミックス)を指すか
+- **あかずきんポップ**: 作者のBOOTHのページが、2026-10-15 に開くと、オーナー以外には非公開と表示された。条件は、ダウンロードしたときの規約の文面に基づく(保存した文面は、`docs/license-snapshots/` に、制作者が追加する)。ページが再び公開されたときの、条件の再確認
+- **M+ FONTS**: 公式リポジトリ(https://github.com/coz-m/MPLUS_FONTS)の現在の OFL.txt は SIL Open Font License 1.1(2026-10-15に確認)。あかずきんポップの元になった2018年の版そのもののバージョンは、確認していない
 - 音源を取り出しにくい配置にする条件(OpenTracks・Springin'・PeriTune): 音声ファイルは Git に置かず(`.gitignore` で除外。履歴にもない)、本番では、ビルド後のファイル名にハッシュが付く形で配信している
 - タイトルロゴの画像ファイルは、素材として単体で配布しない(ソースコードの提出でも、アプリの一部としてのみ)
 
