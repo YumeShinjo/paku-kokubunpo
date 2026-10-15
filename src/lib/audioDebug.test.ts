@@ -8,6 +8,7 @@ import {
   getAudioDebugEntries,
   getAudioDebugState,
   isAudioDebugEnabled,
+  isBufferEnabled,
   isExperimentOn,
   logAudioDebug,
   markAudioDebug,
@@ -61,14 +62,14 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
   it("ふだん(URLにも、保存にも、指定がない)は、無効", () => {
     resetAudioDebugForTest();
     expect(isAudioDebugEnabled()).toBe(false);
-    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: false, full: false, rebuild: false, buffer: false });
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: false, full: false, rebuild: false, bufferOff: false });
   });
 
   it("URLに audiodebug=1 を付けて開くと、有効になり、端末に保存される(PWAで、URLなしで起動しても、有効のまま)", () => {
     resetAudioDebugForTest();
     window.history.replaceState({}, "", "/?audiodebug=1");
     expect(isAudioDebugEnabled()).toBe(true);
-    expect(getAudioDebugState()).toEqual({ enabled: true, revealed: true, full: false, rebuild: false, buffer: false });
+    expect(getAudioDebugState()).toEqual({ enabled: true, revealed: true, full: false, rebuild: false, bufferOff: false });
     expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBe("1");
     // URLなしで開き直す(ホーム画面から起動)。保存された設定で、有効になる
     const saved = window.localStorage.getItem(AUDIO_DEBUG_KEY)!;
@@ -107,7 +108,7 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     resetAudioDebugForTest();
     expect(getAudioDebugState().revealed).toBe(false);
     revealAudioDebug();
-    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: true, full: false, rebuild: false, buffer: false });
+    expect(getAudioDebugState()).toEqual({ enabled: false, revealed: true, full: false, rebuild: false, bufferOff: false });
     expect(window.localStorage.getItem(AUDIO_DEBUG_KEY)).toBeNull();
   });
 
@@ -456,23 +457,25 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     expect(interval).not.toHaveBeenCalled();
     expect(raf).not.toHaveBeenCalled();
   });
-  it("実験A・Bのスイッチ: ふだんはオフ。保存される。ログが無効なあいだは、保存されていても、働かない(isExperimentOn)", () => {
-    expect(getAudioDebugState()).toMatchObject({ rebuild: false, buffer: false });
+  it("デバッグ用のスイッチ: A(作り直す)は、ふだんオフ。B無効も、ふだんオフ(=短い曲は AudioBuffer)。保存される。Aは、ログが無効なあいだは働かない。B無効は、ログが無効でも働く", () => {
+    expect(getAudioDebugState()).toMatchObject({ rebuild: false, bufferOff: false });
     expect(isExperimentOn("rebuild")).toBe(false);
+    expect(isBufferEnabled()).toBe(true);
     setAudioExperiment("rebuild", true);
-    setAudioExperiment("buffer", true);
+    setAudioExperiment("bufferOff", true);
     expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.rebuild)).toBe("1");
-    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.buffer)).toBe("1");
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.bufferOff)).toBe("1");
     expect(isExperimentOn("rebuild")).toBe(true);
-    expect(isExperimentOn("buffer")).toBe(true);
-    setAudioDebugEnabled(false); // ログを切ると、実験は働かない(スイッチは、残る)
+    expect(isBufferEnabled()).toBe(false);
+    setAudioDebugEnabled(false); // ログを切ると、A は働かない。B無効は、不具合の逃げ道なので、働き続ける
     expect(isExperimentOn("rebuild")).toBe(false);
-    expect(isExperimentOn("buffer")).toBe(false);
-    expect(getAudioDebugState()).toMatchObject({ rebuild: true, buffer: true });
+    expect(isBufferEnabled()).toBe(false);
+    expect(getAudioDebugState()).toMatchObject({ rebuild: true, bufferOff: true });
     setAudioDebugEnabled(true);
-    expect(isExperimentOn("buffer")).toBe(true);
-    setAudioExperiment("buffer", false);
-    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.buffer)).toBeNull();
+    expect(isExperimentOn("rebuild")).toBe(true);
+    setAudioExperiment("bufferOff", false);
+    expect(window.localStorage.getItem(AUDIO_EXPERIMENT_KEYS.bufferOff)).toBeNull();
+    expect(isBufferEnabled()).toBe(true);
   });
 
   it("MARK の行に、スイッチA・Bの状態・再生方式・最後の rebuild の時刻・buffer のときの曲の中の位置を足す", () => {
@@ -481,12 +484,12 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
     setup();
     markAudioDebug();
     const text = formatAudioDebug();
-    expect(text).toMatch(/MARK .*A=on B=off method=buffer lastRebuild=12:34:56\.789 bufferPos=12\.345/);
-    expect(text).toMatch(/now:\[-\] last:\[-\] lastTick:\[-\] A=on/); // buffer 方式のときは、audio の時計の窓は出さない
+    expect(text).toMatch(/MARK .*A=on B=on method=buffer lastRebuild=12:34:56\.789 bufferPos=12\.345/);
+    expect(text).toMatch(/now:\[-\] last:\[-\] lastTick:\[-\] A=on B=on/); // buffer 方式のときは、audio の時計の窓は出さない
     registerAudioProbe(null);
     clearAudioDebug();
     markAudioDebug();
-    expect(formatAudioDebug()).toMatch(/A=on B=off method=audio lastRebuild=-$/m);
+    expect(formatAudioDebug()).toMatch(/A=on B=on method=audio lastRebuild=-$/m);
   });
   describe("実験B(AudioBuffer)のとき: ダミーの <audio> の記録をやめて、ctx の時計だけで、約10秒ごとに buffer-tick を記録する", () => {
     /** 実験Bで鳴らしている状態にする(曲の中の位置は、ctx の時計に合わせて進む) */
@@ -584,7 +587,7 @@ describe("音のデバッグログ(?audiodebug=1)", () => {
       ctx.currentTime = 14;
       markAudioDebug();
       const text = formatAudioDebug();
-      expect(text).toMatch(/MARK .*now:\[-\] last:\[-\] lastTick:\[tick=10000ms ctx=10000ms c\/w=1 bufferPos=10\] A=off B=off method=buffer/);
+      expect(text).toMatch(/MARK .*now:\[-\] last:\[-\] lastTick:\[tick=10000ms ctx=10000ms c\/w=1 bufferPos=10\] A=off B=on method=buffer/);
     });
 
     it("<audio> 方式に戻ったら(method=audio)、ふつうの窓の記録に戻る", () => {

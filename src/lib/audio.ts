@@ -1,7 +1,8 @@
 import { useSettingsStore } from "@/app/store/settingsStore";
 import { bgmGainForUrl, findSeAudio, seGain } from "@/assets/registry";
-import { isExperimentOn, logAudioDebug, registerAudioProbe, subscribeAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audioDebug";
+import { isBufferEnabled, isExperimentOn, logAudioDebug, registerAudioProbe, subscribeAudioDebug, watchAudioContext, watchAudioElement } from "@/lib/audioDebug";
 import { bufferBytes, createBufferBgm } from "@/lib/bgmBuffer";
+import { methodForTracks } from "@/lib/bgmPolicy";
 
 /**
  * BGM/SE再生の実体(9章: モバイル音声自動再生制約への対応)。
@@ -458,15 +459,16 @@ function isBgmSilenced(): boolean {
 function updateAudioSession(): void {
   const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
   if (!session) return;
-  // 実験B(AudioBuffer)のときは、<audio> が鳴っていなくても、音声セッションを「メディア再生」(playback)にする。
-  // WebAudio だけだと、iOS は音声セッションを「メディア再生」と見なさず、無音になることがある(消音スイッチなど)。ふだん(B オフ)は、今までどおり
-  const wanted = isBgmSilenced() ? "ambient" : isExperimentOn("buffer") ? "playback" : "auto";
+  // AudioBuffer(B)で曲を鳴らしているときは、<audio> が曲を鳴らしていなくても、音声セッションを「メディア再生」(playback)にする。
+  // WebAudio だけだと、iOS は音声セッションを「メディア再生」と見なさず、無音になることがある(消音スイッチなど)。<audio> 方式のときは、今までどおり
+  const buffered = bgmMethod === "buffer";
+  const wanted = isBgmSilenced() ? "ambient" : buffered ? "playback" : "auto";
   try {
     session.type = wanted;
-    if (isExperimentOn("buffer")) logAudioDebug("audio-session", `set type=${wanted} → now ${session.type}`);
+    if (buffered) logAudioDebug("audio-session", `set type=${wanted} → now ${session.type}`);
   } catch (error) {
     // 対応していない種類の設定は無視する
-    if (isExperimentOn("buffer")) logAudioDebug("audio-session", `set type=${wanted} failed: ${error instanceof Error ? error.message : String(error)}`);
+    if (buffered) logAudioDebug("audio-session", `set type=${wanted} failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -532,14 +534,20 @@ export function playBgm(src: string, introSrc?: string): void {
   bgmTrackGain = bgmGainForUrl(introSrc ?? src); // この曲の補正(音量の差をそろえる)
   applyBgmLevel();
   bgmIntroSrc = introSrc ?? null;
-  logAudioDebug("playBgm", (introSrc ?? src).split("/").pop());
-  // 実験B(デバッグ項目のスイッチ。ふだんはオフ): <audio> ではなく、AudioBuffer で鳴らす
-  if (isExperimentOn("buffer") && bgmGain && audioContext) {
+  // 短い曲は、AudioBuffer で鳴らす(lib/bgmPolicy.ts)。長い曲・長さが分からない曲・「B無効」のときは、<audio> 方式
+  const useBuffer = wantsBuffer(src, introSrc) && bgmGain !== null && audioContext !== null;
+  logAudioDebug("playBgm", `${(introSrc ?? src).split("/").pop()} method=${useBuffer ? "buffer" : "audio"}`);
+  if (useBuffer) {
     startBufferBgm(audio, src, introSrc);
     return;
   }
-  if (bgmMethod === "buffer") leaveBufferBgm(); // AudioBuffer から、ふつうの方式に戻る(スイッチを切った)
+  if (bgmMethod === "buffer") leaveBufferBgm(); // AudioBuffer の曲から、<audio> 方式の曲へ(無音ダミーは、曲に置きかわる)
   startBgmElement(audio, src, introSrc);
+}
+
+/** この曲(導入曲つきなら2曲とも)を、AudioBuffer で鳴らすか */
+function wantsBuffer(src: string, introSrc?: string): boolean {
+  return isBufferEnabled() && methodForTracks([introSrc, src]) === "buffer";
 }
 
 /** 導入曲が終わったら、くり返しの曲へ移る待ち受けを付ける(曲が切り替わるとき・止めるときに外す) */
@@ -677,6 +685,7 @@ function leaveBufferBgm(): void {
   bufferOnEnded = undefined;
   bufferPhaseIntro = false;
   bgmMethod = "audio";
+  updateAudioSession(); // <audio> 方式に戻ったので、音声セッションも、ふつう(auto)に戻す
 }
 
 /** AudioBuffer で鳴らしていれば、止める(止めた位置は覚える) */
@@ -695,6 +704,7 @@ function startBufferBgm(audio: HTMLAudioElement, src: string, introSrc?: string)
   bufferBgm.stop();
   bufferFailures = 0;
   bgmMethod = "buffer";
+  updateAudioSession(); // AudioBuffer のあいだは、音声セッションを playback にする
   keepSessionAlive(audio); // <audio> で曲は鳴らさないが、無音のデータを鳴らし続けて、音声セッションを「メディア再生」に保つ
   bgmSrc = src;
   bufferPhaseIntro = introSrc !== undefined;
@@ -856,7 +866,7 @@ function audioSessionNote(): string {
 
 /** 実験B: 最初のタップの時点の状態を記録する(resume を呼ぶ前)。マナーモード(消音スイッチ)は、Webからは検出できない */
 function logUnlockTap(): void {
-  if (!isExperimentOn("buffer")) return;
+  if (!isBufferEnabled()) return;
   logAudioDebug("unlock-tap", `ctxState=${audioContext?.state ?? "-"} session=${audioSessionNote()} audioPaused=${bgmElement ? bgmElement.paused : "-"} silentSwitch=n/a(検出できない)`);
 }
 
@@ -865,15 +875,16 @@ let unsubscribeExperiment: (() => void) | null = null;
 let lastBufferOn = false;
 function subscribeExperimentChanges(): void {
   if (unsubscribeExperiment) return;
-  lastBufferOn = isExperimentOn("buffer");
+  lastBufferOn = isBufferEnabled();
   unsubscribeExperiment = subscribeAudioDebug(() => {
-    const on = isExperimentOn("buffer");
+    const on = isBufferEnabled();
     if (on === lastBufferOn) return;
     lastBufferOn = on;
-    updateAudioSession(); // 音声セッションの種類は、Bのときだけ playback
     const src = bgmSrc;
     if (!src) return;
     const introSrc = inIntroPhase() && bgmIntroSrc ? bgmIntroSrc : undefined;
+    // 切り替えで、いま鳴らしている曲の方式が変わらないとき(長い曲など)は、鳴らし直さない
+    if ((bgmMethod === "buffer") === (wantsBuffer(src, introSrc ?? undefined) && bgmGain !== null)) return;
     clearIntroHandler();
     bgmElement?.pause();
     if (bgmMethod === "buffer") leaveBufferBgm();

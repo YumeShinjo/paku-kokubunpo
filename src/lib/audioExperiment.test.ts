@@ -1,7 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSettingsStore } from "@/app/store/settingsStore";
+
+/** 曲の長さ(秒。audioLevels.ts の表と同じ)と、曲ごとの音量補正(0.5倍)を、実ファイルの有無によらず、同じにする */
+const TEST_DURATIONS: Record<string, number> = {
+  "title.mp3": 85.94,
+  "stage.mp3": 71.34,
+  "explore.mp3": 87.72,
+  "explore-intro.mp3": 81.97,
+  "talk.mp3": 104.33,
+  "subBoss.mp3": 182.67,
+  "kotonoha.mp3": 168.28,
+  "ending.mp3": 205.48,
+};
+vi.mock("@/assets/registry", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/assets/registry")>();
+  return {
+    ...actual,
+    bgmDurationForUrl: (url: string) => TEST_DURATIONS[url.split("/").pop() ?? ""],
+    bgmGainForUrl: () => 0.5,
+  };
+});
 import { getAudioDebugEntries, resetAudioDebugForTest, setAudioDebugEnabled, setAudioExperiment } from "./audioDebug";
-import { playBgm, shutdownAudio, stopBgm, unlockPlayback } from "./audio";
+import { playBgm, RESUME_FADE_SEC, RESUME_SETTLE_MS, setBgmStarter, shutdownAudio, stopBgm, unlockPlayback } from "./audio";
 
 /**
  * 実験A(復帰したら <audio> 要素を作り直す)と、実験B(BGMを AudioBuffer で鳴らす)。どちらも、デバッグ項目のスイッチをオンにしたときだけ動く。
@@ -32,7 +52,10 @@ class FakeContext {
   sampleRate = 44100;
   destination = {};
   listeners: Record<string, Array<() => void>> = {};
-  gains: Array<{ gain: Record<string, unknown> }> = [];
+  gains: Array<{
+    gain: { value: number; setValueAtTime: ReturnType<typeof vi.fn>; cancelScheduledValues: ReturnType<typeof vi.fn>; setTargetAtTime: ReturnType<typeof vi.fn> };
+    connect: ReturnType<typeof vi.fn>;
+  }> = [];
   mediaSources: Array<{ connect: ReturnType<typeof vi.fn>; disconnect: ReturnType<typeof vi.fn> }> = [];
   bufferSources: FakeSource[] = [];
   decodeCalls = 0;
@@ -105,7 +128,7 @@ const setVisibility = (value: "visible" | "hidden") => {
   document.dispatchEvent(new Event("visibilitychange"));
 };
 
-describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオフ)", () => {
+describe("BGMの再生方式: 短い曲は AudioBuffer(B)が標準・実験A(デバッグ項目)", () => {
   let played: Array<{ el: HTMLMediaElement; src: string }>;
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -128,6 +151,7 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
   });
 
   afterEach(() => {
+    setBgmStarter(null);
     shutdownAudio();
     resetAudioDebugForTest();
     delete (window as unknown as { AudioContext?: unknown }).AudioContext;
@@ -155,6 +179,11 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
   };
 
   describe("実験A: 復帰したら audio 要素を作り直す", () => {
+    // 実験Aは、<audio> 方式の曲のためのもの。短い曲は、ふだん AudioBuffer なので、ここでは「B無効」にして、すべて <audio> 方式にする
+    beforeEach(() => {
+      setAudioExperiment("bufferOff", true);
+    });
+
     it("スイッチがオフ(ふだん): 中断から戻っても、要素は作り直さない(MediaElementSource は、最初の1つだけ)", async () => {
       await start();
       const first = lastPlayed().el;
@@ -232,7 +261,8 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
   });
 
   describe("実験B: BGMを AudioBuffer で鳴らす", () => {
-    it("スイッチがオフ(ふだん): fetch も decodeAudioData も AudioBufferSourceNode も使わず、<audio> で鳴らす", async () => {
+    it("B無効のスイッチがオン(逃げ道): 短い曲も、fetch も decodeAudioData も AudioBufferSourceNode も使わず、<audio> で鳴らす", async () => {
+      setAudioExperiment("bufferOff", true);
       await start();
       await flush();
       expect(fetchMock).not.toHaveBeenCalled();
@@ -241,8 +271,26 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
       expect(lastPlayed().src).toContain("title.mp3");
     });
 
-    it("スイッチがオン: 読み込み → デコード(1回)→ AudioBufferSourceNode(loop・loopStart=0・loopEnd=長さ)を GainNode につないで鳴らす。<audio> では鳴らさない", async () => {
-      setAudioExperiment("buffer", true);
+    it("長い曲(subBoss・kotonoha・ending)は、Bが標準でも、これまでの <audio> 方式のまま(デコードしない)", async () => {
+      for (const name of ["subBoss", "kotonoha", "ending"]) {
+        await start(`/audio/bgm/${name}.mp3`);
+        await flush();
+        expect(ctx().bufferSources, name).toHaveLength(0);
+        expect(ctx().decodeAudioData).not.toHaveBeenCalled();
+        expect(lastPlayed().src).toContain(`${name}.mp3`);
+        shutdownAudio();
+        played.length = 0;
+      }
+    });
+
+    it("曲の長さが分からない曲(表にない曲)は、<audio> 方式", async () => {
+      await start("/audio/bgm/unknown-song.mp3");
+      await flush();
+      expect(ctx().bufferSources).toHaveLength(0);
+      expect(lastPlayed().src).toContain("unknown-song.mp3");
+    });
+
+    it("短い曲(title)は、ふだんから: 読み込み → デコード(1回)→ AudioBufferSourceNode(loop・loopStart=0・loopEnd=長さ)を GainNode につないで鳴らす。<audio> では鳴らさない", async () => {
       await start();
       await flush();
       expect(fetchMock).toHaveBeenCalledWith("/audio/bgm/title.mp3");
@@ -261,7 +309,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("曲を替えると、前の source を止めて、バッファを捨て、新しい曲を、1回だけデコードする(同時に1曲ぶん)", async () => {
-      setAudioExperiment("buffer", true);
       await start();
       await flush();
       const first = ctx().bufferSources[0];
@@ -274,7 +321,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("曲を替えたとき、読み込み中だった前の曲は、鳴らさずに捨てる", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       playBgm("/audio/bgm/title.mp3");
       playBgm("/audio/bgm/stage.mp3"); // title の読み込みが終わる前に、替わった
@@ -284,7 +330,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("導入曲 → くり返しの曲: 導入曲は loop なしで鳴らし、終わったら、くり返しの曲を読み込んで、loop で鳴らす", async () => {
-      setAudioExperiment("buffer", true);
       await start("/audio/bgm/explore.mp3", "/audio/bgm/explore-intro.mp3");
       await flush();
       const intro = ctx().bufferSources[0];
@@ -298,7 +343,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("デコードに失敗したら、<audio> 方式に戻して、同じ曲を鳴らし、「fallback」をログに残す", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       FakeContext.current.decodeFails = true;
       playBgm("/audio/bgm/title.mp3");
@@ -309,7 +353,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("読み込み(fetch)に失敗したときも、<audio> 方式に戻る", async () => {
-      setAudioExperiment("buffer", true);
       fetchMock.mockImplementation(async () => ({ ok: false, status: 404, arrayBuffer: async () => new ArrayBuffer(0) }));
       await start();
       await flush();
@@ -318,7 +361,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("ミュートで止めて、解除すると、止めた位置から続ける(新しい source を、その位置から始める)", async () => {
-      setAudioExperiment("buffer", true);
       await start();
       await flush();
       const first = ctx().bufferSources[0];
@@ -332,7 +374,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("裏に回って戻ったときは、頭から鳴らし直す(<audio> 方式と同じ)", async () => {
-      setAudioExperiment("buffer", true);
       await start();
       await flush();
       ctx().currentTime = 14;
@@ -346,7 +387,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("stopBgm で止めて、バッファを捨てる。そのあとは、もう鳴らさない", async () => {
-      setAudioExperiment("buffer", true);
       await start();
       await flush();
       stopBgm();
@@ -357,20 +397,135 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
       expect(ctx().bufferSources).toHaveLength(1);
     });
 
-    it("鳴らしている最中にスイッチを切ると、同じ曲を、<audio> で頭から鳴らし直す。入れると、AudioBuffer で鳴らし直す", async () => {
+    it("鳴らしている最中に「B無効」を入れると、同じ曲を、<audio> で頭から鳴らし直す。切ると、AudioBuffer で鳴らし直す", async () => {
       await start();
-      await flush();
-      expect(ctx().bufferSources).toHaveLength(0);
-      setAudioExperiment("buffer", true); // <audio> → AudioBuffer
       await flush();
       expect(ctx().bufferSources).toHaveLength(1);
       played.length = 0;
-      setAudioExperiment("buffer", false); // AudioBuffer → <audio>
+      setAudioExperiment("bufferOff", true); // AudioBuffer → <audio>
       await flush();
       expect(ctx().bufferSources[0].stop).toHaveBeenCalled();
       expect(lastPlayed().src).toContain("title.mp3");
+      setAudioExperiment("bufferOff", false); // <audio> → AudioBuffer
+      await flush();
+      expect(ctx().bufferSources).toHaveLength(2);
+    });
+
+    it("長い曲を鳴らしているときは、「B無効」を切り替えても、鳴らし直さない(曲が頭に戻らない)", async () => {
+      await start("/audio/bgm/subBoss.mp3");
+      await flush();
+      played.length = 0;
+      setAudioExperiment("bufferOff", true);
+      setAudioExperiment("bufferOff", false);
+      await flush();
+      expect(played).toHaveLength(0);
     });
   });
+
+  describe("曲ごとの方式の切り替え: 無音ダミーと音声セッションが、破綻しない", () => {
+    const session = () => {
+      const s = { type: "auto" };
+      Object.defineProperty(navigator, "audioSession", { configurable: true, value: s });
+      return s;
+    };
+    afterEach(() => {
+      delete (navigator as unknown as { audioSession?: unknown }).audioSession;
+    });
+
+    it("AudioBuffer の曲 → <audio> の曲 → AudioBuffer の曲: 要素は、無音 → 曲 → 無音と置きかわり、音声セッションは、playback → auto → playback", async () => {
+      const s = session();
+      await start("/audio/bgm/title.mp3");
+      await flush();
+      const el = lastPlayed().el as HTMLAudioElement;
+      expect(el.getAttribute("src")!.startsWith("data:audio/wav")).toBe(true);
+      expect(s.type).toBe("playback");
+
+      playBgm("/audio/bgm/subBoss.mp3"); // 長い曲: <audio>
+      await flush();
+      expect(el.getAttribute("src")).toContain("subBoss.mp3");
+      expect(el.loop).toBe(true);
+      expect(lastPlayed().src).toContain("subBoss.mp3");
+      expect(ctx().bufferSources[0].stop).toHaveBeenCalled(); // 前のバッファの曲は止まる
+      expect(s.type).toBe("auto");
+      // 要素は、1つのまま(MediaElementSource も、最初の1つだけ)
+      expect(ctx().mediaSources).toHaveLength(1);
+
+      playBgm("/audio/bgm/stage.mp3"); // 短い曲: AudioBuffer
+      await flush();
+      expect(el.getAttribute("src")!.startsWith("data:audio/wav")).toBe(true);
+      expect(ctx().bufferSources).toHaveLength(2);
+      expect(ctx().bufferSources[1].start).toHaveBeenCalled();
+      expect(s.type).toBe("playback");
+      expect(ctx().mediaSources).toHaveLength(1);
+    });
+
+    it("曲ごとの音量補正(audioLevels)は、AudioBuffer の曲でも、同じ GainNode に、同じ式でかかる(音量×基準0.4×曲の補正)", async () => {
+      await start("/audio/bgm/title.mp3");
+      await flush();
+      const calls = ctx().gains[0].gain.setValueAtTime.mock.calls as Array<[number, number]>;
+      expect(calls[calls.length - 1][0]).toBeCloseTo(0.7 * 0.4 * 0.5, 6); // bgmVolume 0.7 × BGM_BASE_GAIN 0.4 × 補正 0.5(モック)
+      // スライダーを変えると、同じ GainNode が、新しい音量になる
+      useSettingsStore.getState().setBgmVolume(0.3);
+      const targets = ctx().gains[0].gain.setTargetAtTime.mock.calls as Array<[number, number, number]>;
+      expect(targets[targets.length - 1][0]).toBeCloseTo(0.3 * 0.4 * 0.5, 6);
+    });
+
+    it("ミュートで AudioBuffer を止め、音量は0になる。解除すると、元の音量で、止めた位置から続ける", async () => {
+      await start("/audio/bgm/title.mp3");
+      await flush();
+      const first = ctx().bufferSources[0];
+      useSettingsStore.getState().setMuted(true);
+      expect(first.stop).toHaveBeenCalled();
+      const targets = ctx().gains[0].gain.setTargetAtTime.mock.calls as Array<[number, number, number]>;
+      expect(targets[targets.length - 1][0]).toBe(0);
+      useSettingsStore.getState().setMuted(false);
+      await flush();
+      expect(targets[targets.length - 1][0]).toBeCloseTo(0.7 * 0.4 * 0.5, 6);
+      expect(ctx().bufferSources[1].start).toHaveBeenCalled();
+    });
+
+    it("裏に回って戻ると、AudioBuffer の曲も、音量0から、無音のあと、なめらかに元の音量へ戻す(フェードイン。<audio> 方式と同じ式)", async () => {
+      vi.useFakeTimers();
+      try {
+        await start("/audio/bgm/title.mp3");
+        await flush();
+        setVisibility("hidden");
+        setVisibility("visible");
+        await flush();
+        const gain = ctx().gains[0].gain;
+        const zero = (gain.setValueAtTime.mock.calls as Array<[number, number]>).filter((c) => c[0] === 0);
+        expect(zero.length).toBeGreaterThan(0); // まず、音量0
+        vi.advanceTimersByTime(RESUME_SETTLE_MS + 10);
+        const targets = gain.setTargetAtTime.mock.calls as Array<[number, number, number]>;
+        const fade = targets[targets.length - 1];
+        expect(fade[0]).toBeCloseTo(0.7 * 0.4 * 0.5, 6);
+        expect(fade[2]).toBeCloseTo(RESUME_FADE_SEC / 3, 6); // 3秒かけて戻す(<audio> 方式と同じ)
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("曲の切り替え(AudioBuffer → AudioBuffer): 前の曲は、すぐ止まり、新しい曲は、デコードが終わりしだい始まる(デコード待ちの無音だけ)", async () => {
+      await start("/audio/bgm/title.mp3");
+      await flush();
+      const first = ctx().bufferSources[0];
+      let release: () => void = () => {};
+      fetchMock.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) });
+          }),
+      );
+      playBgm("/audio/bgm/stage.mp3");
+      expect(first.stop).toHaveBeenCalled(); // 前の曲は、すぐ止まる
+      expect(ctx().bufferSources).toHaveLength(1); // 新しい曲は、まだ(デコード待ち)
+      release();
+      await flush();
+      expect(ctx().bufferSources).toHaveLength(2);
+      expect(ctx().bufferSources[1].start).toHaveBeenCalled();
+    });
+  });
+
   describe("実験B: 起動直後(最初のタップ)から、BGMと効果音が鳴る", () => {
     /** fetch を、こちらの合図があるまで待たせる(読み込み・デコードに時間がかかる状態) */
     const delayFetch = () => {
@@ -395,14 +550,14 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
 
     it("AudioContext が suspended のまま起動 → 最初のタップで resume を(待たずに)呼び、BGMも効果音も鳴る(fetch・デコードが遅れていても)", async () => {
       FakeContext.initialState = "suspended";
-      setAudioExperiment("buffer", true);
       const session = mockSession();
       const release = delayFetch();
 
+      // アプリと同じ: 最初のタップ(unlockPlayback)の中で、いまの場面のBGMを始める(bgmStarter)
+      setBgmStarter(() => playBgm("/audio/bgm/title.mp3"));
       unlockPlayback(); // 最初のタップ。resume は、この呼び出しの中で、同期的に呼ばれる(await の前)
       expect(ctx().resume).toHaveBeenCalledTimes(1);
-      expect(session.type).toBe("playback");
-      playBgm("/audio/bgm/title.mp3");
+      expect(session.type).toBe("playback"); // タップの中で、音声セッションも playback になっている
       await flush();
       // 読み込みが終わるまでは、BGMは始まらないが、AudioContext は、もう動いている
       expect(ctx().state).toBe("running");
@@ -422,33 +577,34 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
       // 記録: 最初のタップの時点の状態と、BGMを始めた時点の状態
       const names = getAudioDebugEntries().map((e) => e.event);
       expect(names).toEqual(expect.arrayContaining(["unlock-tap", "audio-session", "buffer-loaded", "buffer-start"]));
-      expect(getAudioDebugEntries().find((e) => e.event === "unlock-tap")?.note).toMatch(/^ctxState=suspended session=playback audioPaused=\S+ silentSwitch=n\/a/);
+      expect(getAudioDebugEntries().find((e) => e.event === "unlock-tap")?.note).toMatch(/^ctxState=suspended session=auto audioPaused=\S+ silentSwitch=n\/a/); // タップの時点では、まだ auto(曲の方式が決まってから、playback にする)
+      expect(getAudioDebugEntries().find((e) => e.event === "audio-session")?.note).toBe("set type=playback → now playback");
       expect(getAudioDebugEntries().find((e) => e.event === "buffer-start")?.note).toMatch(/ctxState=running session=playback audioPaused=\S+/);
     });
 
-    it("Bがオンのとき、audioSession.type は playback。ミュートなら ambient、Bをオフにすると auto(ふだんと同じ)", async () => {
+    it("AudioBuffer の曲のとき、audioSession.type は playback。ミュートなら ambient、「B無効」にすると auto", async () => {
       const session = mockSession();
-      setAudioExperiment("buffer", true);
-      await unlock();
+      await start();
       expect(session.type).toBe("playback");
       useSettingsStore.getState().setMuted(true);
       expect(session.type).toBe("ambient");
       useSettingsStore.getState().setMuted(false);
       expect(session.type).toBe("playback");
-      setAudioExperiment("buffer", false);
+      setAudioExperiment("bufferOff", true);
+      await flush();
       expect(session.type).toBe("auto");
     });
 
-    it("Bがオフ(ふだん): audioSession.type は auto。無音のループ(<audio>)も使わない", async () => {
+    it("<audio> 方式(B無効・長い曲): audioSession.type は auto。無音のループ(<audio>)も使わない。音のログに、B用の行(unlock-tap・audio-session)も出ない", async () => {
       const session = mockSession();
+      setAudioExperiment("bufferOff", true);
       await start();
       expect(session.type).toBe("auto");
       expect(played.some((p) => p.src.startsWith("data:audio/wav") && p.src.length > 200)).toBe(false);
       expect(getAudioDebugEntries().some((e) => e.event === "unlock-tap" || e.event === "audio-session")).toBe(false);
     });
 
-    it("Bがオンのあいだ、無音のデータの <audio> を鳴らし続ける(音声セッションを「メディア再生」に保つ)。曲は <audio> では鳴らさない", async () => {
-      setAudioExperiment("buffer", true);
+    it("AudioBuffer のあいだ、無音のデータの <audio> を鳴らし続ける(音声セッションを「メディア再生」に保つ)。曲は <audio> では鳴らさない", async () => {
       await start();
       await flush();
       const silent = played.filter((p) => p.src.startsWith("data:audio/wav;base64,"));
@@ -460,7 +616,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("ミュートすると、無音の <audio> も止め、解除すると、また鳴らす(他のアプリの音を止めない・ふつうの方式と同じ)", async () => {
-      setAudioExperiment("buffer", true);
       await start();
       await flush();
       const pause = window.HTMLMediaElement.prototype.pause as unknown as ReturnType<typeof vi.fn>;
@@ -473,7 +628,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("始めようとしたとき AudioContext が running でなければ、buffer-blocked を記録し、次のタップで resume してから始める", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       ctx().state = "suspended"; // タップのあと、止まった
       ctx().resumeBehavior = "stuck";
@@ -492,7 +646,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("1回限りのリスナー: タップで動いたあとは、もう resume を呼ばない(pointerdown を何度タップしても、1回だけ)", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       ctx().state = "suspended";
       ctx().resumeBehavior = "stuck";
@@ -510,7 +663,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("タップで動かそうとして、2回続けて動かなかったら、<audio> 方式に戻す(fallback)。アプリが無音のまま止まらない", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       ctx().state = "suspended";
       ctx().resumeBehavior = "stuck";
@@ -528,7 +680,6 @@ describe("音の実験A・B(デバッグ項目のスイッチ。ふだんはオ�
     });
 
     it("resume が失敗(reject)しても、2回続いたら、<audio> 方式に戻る", async () => {
-      setAudioExperiment("buffer", true);
       await unlock();
       ctx().state = "suspended";
       ctx().resumeBehavior = "reject";

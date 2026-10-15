@@ -23,10 +23,13 @@
  * ダミーの timeupdate を契機に、約10秒ぶん溜まったときに1件、「buffer-tick」(ctx/wall・曲の中の位置 bufferPos)を記録する(新しいタイマーは作らない)。
  * 記録は、メモリ上の2000件までのリング(古いものから消える)。全記録で約3時間ぶん。
  *
- * このファイルは、ピッチ異常の対策を試す2つのスイッチ(実験A・B)の状態も持つ(どちらも、ふだんはオフ。端末に保存する):
- *  - A「復帰したら audio 要素を作り直す」/ B「BGMを AudioBuffer で鳴らす」。中身は、lib/audio.ts と lib/bgmBuffer.ts
- *  - スイッチは、音のログが有効なときだけ見える。ログが無効なあいだは、保存されていても、働かない(isExperimentOn)
+ * このファイルは、デバッグ用の2つのスイッチの状態も持つ(端末に保存する。スイッチは、音のログが有効なときだけ見える):
+ *  - A「復帰したら audio 要素を作り直す」(実験。ふだんはオフ。ログが無効なあいだは、保存されていても、働かない: isExperimentOn)
+ *  - B無効「すべて <audio> 方式で鳴らす」(不具合のときの逃げ道。ふだんはオフ=短い曲は AudioBuffer で鳴らす。保存されている限り、ログが無効でも働く: isBufferEnabled)
+ *    曲ごとの方式は lib/bgmPolicy.ts、中身は lib/audio.ts と lib/bgmBuffer.ts
  */
+
+import { bgmMethodTableText } from "./bgmPolicy";
 
 const MAX_ENTRIES = 2000;
 /**
@@ -53,10 +56,10 @@ const MAX_GAP_MS = 1500;
 export const AUDIO_DEBUG_KEY = "paku-kokubunpo:audiodebug";
 /** 「全記録」(すべての窓を記録する)を端末に保存するキー(値は "1") */
 export const AUDIO_DEBUG_FULL_KEY = "paku-kokubunpo:audiodebug-full";
-/** 実験A・Bのスイッチを端末に保存するキー(値は "1") */
+/** デバッグ用のスイッチを端末に保存するキー(値は "1")。rebuild=実験A、bufferOff=B無効 */
 export const AUDIO_EXPERIMENT_KEYS = {
   rebuild: "paku-kokubunpo:audiodebug-rebuild",
-  buffer: "paku-kokubunpo:audiodebug-buffer",
+  bufferOff: "paku-kokubunpo:audiodebug-buffer-off",
 } as const;
 export type AudioExperiment = keyof typeof AUDIO_EXPERIMENT_KEYS;
 
@@ -156,8 +159,8 @@ export interface AudioDebugState {
   full: boolean;
   /** 実験A: 復帰したら audio 要素を作り直す(端末に保存される。ログが有効なときだけ働く) */
   rebuild: boolean;
-  /** 実験B: BGMを AudioBuffer で鳴らす(端末に保存される。ログが有効なときだけ働く) */
-  buffer: boolean;
+  /** B無効: 短い曲も含めて、すべて <audio> 方式で鳴らす(端末に保存される。不具合のときの逃げ道) */
+  bufferOff: boolean;
 }
 
 const entries: AudioDebugEntry[] = [];
@@ -201,7 +204,7 @@ function urlFlag(): "1" | "0" | null {
 
 function current(): AudioDebugState {
   if (state) return state;
-  if (typeof window === "undefined") return (state = { enabled: false, revealed: false, full: false, rebuild: false, buffer: false });
+  if (typeof window === "undefined") return (state = { enabled: false, revealed: false, full: false, rebuild: false, bufferOff: false });
   const flag = urlFlag();
   let enabled = readFlag(AUDIO_DEBUG_KEY);
   if (flag === "1") {
@@ -216,7 +219,7 @@ function current(): AudioDebugState {
     revealed: enabled,
     full: readFlag(AUDIO_DEBUG_FULL_KEY),
     rebuild: readFlag(AUDIO_EXPERIMENT_KEYS.rebuild),
-    buffer: readFlag(AUDIO_EXPERIMENT_KEYS.buffer),
+    bufferOff: readFlag(AUDIO_EXPERIMENT_KEYS.bufferOff),
   };
   return state;
 }
@@ -231,10 +234,15 @@ export function isAudioDebugEnabled(): boolean {
   return current().enabled;
 }
 
-/** 実験のスイッチが、働いているか(ログが有効で、スイッチがオン)。ログが無効なあいだは、スイッチがオンでも、働かない */
-export function isExperimentOn(name: AudioExperiment): boolean {
+/** 実験A(復帰したら要素を作り直す)が、働いているか(ログが有効で、スイッチがオン)。ログが無効なあいだは、スイッチがオンでも、働かない */
+export function isExperimentOn(name: "rebuild"): boolean {
   const now = current();
   return now.enabled && now[name];
+}
+
+/** 短い曲を AudioBuffer で鳴らすか(ふだんは、はい)。デバッグ項目の「B無効」をオンにしている間だけ、いいえ(すべて <audio> 方式) */
+export function isBufferEnabled(): boolean {
+  return !current().bufferOff;
 }
 
 /** 設定画面が、表示を決めるための状態(useSyncExternalStore の getSnapshot。変わるまで、同じ値を返す) */
@@ -431,6 +439,7 @@ function attachPage(): void {
   );
   startedAt = Date.now();
   push("start", { note: navigator.userAgent });
+  push("bgm-methods", { note: bgmMethodTableText() }); // 曲ごとの再生方式(buffer / audio)と、デコード後のメモリの見積もり
 }
 
 function attachAudio(audio: HTMLAudioElement): void {
@@ -621,7 +630,7 @@ export function markAudioDebug(): boolean {
       current: windows ? currentWin : null,
       last: windows ? sampler.last : null,
       lastTick: tickState.last,
-      experiment: { rebuild: now.rebuild, buffer: now.buffer, ...info },
+      experiment: { rebuild: now.rebuild, buffer: !now.bufferOff, ...info },
     },
   });
   return true;
@@ -720,12 +729,12 @@ export function resetAudioDebugForTest(enabled?: boolean): void {
     window.localStorage.removeItem(AUDIO_DEBUG_KEY);
     window.localStorage.removeItem(AUDIO_DEBUG_FULL_KEY);
     window.localStorage.removeItem(AUDIO_EXPERIMENT_KEYS.rebuild);
-    window.localStorage.removeItem(AUDIO_EXPERIMENT_KEYS.buffer);
+    window.localStorage.removeItem(AUDIO_EXPERIMENT_KEYS.bufferOff);
   } catch {
     // 無視
   }
   probe = null;
-  state = enabled === undefined ? null : { enabled, revealed: enabled, full: false, rebuild: false, buffer: false };
+  state = enabled === undefined ? null : { enabled, revealed: enabled, full: false, rebuild: false, bufferOff: false };
 }
 
 /** 記録のテキストを、クリップボードへコピーする。コピーできたか(true)を返す */
@@ -751,3 +760,6 @@ export async function copyAudioDebug(): Promise<boolean> {
     }
   }
 }
+
+// アプリを開いた時点で、URLの audiodebug=1 を読んで、保存する(音の処理が動く前に閉じても、「一度開いたら有効」が守られるように)
+if (typeof window !== "undefined") current();
