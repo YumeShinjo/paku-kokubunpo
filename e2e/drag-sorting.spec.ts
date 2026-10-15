@@ -92,9 +92,15 @@ function mousePointer(page: Page): Pointer {
 
 function touchPointer(client: CDPSession): Pointer {
   return {
-    down: (p) => client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: p.x, y: p.y, id: 1 }] }),
-    move: (p) => client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: p.x, y: p.y, id: 1 }] }),
-    up: () => client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] }),
+    down: async (p) => {
+      await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: p.x, y: p.y, id: 1 }] });
+    },
+    move: async (p) => {
+      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: p.x, y: p.y, id: 1 }] });
+    },
+    up: async () => {
+      await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    },
   };
 }
 
