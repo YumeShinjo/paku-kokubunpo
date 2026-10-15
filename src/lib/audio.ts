@@ -92,6 +92,7 @@ export function unlockPlayback(): void {
   useSettingsStore.getState().unlockAudio();
   updateAudioSession();
   getAudioContext(); // (なければ作る)
+  logUnlockTap(); // 実験B(デバッグ項目のスイッチ。ふだんはオフ)のときだけ、最初のタップの時点の状態を記録する
   // 止まっていれば動かす。iOS(Safari)は、止まった状態を "suspended" ではなく "interrupted" と呼ぶことがあり
   // (画面の読み込み直し・電話・ロックのあとなど)、"suspended" だけを見ていると再開できず、BGMも効果音も無音のままになる。
   resumeAudioContext();
@@ -457,10 +458,15 @@ function isBgmSilenced(): boolean {
 function updateAudioSession(): void {
   const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
   if (!session) return;
+  // 実験B(AudioBuffer)のときは、<audio> が鳴っていなくても、音声セッションを「メディア再生」(playback)にする。
+  // WebAudio だけだと、iOS は音声セッションを「メディア再生」と見なさず、無音になることがある(消音スイッチなど)。ふだん(B オフ)は、今までどおり
+  const wanted = isBgmSilenced() ? "ambient" : isExperimentOn("buffer") ? "playback" : "auto";
   try {
-    session.type = isBgmSilenced() ? "ambient" : "auto";
-  } catch {
+    session.type = wanted;
+    if (isExperimentOn("buffer")) logAudioDebug("audio-session", `set type=${wanted} → now ${session.type}`);
+  } catch (error) {
     // 対応していない種類の設定は無視する
+    if (isExperimentOn("buffer")) logAudioDebug("audio-session", `set type=${wanted} failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -663,6 +669,9 @@ registerAudioProbe(() => ({
 
 /** 実験Bをやめて、ふつうの方式に戻る(バッファを捨てる) */
 function leaveBufferBgm(): void {
+  tapResumeAbort?.abort();
+  tapResumeAbort = null;
+  bufferFailures = 0;
   bufferToken++;
   bufferBgm.stop();
   bufferOnEnded = undefined;
@@ -682,10 +691,11 @@ function fallbackToElement(src: string, introSrc?: string): void {
 }
 
 function startBufferBgm(audio: HTMLAudioElement, src: string, introSrc?: string): void {
-  audio.pause(); // <audio> は使わない(無音の準備用の曲を、鳴らしたままにしない)
   bufferToken++;
   bufferBgm.stop();
+  bufferFailures = 0;
   bgmMethod = "buffer";
+  keepSessionAlive(audio); // <audio> で曲は鳴らさないが、無音のデータを鳴らし続けて、音声セッションを「メディア再生」に保つ
   bgmSrc = src;
   bufferPhaseIntro = introSrc !== undefined;
   const token = bufferToken;
@@ -727,15 +737,127 @@ async function loadAndPlayBuffer(url: string, loop: boolean, token: number, onEn
 function ensureBufferPlaying(): void {
   const ctx = audioContext;
   if (bgmMethod !== "buffer" || !bgmSrc || backgroundHalted || !bufferBgm.hasBuffer() || bufferBgm.isPlaying()) return;
-  if (!ctx || !bgmGain || ctx.state !== "running" || pendingStart || isPageHidden() || isBgmSilenced()) return;
+  if (!ctx || !bgmGain || pendingStart || isPageHidden() || isBgmSilenced()) return;
+  // AudioContext が止まっているなら、次のタップで動かしてから始める(iOS は、タップの中でないと、止まった AudioContext を動かせないことがある)
+  if (ctx.state !== "running") {
+    if (!tapResumeAbort) {
+      logAudioDebug("buffer-blocked", `ctx.state=${ctx.state} at start`);
+      armTapResume();
+    }
+    return;
+  }
+  if (bufferElement) keepSessionAlive(bufferElement);
   const url = bgmSrc;
   try {
     const seam = bufferBgm.start(ctx, bgmGain, { loop: bufferLoop, onEnded: bufferOnEnded });
-    logAudioDebug("buffer-play", `${bufferTrackNote} loop=${seam.loop} loopStart=${seam.loopStart} loopEnd=${round3(seam.loopEnd)}`);
+    bufferFailures = 0;
+    logAudioDebug(
+      "buffer-start",
+      `${bufferTrackNote} loop=${seam.loop} loopStart=${seam.loopStart} loopEnd=${round3(seam.loopEnd)} ctxState=${ctx.state} session=${audioSessionNote()} audioPaused=${bufferElement ? bufferElement.paused : "-"}`,
+    );
   } catch (error) {
     logAudioDebug("fallback", `buffer→audio ${baseName(url)}: ${error instanceof Error ? error.message : String(error)}`);
     fallbackToElement(url, bufferPhaseIntro ? (bgmIntroSrc ?? undefined) : undefined);
   }
+}
+
+/** 無音のデータを繰り返し鳴らす <audio>(実験Bで、音声セッションを「メディア再生」に保つ)。1秒ぶんの無音の WAV を、必要になったときに1回だけ作る */
+let silentLoopSrc: string | null = null;
+function getSilentLoopSrc(): string {
+  if (silentLoopSrc) return silentLoopSrc;
+  const sampleRate = 8000;
+  const dataBytes = sampleRate * 2; // 1秒・16ビット・モノラル
+  const bytes = new Uint8Array(44 + dataBytes); // 音のデータは、すべて 0(無音)
+  const view = new DataView(bytes.buffer);
+  const text = (offset: number, value: string) => [...value].forEach((c, i) => view.setUint8(offset + i, c.charCodeAt(0)));
+  text(0, "RIFF");
+  view.setUint32(4, 36 + dataBytes, true);
+  text(8, "WAVE");
+  text(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, 1, true); // モノラル
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  text(36, "data");
+  view.setUint32(40, dataBytes, true);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x2000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x2000));
+  silentLoopSrc = `data:audio/wav;base64,${btoa(binary)}`;
+  return silentLoopSrc;
+}
+
+/** 実験Bで使っている <audio>(無音のデータを鳴らすためだけの要素) */
+let bufferElement: HTMLAudioElement | null = null;
+
+/**
+ * 実験B: BGMを AudioBuffer で鳴らしているあいだも、無音の <audio> を鳴らし続ける。<audio> は、音量0ではなく、実際に無音のデータ。
+ * iOS は、WebAudio だけだと音声セッションが「メディア再生」にならず、音が出ないことがある。<audio> が鳴っていれば、メディア再生になる。
+ * ミュート・BGM音量0・裏に回っているあいだは、鳴らさない(ふつうの方式と同じ。他のアプリの音を止めないため)。
+ */
+function keepSessionAlive(audio: HTMLAudioElement): void {
+  bufferElement = audio;
+  const silent = getSilentLoopSrc();
+  if (audio.getAttribute("src") !== silent) {
+    audio.src = silent;
+    audio.loop = true;
+  }
+  if (audio.paused) playBgmElement(audio);
+}
+
+/** AudioBuffer が、続けて動かせないので、ふつうの方式(<audio>)に戻す */
+function fallbackFromBlocked(reason: string): void {
+  const src = bgmSrc;
+  logAudioDebug("fallback", `buffer→audio: ${reason}`);
+  if (!src) return;
+  fallbackToElement(src, bufferPhaseIntro ? (bgmIntroSrc ?? undefined) : undefined);
+}
+
+/** 次のタップ(pointerdown / touchend / click のどれか、1回限り)で、AudioContext を動かしてから、BGMを始める */
+let tapResumeAbort: AbortController | null = null;
+/** タップで動かそうとして、動かなかった回数(2回続いたら、<audio> 方式に戻す) */
+let bufferFailures = 0;
+function armTapResume(): void {
+  if (tapResumeAbort || typeof document === "undefined") return;
+  const abort = (tapResumeAbort = new AbortController());
+  const onTap = () => {
+    abort.abort();
+    tapResumeAbort = null;
+    const ctx = audioContext;
+    if (!ctx || bgmMethod !== "buffer") return;
+    const failed = (reason: string) => {
+      if (bgmMethod !== "buffer") return;
+      logAudioDebug("buffer-blocked", reason);
+      bufferFailures++;
+      if (bufferFailures >= 2) fallbackFromBlocked(reason);
+      else armTapResume();
+    };
+    ctx
+      .resume()
+      .then(() => {
+        if (ctx.state !== "running") {
+          failed(`still ${ctx.state} after tap-resume`);
+          return;
+        }
+        logAudioDebug("tap-resume", `ok ctxState=${ctx.state}`);
+        ensureBufferPlaying();
+      })
+      .catch((error) => failed(`resume rejected: ${error instanceof Error ? error.message : String(error)}`));
+  };
+  for (const name of ["pointerdown", "touchend", "click"]) document.addEventListener(name, onTap, { signal: abort.signal, capture: true });
+}
+
+/** navigator.audioSession.type(対応していなければ "n/a") */
+function audioSessionNote(): string {
+  return (navigator as unknown as { audioSession?: { type?: string } }).audioSession?.type ?? "n/a";
+}
+
+/** 実験B: 最初のタップの時点の状態を記録する(resume を呼ぶ前)。マナーモード(消音スイッチ)は、Webからは検出できない */
+function logUnlockTap(): void {
+  if (!isExperimentOn("buffer")) return;
+  logAudioDebug("unlock-tap", `ctxState=${audioContext?.state ?? "-"} session=${audioSessionNote()} audioPaused=${bgmElement ? bgmElement.paused : "-"} silentSwitch=n/a(検出できない)`);
 }
 
 /** スイッチBを切り替えたとき、いま鳴らしている曲を、新しい方式で、頭から鳴らし直す */
@@ -748,6 +870,7 @@ function subscribeExperimentChanges(): void {
     const on = isExperimentOn("buffer");
     if (on === lastBufferOn) return;
     lastBufferOn = on;
+    updateAudioSession(); // 音声セッションの種類は、Bのときだけ playback
     const src = bgmSrc;
     if (!src) return;
     const introSrc = inIntroPhase() && bgmIntroSrc ? bgmIntroSrc : undefined;
@@ -868,6 +991,7 @@ export function shutdownAudio(): void {
   lastCtxState = "";
   unsubscribeExperiment?.();
   unsubscribeExperiment = null;
+  bufferElement = null;
   if (bgmMethod === "buffer") leaveBufferBgm();
   bgmSourceTried = false;
   bgmTargetLevel = -1;
