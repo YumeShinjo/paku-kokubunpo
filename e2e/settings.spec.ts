@@ -121,7 +121,7 @@ test.describe("せってい: 音のログ(調査用。ふだんは見えない)"
 
     for (let i = 0; i < 5; i++) await version.click({ position: { x: 20, y: 4 } });
     await expect(page.locator(".audio-debug-panel")).toBeVisible();
-    await expect(page.locator(".audio-debug-panel input[role='switch']")).not.toBeChecked();
+    await expect(page.locator(".audio-debug-panel input[role='switch']").first()).not.toBeChecked();
   });
 
   test("?audiodebug=1 で一度開くと、そのあとURLなしで開き直しても(ホーム画面から起動しても)出る", async ({ page }) => {
@@ -131,16 +131,41 @@ test.describe("せってい: 音のログ(調査用。ふだんは見えない)"
     await page.locator(".title-primary").waitFor();
     await page.getByRole("button", { name: "せってい" }).click();
     await expect(page.locator(".audio-debug-panel")).toBeVisible();
-    await expect(page.locator(".audio-debug-panel input[role='switch']")).toBeChecked();
+    await expect(page.locator(".audio-debug-panel input[role='switch']").first()).toBeChecked();
     // URLにパラメータなしで開き直す
     await page.goto("/");
     await startApp(page);
     await page.getByRole("button", { name: "せってい" }).click();
     await expect(page.locator(".audio-debug-panel")).toBeVisible();
-    await expect(page.locator(".audio-debug-panel input[role='switch']")).toBeChecked();
+    await expect(page.locator(".audio-debug-panel input[role='switch']").first()).toBeChecked();
     // 押せるものは、48px以上
     const heights = await page.locator(".audio-debug-panel button, .audio-debug-panel .settings-switch-row").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
     for (const h of heights) expect(h).toBeGreaterThanOrEqual(47.5);
+    expect(await page.locator(".audio-debug-mark").count()).toBe(1);
     await expect(page.locator(".screen-settings")).toHaveScreenshot("settings-audiolog.png");
   });
 });
+
+for (const { w, h } of [SIZES[0], SIZES[2], SIZES[4]]) {
+  for (const large of [false, true]) {
+    test(`せってい(音のログを出したとき) ${w}x${h} ${large ? "大" : "標準"}: 崩れない`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: h });
+      await page.goto("/?audiodebug=1");
+      await page.locator(".tap-to-start").click();
+      await page.locator(".title-primary").waitFor();
+      await page.getByRole("button", { name: "せってい" }).click();
+      if (large) await page.getByRole("radio", { name: "大" }).click();
+      await expect(page.locator(".audio-debug-mark")).toBeVisible();
+      const report = await page.evaluate(() => {
+        const panel = document.querySelector(".audio-debug-panel")!;
+        const rect = (e: Element) => e.getBoundingClientRect();
+        const targets = [...panel.querySelectorAll("button, .settings-switch-row")].map((e) => ({ t: (e.textContent || "").trim(), h: rect(e).height }));
+        const clipped = [...panel.querySelectorAll<HTMLElement>("button, .settings-switch-row span")].filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => (b.textContent || "").trim());
+        return { overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, targets, clipped };
+      });
+      expect(report.overflow).toBeLessThanOrEqual(1);
+      for (const t of report.targets) expect(t.h, t.t).toBeGreaterThanOrEqual(47.5);
+      expect(report.clipped).toEqual([]);
+    });
+  }
+}

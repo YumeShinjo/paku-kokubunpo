@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { AUDIO_DEBUG_KEY, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
+import { AUDIO_DEBUG_FULL_KEY, AUDIO_DEBUG_KEY, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
 import { useSettingsStore } from "@/app/store/settingsStore";
 
 const reset = vi.hoisted(() => ({
@@ -116,12 +116,12 @@ describe("設定画面: 音のログ(調査用。ふだんは見えない)", () 
     expect(container.textContent).not.toContain("音のログ");
   });
 
-  it("URLに ?audiodebug=1 を付けて開いたあと、音のログの項目(スイッチ・コピー・クリア)が出る", () => {
+  it("URLに ?audiodebug=1 を付けて開いたあと、音のログの項目(スイッチ・いま高い・コピー・クリア)が出る", () => {
     window.history.replaceState({}, "", "/?audiodebug=1");
     renderScreen();
     expect(panel()).not.toBeNull();
     expect(sw()).not.toBeNull();
-    expect([...panel()!.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["コピー", "クリア"]);
+    expect([...panel()!.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["いま高い", "コピー", "クリア"]);
   });
 
   it("URLなしで開き直しても(保存されているので)出る。スイッチを切っても、その場では消えず、読み込み直すと、また見えなくなる", () => {
@@ -189,6 +189,36 @@ describe("設定画面: 音のログ(調査用。ふだんは見えない)", () 
     act(() => sw().click());
     expect(isAudioDebugEnabled()).toBe(false);
     expect(getAudioDebugEntries()).toHaveLength(0);
+  });
+
+  it("「いま高い」ボタンは、ログが有効なときだけ出る。押すと MARK の行が記録されて、「きろくしました」と出る", () => {
+    vi.useFakeTimers();
+    renderScreen();
+    for (let i = 0; i < 5; i++) act(() => version().click()); // 項目は出るが、まだログは切れている
+    const mark = () => panel()!.querySelector<HTMLButtonElement>(".audio-debug-mark");
+    expect(mark()).toBeNull();
+    act(() => sw().click());
+    expect(mark()).not.toBeNull();
+    expect(mark()!.textContent).toBe("いま高い");
+    act(() => mark()!.click());
+    expect(getAudioDebugEntries().some((e) => e.event === "MARK")).toBe(true);
+    expect(panel()!.textContent).toContain("きろくしました");
+    // ログを切ると、ボタンは消える
+    act(() => sw().click());
+    expect(mark()).toBeNull();
+  });
+
+  it("「ぜんぶ きろく」のスイッチ: ログが切れているあいだは押せない。入れると、保存される", () => {
+    window.history.replaceState({}, "", "/?audiodebug=1");
+    renderScreen();
+    const full = () => [...panel()!.querySelectorAll<HTMLInputElement>('input[role="switch"]')][1];
+    expect(full().closest("label")!.textContent).toContain("ぜんぶ きろく");
+    expect(full().disabled).toBe(false);
+    act(() => full().click());
+    expect(full().checked).toBe(true);
+    expect(window.localStorage.getItem(AUDIO_DEBUG_FULL_KEY)).toBe("1");
+    act(() => sw().click()); // ログを切る
+    expect(full().disabled).toBe(true);
   });
 
   it("コピーを押すと、記録のテキストがクリップボードに入り、件数が出る", async () => {

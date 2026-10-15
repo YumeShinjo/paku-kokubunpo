@@ -3192,6 +3192,16 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   transform: translateX(1.4rem);
 }
 
+.settings-switch:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 音のログの「いま高い」ボタン(高さ48px以上) */
+.screen-settings .audio-debug-mark {
+  min-height: 3rem;
+}
+
 .settings-switch:focus-visible {
   outline: 2px solid var(--color-gold-line);
   outline-offset: 2px;

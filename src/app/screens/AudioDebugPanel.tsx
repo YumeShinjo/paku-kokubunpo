@@ -4,7 +4,9 @@ import {
   copyAudioDebug,
   getAudioDebugEntries,
   getAudioDebugState,
+  markAudioDebug,
   setAudioDebugEnabled,
+  setAudioDebugFull,
   subscribeAudioDebug,
 } from "@/lib/audioDebug";
 
@@ -14,12 +16,17 @@ import {
  * 使い方は、src/lib/audioDebug.ts の先頭に書いてある。
  */
 export function AudioDebugPanel() {
-  const { enabled } = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState);
+  const { enabled, full } = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState);
   const [message, setMessage] = useState("");
 
   async function handleCopy() {
     const count = getAudioDebugEntries().length;
     setMessage((await copyAudioDebug()) ? `${count}件を コピーしました` : "コピーできませんでした");
+  }
+
+  // 「いま高い」: 高いピッチが聞こえたその瞬間に押す。3つの時計などを MARK の行で記録する
+  function handleMark() {
+    setMessage(markAudioDebug() ? "きろくしました" : "");
   }
 
   function handleClear() {
@@ -43,6 +50,22 @@ export function AudioDebugPanel() {
           }}
         />
       </label>
+      <label className="settings-switch-row">
+        <span>ぜんぶ きろく(約2秒ごと)</span>
+        <input
+          type="checkbox"
+          role="switch"
+          className="settings-switch"
+          checked={full}
+          disabled={!enabled}
+          onChange={(e) => setAudioDebugFull(e.target.checked)}
+        />
+      </label>
+      {enabled && (
+        <button type="button" className="audio-debug-mark" onClick={handleMark}>
+          いま高い
+        </button>
+      )}
       <div className="settings-pair">
         <button type="button" disabled={!enabled} onClick={() => void handleCopy()}>
           コピー
