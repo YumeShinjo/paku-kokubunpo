@@ -147,3 +147,75 @@ describe("ことわざ・故事成語データ(ミニゲーム)", () => {
     expect(new Set(fulls).size).toBe(fulls.length);
   });
 });
+
+/**
+ * ふりがなの読み合わせ: 表記(full)の中のふりがな(`漢字[よみ]`)の読みが、データの reading(ひらがな)の中に、順番に現れること。
+ * 以前、画竜点睛の `竜[りゅう]` が誤りだった(正しくは「がりょうてんせい」の「りょう」)のを、見つけられなかったための再発防止。
+ * 機械的に合わない項目は、下の READING_EXCEPTIONS に、理由を書いて入れる(ふりがなの読みを、reading の側の表記に直したもの)。
+ */
+const READING_EXCEPTIONS: Record<string, { rubies: string[]; reason: string }> = {
+  "koji-014": {
+    // 完璧: ふりがなは 璧[へき] だが、reading は「かんぺき」(「かん」のあとの「へ」が、発音しやすいように「ぺ」に変わる音の変化)
+    rubies: ["かん", "ぺき"],
+    reason: "半濁音化(かん+へき→かんぺき)。ふりがな「へき」は、漢字の読みとして正しい。reading は、実際の発音の「ぺき」",
+  },
+};
+
+/** 表記(full)のふりがな(読み)を、現れる順に取り出す */
+const rubiesOf = (q: IdiomQuestion): string[] => q.full.filter((s) => s.ruby).map((s) => s.ruby as string);
+
+/** rubies が、reading の中に、この順で(間をあけてもよい)現れるか。現れなかった最初の読みを返す(すべて現れれば null) */
+function firstMissingReading(rubies: string[], reading: string): string | null {
+  let from = 0;
+  for (const ruby of rubies) {
+    const at = reading.indexOf(ruby, from);
+    if (at < 0) return ruby;
+    from = at + ruby.length;
+  }
+  return null;
+}
+
+describe("ふりがなの読み合わせ(表記のふりがなが、reading に順番に現れる)", () => {
+  it("すべての項目で、表記のふりがなの読みが、reading の中に順番に現れる(例外は理由つきで、下に書く)", () => {
+    const failures: string[] = [];
+    for (const q of all) {
+      const exception = READING_EXCEPTIONS[q.id];
+      const rubies = exception ? exception.rubies : rubiesOf(q);
+      const missing = firstMissingReading(rubies, q.reading);
+      if (missing !== null) failures.push(`${q.id}: 「${missing}」が reading「${q.reading}」に順番に現れない(ふりがな: ${rubies.join("・")})`);
+    }
+    expect(failures).toEqual([]);
+  });
+
+  it("画竜点睛(koji-018)は「がりょうてんせい」。ふりがなは、が・りょう・てんせい", () => {
+    const q = all.find((x) => x.id === "koji-018")!;
+    expect(q.reading).toBe("がりょうてんせい");
+    expect(rubiesOf(q)).toEqual(["が", "りょう", "てんせい"]);
+    // 正解の選択肢のふりがなも、同じ(表記と選択肢で、食い違わない)
+    const correct = q.choices.find((c) => c.id === q.correctChoiceId)!;
+    expect(correct.text.map((s) => s.ruby).filter(Boolean)).toEqual(["りょう"]);
+  });
+
+  it("登竜門(koji-016)の「竜」は、とうりゅうもんの「りゅう」", () => {
+    const q = all.find((x) => x.id === "koji-016")!;
+    expect(q.reading).toBe("とうりゅうもん");
+    expect(rubiesOf(q)).toEqual(["とう", "りゅう", "もん"]);
+  });
+
+  it("確かめ方が働いている: 誤ったふりがな(竜[りゅう])は、「がりょうてんせい」では見つかる", () => {
+    expect(firstMissingReading(["が", "りゅう", "てんせい"], "がりょうてんせい")).toBe("りゅう");
+    expect(firstMissingReading(["が", "りょう", "てんせい"], "がりょうてんせい")).toBeNull();
+    // 順番も見る(読みが逆の順にあるときは、現れたことにしない)
+    expect(firstMissingReading(["てんせい", "が"], "がりょうてんせい")).toBe("が");
+  });
+});
+
+describe("登竜門の由来(koji-016)", () => {
+  it("「後漢書」に見える言葉・黄河の急流「竜門」・鯉がのぼりきると竜になる、という説明になっている", () => {
+    const q = all.find((x) => x.id === "koji-016")!;
+    expect(plain(q.origin)).toBe(
+      "中国の「後漢書」に見える言葉。黄河の急流「竜門」を、鯉がのぼりきると竜になる、という伝説から、出世のための難しい関門をいう。",
+    );
+    expect(q.origin!.filter((s) => s.ruby).map((s) => `${s.text}[${s.ruby}]`)).toEqual(["後漢書[ごかんじょ]", "黄河[こうが]", "鯉[こい]"]);
+  });
+});
