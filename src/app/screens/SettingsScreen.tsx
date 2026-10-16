@@ -10,6 +10,8 @@ import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 import { ContactLink } from "@/components/ContactLink";
 import { AudioDebugPanel } from "./AudioDebugPanel";
+import { DebugUnlockPanel } from "./DebugUnlockPanel";
+import { useDebugUnlock } from "@/lib/debugUnlock";
 
 /** 音のログの項目を出すための、バージョン表記の連続タップ(回数・タップとタップの間のいちばん長い時間) */
 const VERSION_TAP_COUNT = 5;
@@ -35,6 +37,7 @@ export function SettingsScreen() {
 
   // 音のログの項目: ふだんは出さない。?audiodebug=1 で開いたあと、または、バージョン表記を5回続けてタップしたあとだけ出る
   const audioDebugRevealed = useSyncExternalStore(subscribeAudioDebug, getAudioDebugState).revealed;
+  const debugUnlocked = useDebugUnlock();
   const versionTaps = useRef({ count: 0, last: 0 });
   function handleVersionTap() {
     const now = Date.now();
@@ -187,7 +190,13 @@ export function SettingsScreen() {
         </p>
       </section>
 
-      {audioDebugRevealed && <AudioDebugPanel />}
+      {/* デバッグ項目: 音のログと、全解放。ふだんは出ない(5回タップ・?audiodebug=1・全解放がオンのときだけ) */}
+      {(audioDebugRevealed || debugUnlocked) && (
+        <>
+          <AudioDebugPanel />
+          <DebugUnlockPanel />
+        </>
+      )}
 
       {/* データの初期化は、いちばん下に、ほかと離して置く(うっかり押さないように) */}
       <div className="settings-reset">
