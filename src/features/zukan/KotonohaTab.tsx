@@ -1,6 +1,7 @@
 import { Leaf } from "lucide-react";
 import { Rb } from "@/components/Rb";
-import { hasAllLeaves, useKotonohaStore } from "@/app/store/kotonohaStore";
+import { hasAllLeaves } from "@/app/store/kotonohaStore";
+import { useViewCollectedIds } from "@/features/debug/unlockView";
 import { TitleBadge } from "@/components/TitleBadge";
 import { kotonohaTitle } from "@/data/titles";
 import { kojiQuestions, kotowazaQuestions, type IdiomQuestion } from "@/data/kotowaza";
@@ -65,7 +66,7 @@ function LeafSection({ title, questions, collected }: { title: string; questions
  * 集めた数(N / 80)と、ことわざ・故事成語の見出しを分けた葉のカード。
  */
 export function KotonohaTab() {
-  const collectedIds = useKotonohaStore((s) => s.collectedIds);
+  const collectedIds = useViewCollectedIds(); // 表示(全解放がオンのときは、80まいすべて集めた表示。称号も出る)
   const collected = new Set(collectedIds);
   const total = kotowazaQuestions.length + kojiQuestions.length;
   const count = [...kotowazaQuestions, ...kojiQuestions].filter((q) => collected.has(q.id)).length;

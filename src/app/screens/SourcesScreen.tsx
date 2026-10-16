@@ -7,6 +7,7 @@ import { useNavigationStore, type Screen } from "@/app/store/navigationStore";
 import { BackButton } from "@/components/BackButton";
 import { CourseProof } from "@/components/CourseProof";
 import { Ruby } from "@/components/Ruby";
+import { useDebugUnlock } from "@/lib/debugUnlock";
 
 /**
  * 「くわしい出典」ページ。独立した画面(Screen の "sources")。クレジット・設定・あそびかたの最後のカードから開き、
@@ -16,7 +17,10 @@ import { Ruby } from "@/components/Ruby";
  */
 export function SourcesScreen({ next }: { next: Screen }) {
   const goTo = useNavigationStore((s) => s.goTo);
-  const [open, setOpen] = useState(false);
+  const [opened, setOpen] = useState(false);
+  // 全解放がオンのときは、ネタバレの隠し(「ひらく」を押すまで一覧を見せない)も外れる
+  const debugUnlocked = useDebugUnlock();
+  const open = opened || debugUnlocked;
   const groups = buildSourceGroups(assetCredits);
 
   useEffect(() => {

@@ -4,7 +4,8 @@ import { UserRound, Users, X as CloseIcon } from "lucide-react";
 import { findImage } from "@/assets/registry";
 import { Rb } from "@/components/Rb";
 import { hasEnteredForest, useKotonohaStore } from "@/app/store/kotonohaStore";
-import { useStoryStore } from "@/app/store/storyStore";
+import { useViewSeenStoryIds } from "@/features/debug/unlockView";
+import { useDebugUnlock } from "@/lib/debugUnlock";
 import {
   resolveCharacters,
   nakamaRuby,
@@ -142,8 +143,9 @@ function NakamaDetail({ character, onClose }: { character: ResolvedCharacter; on
  * 解放の判定は、見たストーリーの記録(storyStore)と、言の葉の森への入場(kotonohaStore)。
  */
 export function NakamaTab() {
-  const seenStoryIds = useStoryStore((s) => s.seenStoryIds);
-  const enteredForest = useKotonohaStore(hasEnteredForest);
+  const seenStoryIds = useViewSeenStoryIds(); // 表示(全解放がオンのときは、すべてのストーリーを見た表示。王様の枠も出る)
+  const rawEnteredForest = useKotonohaStore(hasEnteredForest);
+  const enteredForest = useDebugUnlock() || rawEnteredForest;
   const [openId, setOpenId] = useState<string | null>(null);
   const openerRef = useRef<HTMLElement | null>(null);
 

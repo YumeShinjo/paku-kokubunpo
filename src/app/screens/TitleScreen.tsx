@@ -14,6 +14,9 @@ import { Rb } from "@/components/Rb";
 import { CourseProof } from "@/components/CourseProof";
 import { homeLineText, nextTapLine, statusLine, type HomeLine } from "@/data/homeLines";
 import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { useViewCollectedIds } from "@/features/debug/unlockView";
+import { isDebugUnlocked, useDebugUnlock } from "@/lib/debugUnlock";
+import { getAllIdiomQuestions } from "@/data/kotowaza";
 import { useProgressStore } from "@/app/store/progressStore";
 import { KOTONOHA_UNLOCK_AREA_ID } from "@/features/kotonoha/unlock";
 import { getEndingTitle } from "@/data/titles";
@@ -30,16 +33,18 @@ export function TitleScreen() {
   const openSplash = useNavigationStore((s) => s.openSplash);
   const bgUrl = findImage(IMAGE.splashBg); // 最初の画面の背景を、ぼかして薄く敷く
   const title = getEndingTitle(useStoryStore((s) => s.choices));
-  const leafCount = useKotonohaStore((s) => s.collectedIds.length);
+  const leafCount = useViewCollectedIds().length; // 集めた葉の数(表示。全解放がオンのときは、80まい)
+  const debugUnlocked = useDebugUnlock();
 
   // コトの吹き出し。開いたときは、状況の一言(上から順に判定)。コトをタップすると、別の一言に替わる(直前と同じものは出さない)。
   // 時間では消さず、元に戻すタイマーもない(次にタップするか、ホームを開き直すまで、そのまま)
   const [line, setLine] = useState<HomeLine>(() =>
     statusLine({
       starCount: useReviewStore.getState().starredQuestionIds.length,
-      prologueCleared: useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
-      forestUnlocked: useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
-      leafCount: useKotonohaStore.getState().collectedIds.length,
+      // 全解放がオンのときは、序章をクリアしたものとして、一言を選ぶ(表示の判定)
+      prologueCleared: isDebugUnlocked() || useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
+      forestUnlocked: isDebugUnlocked() || useProgressStore.getState().isAreaCleared(KOTONOHA_UNLOCK_AREA_ID),
+      leafCount: isDebugUnlocked() ? getAllIdiomQuestions().length : useKotonohaStore.getState().collectedIds.length,
     }),
   );
 
@@ -166,6 +171,8 @@ export function TitleScreen() {
       </div>
       {/* 講義の自作証明。フッターの下に、小さく置く(押せない) */}
       <CourseProof className="title-proof" />
+      {/* 全解放がオンのあいだだけ、隅に小さな目印を出す(ふつうのプレイヤーには出ない。押せない) */}
+      {debugUnlocked && <p className="debug-unlock-badge">全解放 オン</p>}
     </div>
   );
 }

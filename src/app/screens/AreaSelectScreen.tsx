@@ -7,7 +7,7 @@ import { getQuestionsForArea } from "@/data/questionLoader";
 import { buildAreaEntryScreen } from "@/features/story/storyFlow";
 import { useMasteryStore } from "@/app/store/masteryStore";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useProgressStore } from "@/app/store/progressStore";
+import { useViewIsAreaCleared, useViewIsAreaUnlocked } from "@/features/debug/unlockView";
 import { useStoryStore } from "@/app/store/storyStore";
 import { Rb } from "@/components/Rb";
 import { areaNameText, unitLabelText } from "@/data/areaText";
@@ -21,8 +21,9 @@ import type { CSSProperties } from "react";
  */
 export function AreaSelectScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
-  const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
-  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
+  // 表示の判定(全解放がオンのときだけ、すべて「解放済み」に見せる。debug/unlockView.ts)
+  const isAreaCleared = useViewIsAreaCleared();
+  const isAreaUnlocked = useViewIsAreaUnlocked();
   const hasSeen = useStoryStore((s) => s.hasSeen);
   const correctIds = useMasteryStore((s) => s.correctQuestionIds);
 

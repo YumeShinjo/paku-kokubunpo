@@ -4,6 +4,7 @@ import { BackButton } from "@/components/BackButton";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { shouldShowEntryFirst, useKotonohaStore } from "@/app/store/kotonohaStore";
+import { useViewCollectedIds } from "@/features/debug/unlockView";
 import { getAllIdiomQuestions } from "@/data/kotowaza";
 import { KOTONOHA_ABOUT } from "@/data/kotonohaAbout";
 import { Ruby } from "@/components/Ruby";
@@ -49,7 +50,7 @@ function EntryFirst({ onDone }: { onDone: () => void }) {
 export function KotonohaScreen() {
   const goTo = useNavigationStore((s) => s.goTo);
   const unlocked = useKotonohaUnlocked();
-  const collectedIds = useKotonohaStore((s) => s.collectedIds);
+  const collectedIds = useViewCollectedIds(); // 範囲ごとの「N / 全部」の表示(全解放がオンのときは、すべて集めた表示)
   const markEntered = useKotonohaStore((s) => s.markEntered);
   const setLastEntryScene = useKotonohaStore((s) => s.setLastEntryScene);
   const markEntryFirstSeen = useKotonohaStore((s) => s.markEntryFirstSeen);

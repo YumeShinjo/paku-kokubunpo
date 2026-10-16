@@ -3273,6 +3273,45 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   margin-left: auto;
 }
 
+/* 全解放がオンのときだけ出る、ホーム画面の隅の目印(12px・目立たない色・押せない。レイアウトには、影響しない) */
+.debug-unlock-badge {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.3rem;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--color-text-muted);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* ことだまの書「おもいで」の、全解放のときの称号の一覧 */
+.zukan-title-list h3 {
+  margin: 0.4rem 0;
+  font-size: 0.95rem;
+}
+
+.zukan-title-list ul {
+  list-style: none;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.zukan-title-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.zukan-title-reason {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
 .settings-version {
   position: relative;
   margin: 0;

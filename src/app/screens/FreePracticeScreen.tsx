@@ -6,7 +6,7 @@ import { QuizPlayer, type SessionResult } from "@/features/quiz/QuizPlayer";
 import { Ruby } from "@/components/Ruby";
 import { duckBgm, playSe, seDurationMs } from "@/lib/audio";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useProgressStore } from "@/app/store/progressStore";
+import { useViewIsAreaUnlocked } from "@/features/debug/unlockView";
 
 /**
  * 自由練習(6章): ことだまの書から、選んだ単元の問題プールだけを解くセッション。
@@ -34,7 +34,8 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
     setAttempt((a) => a + 1);
   }
 
-  const areaUnlocked = useProgressStore((s) => (meta ? s.isAreaUnlocked(meta.areaId) : false));
+  const isAreaUnlockedView = useViewIsAreaUnlocked();
+  const areaUnlocked = meta ? isAreaUnlockedView(meta.areaId) : false;
 
   if (!meta || !areaUnlocked || questions.length === 0) {
     return (

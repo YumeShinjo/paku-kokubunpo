@@ -20,7 +20,7 @@ import { BOSS_LIVES } from "./bossRules";
 import { areaAccentStyle } from "@/data/areaTheme";
 import { useStatsStore } from "@/app/store/statsStore";
 import { useMasteryStore } from "@/app/store/masteryStore";
-import { useProgressStore } from "@/app/store/progressStore";
+import { useViewIsStageCleared } from "@/features/debug/unlockView";
 import { areaBackgroundName, areaPurifyGateStageId } from "@/data/bosses";
 import { isUnitWeak } from "@/features/zukan/unitAccuracy";
 import {
@@ -111,7 +111,7 @@ export function QuizPlayer({
   const recordCorrect = useMasteryStore((s) => s.recordCorrect);
   const toggleStar = useReviewStore((s) => s.toggleStar);
   const starredIds = useReviewStore((s) => s.starredQuestionIds);
-  const isStageCleared = useProgressStore((s) => s.isStageCleared);
+  const isStageCleared = useViewIsStageCleared(); // 背景の浄化後の姿の判定(表示)
 
   const seenGuides = useTutorialStore((s) => s.seenGuides);
   const markGuideSeen = useTutorialStore((s) => s.markSeen);

@@ -12,6 +12,7 @@ import { buildStageEntryScreen } from "@/features/story/storyFlow";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { useViewIsAreaUnlocked, useViewIsStageCleared, useViewIsStageUnlocked } from "@/features/debug/unlockView";
 import { useSessionStore } from "@/app/store/sessionStore";
 import { restoreSession } from "@/features/quiz/session";
 import { Rb } from "@/components/Rb";
@@ -26,10 +27,11 @@ import { BackButton } from "@/components/BackButton";
  */
 export function StageSelectScreen({ areaId }: { areaId: string }) {
   const goTo = useNavigationStore((s) => s.goTo);
-  const isStageCleared = useProgressStore((s) => s.isStageCleared);
+  // 表示の判定(全解放がオンのときだけ、すべて「解放済み」「クリア済み」に見せる。ラスボスの伏せも外れる。debug/unlockView.ts)
+  const isStageCleared = useViewIsStageCleared();
   const isStageAssisted = useProgressStore((s) => s.isStageAssisted);
-  const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
-  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
+  const isStageUnlocked = useViewIsStageUnlocked();
+  const isAreaUnlocked = useViewIsAreaUnlocked();
   const hasSeen = useStoryStore((s) => s.hasSeen);
   const savedSession = useSessionStore((s) => s.active);
   const clearSession = useSessionStore((s) => s.clear);

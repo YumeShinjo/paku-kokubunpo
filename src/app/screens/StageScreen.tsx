@@ -17,6 +17,7 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import { useProgressStore } from "@/app/store/progressStore";
 import { useMascotStore } from "@/app/store/mascotStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { useViewIsStageUnlocked } from "@/features/debug/unlockView";
 import { useSessionStore } from "@/app/store/sessionStore";
 import { restoreSession } from "@/features/quiz/session";
 import { Rb } from "@/components/Rb";
@@ -38,7 +39,8 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
   // このボスに負けた回数(保存している)。負けるたびに、次の挑戦のライフが1ふえる(最大+4)
   const bossLosses = useProgressStore((s) => s.bossLosses[stageId] ?? 0);
   const isAreaCleared = useProgressStore((s) => s.isAreaCleared);
-  const isStageUnlocked = useProgressStore((s) => s.isStageUnlocked);
+  // 入口の判定だけ、全解放がオンのときは、すべて挑戦できる(ステージをクリアしたときの「エリア全体をクリアしたか」(isAreaCleared)は、本当の進行データのまま)
+  const isStageUnlocked = useViewIsStageUnlocked();
   const growTo = useMascotStore((s) => s.growTo);
   const pushToast = useToastStore((s) => s.push);
   const hasSeen = useStoryStore((s) => s.hasSeen);

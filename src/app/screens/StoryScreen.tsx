@@ -7,8 +7,8 @@ import { layoutPortraits } from "@/features/story/portraitLayout";
 import { findImage, IMAGE } from "@/assets/registry";
 import { areaBackgroundName, areaPurifyGateStageId, isSubBossPurifiedIn, subBossAreaOf } from "@/data/bosses";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useProgressStore } from "@/app/store/progressStore";
 import { useStoryStore } from "@/app/store/storyStore";
+import { useViewIsStageCleared } from "@/features/debug/unlockView";
 import { playSe } from "@/lib/audio";
 import type { Screen } from "@/app/store/navigationStore";
 
@@ -31,7 +31,8 @@ const ASSIST_PURIFY_LINE = 2;
 
 export function StoryScreen({ eventId, next }: { eventId: string; next: Screen }) {
   const goTo = useNavigationStore((s) => s.goTo);
-  const isStageCleared = useProgressStore((s) => s.isStageCleared);
+  // 背景・立ち絵の浄化後の姿の判定(表示)。全解放がオンのときは、浄化後の姿(ただし、戦う前の場面は、いつも浄化前のまま)
+  const isStageCleared = useViewIsStageCleared();
   const markSeen = useStoryStore((s) => s.markSeen);
   const recordChoice = useStoryStore((s) => s.recordChoice);
   const event = useMemo(() => getStoryEvent(eventId), [eventId]);

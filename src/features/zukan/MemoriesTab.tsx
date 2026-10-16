@@ -4,7 +4,8 @@ import { Rb } from "@/components/Rb";
 import { StoryArchive } from "@/features/zukan/StoryArchive";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStoryStore } from "@/app/store/storyStore";
-import { ENDING_CHOICE_EVENT_ID, getEndingTitle } from "@/data/titles";
+import { ENDING_CHOICE_EVENT_ID, endingTitles, getEndingTitle, kotonohaTitle } from "@/data/titles";
+import { useDebugUnlock } from "@/lib/debugUnlock";
 import { buildEndingReplayScreen } from "@/features/story/storyFlow";
 
 /**
@@ -16,7 +17,9 @@ export function MemoriesTab() {
   const choices = useStoryStore((s) => s.choices);
   const title = getEndingTitle(choices);
   // エンディングの分岐まで進んでいれば、見返せる(選びなおして称号を変えることもできる)
-  const canReplayEnding = choices[ENDING_CHOICE_EVENT_ID] !== undefined;
+  // 全解放がオンのときは、エンディングまで進んでいなくても、見返せる。称号は、すべてを一覧で見せる(表示の判定。保存した選択は、書き換えない)
+  const debugUnlocked = useDebugUnlock();
+  const canReplayEnding = debugUnlocked || choices[ENDING_CHOICE_EVENT_ID] !== undefined;
 
   return (
     <>
@@ -30,6 +33,19 @@ export function MemoriesTab() {
           </span>
         )}
       </p>
+      {debugUnlocked && (
+        <section className="zukan-title-list" aria-label="しょうごう いちらん">
+          <h3>しょうごう いちらん</h3>
+          <ul>
+            {[...Object.values(endingTitles), kotonohaTitle].map((t) => (
+              <li key={t.id}>
+                <TitleBadge title={t} />
+                <span className="zukan-title-reason">{t.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {canReplayEnding && (
         <div className="zukan-replay">
           <button

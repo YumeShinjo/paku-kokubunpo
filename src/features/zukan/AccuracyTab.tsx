@@ -8,7 +8,7 @@ import { Ruby } from "@/components/Ruby";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { useStatsStore } from "@/app/store/statsStore";
 import { useReviewStore } from "@/app/store/reviewStore";
-import { useProgressStore } from "@/app/store/progressStore";
+import { useViewIsAreaUnlocked } from "@/features/debug/unlockView";
 import { Rb } from "@/components/Rb";
 import { areaNameText } from "@/data/areaText";
 
@@ -22,7 +22,7 @@ export function AccuracyTab() {
   const goTo = useNavigationStore((s) => s.goTo);
   const unitRecent = useStatsStore((s) => s.unitRecent);
   const starredIds = useReviewStore((s) => s.starredQuestionIds);
-  const isAreaUnlocked = useProgressStore((s) => s.isAreaUnlocked);
+  const isAreaUnlocked = useViewIsAreaUnlocked();
   // 単元ごとの星の数(単元名の横に表示)
   const starsByUnit = useMemo(() => {
     const unitOf = new Map(getAllQuestions().map((q) => [q.id, q.unit]));

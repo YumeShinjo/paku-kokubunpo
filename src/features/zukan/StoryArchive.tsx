@@ -2,7 +2,7 @@ import { zukanReturnScreen } from "@/features/zukan/zukanReturn";
 import { ScrollText } from "lucide-react";
 import { buildStoryArchive, countReplayableStories } from "@/features/story/storyArchive";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useStoryStore } from "@/app/store/storyStore";
+import { useViewSeenStoryIds } from "@/features/debug/unlockView";
 import { Rb } from "@/components/Rb";
 
 /**
@@ -11,7 +11,7 @@ import { Rb } from "@/components/Rb";
  */
 export function StoryArchive() {
   const goTo = useNavigationStore((s) => s.goTo);
-  const seenStoryIds = useStoryStore((s) => s.seenStoryIds);
+  const seenStoryIds = useViewSeenStoryIds(); // 表示(全解放がオンのときは、すべてのストーリーを見返せる。真相の話も)
 
   const groups = buildStoryArchive(seenStoryIds);
   const seenCount = groups.reduce((n, g) => n + g.entries.length, 0);

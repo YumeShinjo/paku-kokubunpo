@@ -1,7 +1,7 @@
 import { Leaf, Lock } from "lucide-react";
 import { Rb } from "@/components/Rb";
 import { useNavigationStore } from "@/app/store/navigationStore";
-import { useKotonohaStore } from "@/app/store/kotonohaStore";
+import { useViewCollectedIds } from "@/features/debug/unlockView";
 import { getAllIdiomQuestions } from "@/data/kotowaza";
 import { KOTONOHA_LOCKED_MESSAGE, useKotonohaUnlocked } from "@/features/kotonoha/unlock";
 
@@ -13,7 +13,7 @@ import { KOTONOHA_LOCKED_MESSAGE, useKotonohaUnlocked } from "@/features/kotonoh
 export function ForestEntry() {
   const goTo = useNavigationStore((s) => s.goTo);
   const unlocked = useKotonohaUnlocked();
-  const collectedCount = useKotonohaStore((s) => s.collectedIds.length);
+  const collectedCount = useViewCollectedIds().length; // 表示(全解放がオンのときは、80まい)
   const total = getAllIdiomQuestions().length;
 
   return (
