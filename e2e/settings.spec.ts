@@ -26,6 +26,7 @@ for (const { w, h } of SIZES) {
       await page.setViewportSize({ width: w, height: h });
       await openSettings(page, large);
 
+      await page.evaluate(() => document.fonts.ready); // フォントの読み込みが終わってから測る(読み込み前は、文字の幅・行の高さが違う)
       const report = await page.evaluate(() => {
         const rect = (e: Element) => e.getBoundingClientRect();
         const screen = document.querySelector(".screen-settings")!;
@@ -87,6 +88,8 @@ for (const { w, h } of SIZES) {
       expect(report.clipped, "文字が、ボタンからはみ出していない").toEqual([]);
       expect(report.resetGap, "初期化は、ほかと十分に離れている").toBeGreaterThanOrEqual(36);
       console.log(`SETTINGS ${w}x${h} ${large ? "大" : "標準"}: docHeight=${report.docH}`);
+      // デバッグ項目を出していないとき、設定画面の高さは、これまでと変わらない(幅360のとき: 標準 1,232px / 大 1,498px)
+      if (w === 360) expect(report.docH, "デバッグ項目を出していない設定画面の高さ").toBe(large ? 1498 : 1232);
     });
   }
 }
