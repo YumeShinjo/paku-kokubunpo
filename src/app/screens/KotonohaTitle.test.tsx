@@ -31,7 +31,7 @@ const withoutRt = (el: Element) => {
   return clone.textContent ?? "";
 };
 
-describe("言の葉の森: 入口の説明・80まいそろったときの称号", () => {
+describe("言の葉の森: 入口の説明・80枚そろったときの称号", () => {
   let container: HTMLDivElement;
   let root: Root;
   const q = <T extends Element>(selector: string) => container.querySelector<T>(selector);
@@ -55,7 +55,7 @@ describe("言の葉の森: 入口の説明・80まいそろったときの称号
   });
 
   it("入口に、説明がいつでも出る(初回の会話の前後・2回目以降のどちらでも)。ネタバレなし", () => {
-    const expected = "言の葉の森は、ことわざ・故事成語を あつめる ミニゲームだよ。1ラウンド10問。本編のとちゅうでも、いつでも あそべるよ。80まい ぜんぶ そろえると、ユライから しょうごうが もらえるよ!";
+    const expected = "言の葉の森は、ことわざ・故事成語を あつめる ミニゲームだよ。1ラウンド10問。本編のとちゅうでも、いつでも あそべるよ。80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ!";
     expect(plain(KOTONOHA_ABOUT)).toBe(expected);
     act(() => root.render(<KotonohaScreen />));
     expect(withoutRt(q(".kotonoha-about")!)).toBe(expected);
@@ -68,7 +68,7 @@ describe("言の葉の森: 入口の説明・80まいそろったときの称号
     for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(expected, word).not.toContain(word);
   });
 
-  it("称号の名前(仮): 王座の間の称号と同じ形。80まいぜんぶ集めたかは、集めた葉から導く", () => {
+  it("称号の名前(仮): 王座の間の称号と同じ形。80枚ぜんぶ集めたかは、集めた葉から導く", () => {
     expect(kotonohaTitle.plain).toBe("言の葉をひろいし者");
     expect(plain(kotonohaTitle.name.map((s) => (s.ruby ? `${s.text}[${s.ruby}]` : s.text)).join(""))).toBe("言の葉をひろいし者");
     expect(hasAllLeaves(allIds())).toBe(true);
@@ -76,7 +76,7 @@ describe("言の葉の森: 入口の説明・80まいそろったときの称号
     expect(allIds()).toHaveLength(80);
   });
 
-  it("ことだまの書の「ことのは」: 80まいそろったときだけ、称号が出る", () => {
+  it("ことだまの書の「ことのは」: 80枚そろったときだけ、称号が出る", () => {
     useKotonohaStore.setState({ collectedIds: allIds().slice(1) });
     act(() => root.render(<KotonohaTab />));
     expect(q(".kotonoha-tab-title-earned")).toBeNull();
@@ -113,6 +113,6 @@ describe("言の葉の森: 入口の説明・80まいそろったときの称号
 
   it("「あそびかた」の言の葉の森のカードに、称号の1文がある", () => {
     const forest = howToCards.find((c) => c.id === "forest")!;
-    expect(plain(forest.body)).toContain("80まい ぜんぶ そろえると、ユライから しょうごうが もらえるよ!");
+    expect(plain(forest.body)).toContain("80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ!");
   });
 });

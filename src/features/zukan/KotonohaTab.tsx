@@ -66,7 +66,7 @@ function LeafSection({ title, questions, collected }: { title: string; questions
  * 集めた数(N / 80)と、ことわざ・故事成語の見出しを分けた葉のカード。
  */
 export function KotonohaTab() {
-  const collectedIds = useViewCollectedIds(); // 表示(全解放がオンのときは、80まいすべて集めた表示。称号も出る)
+  const collectedIds = useViewCollectedIds(); // 表示(全解放がオンのときは、80枚すべて集めた表示。称号も出る)
   const collected = new Set(collectedIds);
   const total = kotowazaQuestions.length + kojiQuestions.length;
   const count = [...kotowazaQuestions, ...kojiQuestions].filter((q) => collected.has(q.id)).length;

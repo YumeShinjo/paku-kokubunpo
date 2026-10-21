@@ -92,7 +92,7 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
     setCompletions([]);
   }
 
-  // 80まいぜんぶそろって、称号を授与するときに、称号の授与の効果音(王座の間の称号と同じ)を鳴らす
+  // 80枚ぜんぶそろって、称号を授与するときに、称号の授与の効果音(王座の間の称号と同じ)を鳴らす
   const awardingTitle = phase === "result" && completions[0] === "all";
   useEffect(() => {
     if (awardingTitle) playSe("subBossClear");
@@ -226,7 +226,7 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
           <SceneBubbles sceneId={resultSceneId(score, round.length)} className="kotonoha-result-scene" />
           <p className="kotonoha-new-leaves">
             <Leaf aria-hidden="true" size={18} className="inline-icon" />
-            {newLeaves > 0 ? `あたらしい 葉が ${newLeaves}まい あつまったよ` : "あたらしい 葉は なかったよ"}
+            {newLeaves > 0 ? `あたらしい 葉が ${newLeaves}枚 あつまったよ` : "あたらしい 葉は なかったよ"}
           </p>
           {/* 新しい葉を集めたときは、その行に、leaf_new を添える(得点帯別の一言とは別枠) */}
           {newLeaves > 0 && <SceneBubbles sceneId="leaf_new" className="kotonoha-leaf-new-scene" />}
@@ -246,7 +246,7 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
         <div className="kotonoha-complete-overlay">
           <div className="kotonoha-complete" role="dialog" aria-modal="true" aria-label="ユライとコトの会話" data-scene={COMPLETE_SCENE[completions[0]]}>
             <SceneBubbles sceneId={COMPLETE_SCENE[completions[0]]} />
-            {/* 80まいぜんぶそろったときだけ、ユライから称号を授与する(王座の間の称号と同じ見た目の TitleBadge) */}
+            {/* 80枚ぜんぶそろったときだけ、ユライから称号を授与する(王座の間の称号と同じ見た目の TitleBadge) */}
             {completions[0] === "all" && (
               <div className="kotonoha-title-award" role="status">
                 <p>ユライから しょうごう(二つ名)を もらったよ!</p>

@@ -33,7 +33,7 @@ export function TitleScreen() {
   const openSplash = useNavigationStore((s) => s.openSplash);
   const bgUrl = findImage(IMAGE.splashBg); // 最初の画面の背景を、ぼかして薄く敷く
   const title = getEndingTitle(useStoryStore((s) => s.choices));
-  const leafCount = useViewCollectedIds().length; // 集めた葉の数(表示。全解放がオンのときは、80まい)
+  const leafCount = useViewCollectedIds().length; // 集めた葉の数(表示。全解放がオンのときは、80枚)
   const debugUnlocked = useDebugUnlock();
 
   // コトの吹き出し。開いたときは、状況の一言(上から順に判定)。コトをタップすると、別の一言に替わる(直前と同じものは出さない)。

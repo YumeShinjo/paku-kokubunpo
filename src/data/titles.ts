@@ -38,7 +38,7 @@ export const endingTitles: Record<string, PlayerTitle> = {
 };
 
 /**
- * 言の葉の森の称号。葉を80まい、ぜんぶ集めると、ユライからもらえる(仮の名前。あとで差し替えてよい)。
+ * 言の葉の森の称号。葉を80枚、ぜんぶ集めると、ユライからもらえる(仮の名前。あとで差し替えてよい)。
  * 王座の間の称号(endingTitles)と同じ形。集めた葉(kotonohaStore.collectedIds)から導くので、別には保存しない。
  * 名前の案: 「言の葉をひろいし者」(仮の名前として使用)/「森のことだま使い」/「ことのはの守り人」
  */
@@ -46,7 +46,7 @@ export const kotonohaTitle: PlayerTitle = {
   id: "kotonoha",
   name: rb("言[こと]の葉[は]をひろいし者[もの]"),
   plain: "言の葉をひろいし者",
-  reason: "言の葉の森の葉を、80まいぜんぶ あつめた",
+  reason: "言の葉の森の葉を、80枚ぜんぶ あつめた",
 };
 
 /** 保存された選択(storyStore.choices)から、いま持っている称号を返す。まだ選んでいなければ undefined。 */

@@ -387,7 +387,7 @@ describe("言の葉の森の画面: 場面台詞", () => {
       start("all");
       playRound(undefined, true);
       const row = q(".kotonoha-new-leaves")!;
-      expect(row.textContent).toContain("10まい");
+      expect(row.textContent).toContain("10枚");
       const leafNew = q('.kotonoha-leaf-new-scene[data-scene="leaf_new"]');
       expect(leafNew).not.toBeNull();
       expect(leafNew!.previousElementSibling).toBe(row);

@@ -96,7 +96,7 @@ export function KotonohaScreen() {
       ) : (
         <>
           <KotonohaScene />
-          {/* 本編との関係と、80まいそろったときに起こること。初回の会話とは別に、いつでも読める */}
+          {/* 本編との関係と、80枚そろったときに起こること。初回の会話とは別に、いつでも読める */}
           <p className="kotonoha-about">
             <Ruby text={rb(KOTONOHA_ABOUT)} />
           </p>

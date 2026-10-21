@@ -43,7 +43,7 @@ export function useViewIsAreaCleared(): (areaId: string) => boolean {
 
 const allIdiomIds = (): string[] => getAllIdiomQuestions().map((q) => q.id);
 
-/** 集めた葉(言の葉の森)のid(表示用: 図鑑・入口の「N / 80」)。全解放のときは、80まい全部 */
+/** 集めた葉(言の葉の森)のid(表示用: 図鑑・入口の「N / 80」)。全解放のときは、80枚全部 */
 export function useViewCollectedIds(): string[] {
   const unlocked = useDebugUnlock();
   const raw = useKotonohaStore((s) => s.collectedIds);

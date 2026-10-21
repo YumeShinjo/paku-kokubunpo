@@ -381,7 +381,7 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
       {retryWrongCount > 0 && !submitted && (
         <p className="sorting-retry-note" role="status">
-          あと{retryWrongCount}まい ちがうよ。もういちど、えらんでみよう!
+          あと{retryWrongCount}枚 ちがうよ。もういちど、えらんでみよう!
         </p>
       )}
 

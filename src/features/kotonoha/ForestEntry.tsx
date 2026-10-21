@@ -13,7 +13,7 @@ import { KOTONOHA_LOCKED_MESSAGE, useKotonohaUnlocked } from "@/features/kotonoh
 export function ForestEntry() {
   const goTo = useNavigationStore((s) => s.goTo);
   const unlocked = useKotonohaUnlocked();
-  const collectedCount = useViewCollectedIds().length; // 表示(全解放がオンのときは、80まい)
+  const collectedCount = useViewCollectedIds().length; // 表示(全解放がオンのときは、80枚)
   const total = getAllIdiomQuestions().length;
 
   return (

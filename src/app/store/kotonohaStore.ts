@@ -113,7 +113,7 @@ export function newlyCompleted(before: string[], after: string[], shown: Complet
   return now.filter((kind) => !shown.includes(kind));
 }
 
-/** 葉を80まいぜんぶ集めたか(言の葉の森の称号をもらえる条件) */
+/** 葉を80枚ぜんぶ集めたか(言の葉の森の称号をもらえる条件) */
 export function hasAllLeaves(collectedIds: string[]): boolean {
   return CATEGORY_IDS.all.every((id) => collectedIds.includes(id));
 }

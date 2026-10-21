@@ -67,13 +67,13 @@ describe("仕分け: 1回だけやり直せる(1回目に外したカードだ�
     expect(container.querySelector(".sorting-results")).not.toBeNull();
   });
 
-  it("1回目に1枚外すと、外したカードだけが戻り、合っているカードは固定される。「あと1まい ちがうよ」。解答は、まだ通知しない", () => {
+  it("1回目に1枚外すと、外したカードだけが戻り、合っているカードは固定される。「あと1枚 ちがうよ」。解答は、まだ通知しない", () => {
     place("走る", "動詞");
     place("山", "形容詞"); // 外す
     place("高い", "形容詞");
     act(() => submit().click());
     expect(onAnswer).not.toHaveBeenCalled();
-    expect(note()).toContain("あと1まい ちがうよ");
+    expect(note()).toContain("あと1枚 ちがうよ");
     // 答え・品詞名は出さない
     for (const word of ["名詞", "正解", "山は", "解説"]) expect(note(), word).not.toContain(word);
     expect(pool()).toEqual(["山"]); // 外したカードだけが戻っている
@@ -123,12 +123,12 @@ describe("仕分け: 1回だけやり直せる(1回目に外したカードだ�
     expect(container.querySelectorAll(".sorting-results li.correct")).toHaveLength(3);
   });
 
-  it("2枚以上外したら、「あと2まい」。外した2枚が戻り、合っている1枚だけが固定される", () => {
+  it("2枚以上外したら、「あと2枚」。外した2枚が戻り、合っている1枚だけが固定される", () => {
     place("走る", "動詞");
     place("山", "動詞");
     place("高い", "名詞");
     act(() => submit().click());
-    expect(note()).toContain("あと2まい ちがうよ");
+    expect(note()).toContain("あと2枚 ちがうよ");
     expect(pool().sort()).toEqual(["山", "高い"].sort());
     expect(chip("走る").disabled).toBe(true);
   });
