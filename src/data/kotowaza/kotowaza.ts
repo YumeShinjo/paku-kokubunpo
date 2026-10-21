@@ -113,7 +113,7 @@ export const kotowazaQuestions: IdiomQuestion[] = [
   make({
     n: 13, difficulty: 1,
     sentence: "___に小判[こばん]",
-    answer: "猫[ねこ]", wrongs: ["犬[いぬ]", "鳥[とり]"],
+    answer: "猫[ねこ]", wrongs: ["牛[うし]", "鳥[とり]"],
     reading: "ねこにこばん",
     meaning: "価値のあるものを与えても、その値打ちがわからない相手には、何の役にも立たないということ。",
     yurai: "こばんの うえで、ねこが あくびを する。",

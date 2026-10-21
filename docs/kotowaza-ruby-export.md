@@ -80,7 +80,7 @@
 | 丘[おか] | 1 | 選択肢:kotowaza-046 |
 | 急[いそ] | 2 | 表記:kotowaza-006, 出題文:kotowaza-006 |
 | 泣[な] | 4 | 表記:kotowaza-030, 出題文:kotowaza-030, 表記:koji-028, 出題文:koji-028 |
-| 牛[うし] | 1 | 選択肢:koji-026 |
+| 牛[うし] | 2 | 選択肢:kotowaza-013, 選択肢:koji-026 |
 | 牛後[ぎゅうご] | 2 | 表記:koji-027, 出題文:koji-027 |
 | 漁師[りょうし] | 1 | 由来:koji-009 |
 | 漁夫[ぎょふ] | 2 | 表記:koji-009, 選択肢:koji-009 |
@@ -104,7 +104,7 @@
 | 月[げつ] | 1 | 選択肢:koji-024 |
 | 月[つき] | 2 | 表記:kotowaza-032, 選択肢:kotowaza-032 |
 | 兼[か] | 2 | 表記:kotowaza-037, 選択肢:kotowaza-037 |
-| 犬[いぬ] | 4 | 選択肢:kotowaza-001, 表記:kotowaza-005, 出題文:kotowaza-005, 選択肢:kotowaza-013 |
+| 犬[いぬ] | 3 | 選択肢:kotowaza-001, 表記:kotowaza-005, 出題文:kotowaza-005 |
 | 肩[かた] | 1 | 選択肢:kotowaza-033 |
 | 見[けん] | 2 | 表記:kotowaza-020, 選択肢:kotowaza-020 |
 | 軒[のき] | 1 | 由来:kotowaza-042 |
