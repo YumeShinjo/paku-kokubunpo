@@ -14,7 +14,7 @@
 
 - 確認した件数: 80 / 80(確認できなかった項目: なし)
 - 直した: 1件(kotowaza-013 の選択肢)
-- 要判断: 3件(kotowaza-006・koji-025・koji-013。いずれも、いまの文は、ぼかしてあり、誤りとは言えない)
+- 要判断: 3件(kotowaza-006・koji-025・koji-013)。2026-10-22 の追加12で、言い切らない書き方に直した(このあとの「要判断の処理」)
 - OK: 上の4件以外。(koji-016 は、2026-10-16 に書き直し済みの由来を、再確認した)
 
 ## 一覧
@@ -26,7 +26,7 @@
 | kotowaza-003 | 七転び八起き | ななころびやおき | [コトバンク](https://kotobank.jp/word/%E4%B8%83%E8%BB%A2%E3%81%B3%E5%85%AB%E8%B5%B7%E3%81%8D-589160) / [故事ことわざ辞典](http://kotowaza-allguide.com/na/nanakorobiyaoki.html) | OK | OK | (由来の項目なし) | OK | OK |
 | kotowaza-004 | 花より団子 | はなよりだんご | [コトバンク](https://kotobank.jp/word/%E8%8A%B1%E3%82%88%E3%82%8A%E5%9B%A3%E5%AD%90-603292) / [故事ことわざ辞典](http://kotowaza-allguide.com/ha/hanayoridango.html) | OK | OK | OK | OK | OK |
 | kotowaza-005 | 犬も歩けば棒に当たる | いぬもあるけばぼうにあたる | [コトバンク](https://kotobank.jp/word/%E7%8A%AC%E3%82%82%E6%AD%A9%E3%81%91%E3%81%B0%E6%A3%92%E3%81%AB%E5%BD%93%E3%81%9F%E3%82%8B-435267) / [故事ことわざ辞典](http://kotowaza-allguide.com/i/inumoarukebabou.html) | OK | OK | (由来の項目なし) | OK | OK |
-| kotowaza-006 | 急がば回れ | いそがばまわれ | [コトバンク](https://kotobank.jp/word/%E6%80%A5%E3%81%8C%E3%81%B0%E5%9B%9E%E3%82%8C-432744) / [故事ことわざ辞典](http://kotowaza-allguide.com/i/isogabamaware.html) | OK | OK | OK | OK | 要判断 |
+| kotowaza-006 | 急がば回れ | いそがばまわれ | [コトバンク](https://kotobank.jp/word/%E6%80%A5%E3%81%8C%E3%81%B0%E5%9B%9E%E3%82%8C-432744) / [故事ことわざ辞典](http://kotowaza-allguide.com/i/isogabamaware.html) | OK | OK | OK | OK | 要判断→処理済み(追加12) |
 | kotowaza-007 | 論より証拠 | ろんよりしょうこ | [コトバンク](https://kotobank.jp/word/%E8%AB%96%E3%82%88%E3%82%8A%E8%A8%BC%E6%8B%A0-664007) / [故事ことわざ辞典](http://kotowaza-allguide.com/ro/ronyorisyouko.html) | OK | OK | (由来の項目なし) | OK | OK |
 | kotowaza-008 | 塵も積もれば山となる | ちりもつもればやまとなる | [コトバンク](https://kotobank.jp/word/%E5%A1%B5%E3%82%82%E7%A9%8D%E3%82%82%E3%82%8C%E3%81%B0%E5%B1%B1%E3%81%A8%E3%81%AA%E3%82%8B-569680) / [故事ことわざ辞典](http://kotowaza-allguide.com/ti/chirimotsumoreba.html) | OK | OK | (由来の項目なし) | OK | OK |
 | kotowaza-009 | 雨降って地固まる | あめふってじかたまる | [コトバンク](https://kotobank.jp/word/%E9%9B%A8%E9%99%8D%E3%81%A4%E3%81%A6%E5%9C%B0%E5%9B%BA%E3%81%BE%E3%82%8B-3206810) / [故事ことわざ辞典](http://kotowaza-allguide.com/a/amafuttejikatamaru.html) | OK | OK | (由来の項目なし) | OK | OK |
@@ -83,7 +83,7 @@
 | koji-010 | 温故知新 | おんこちしん | [コトバンク](https://kotobank.jp/word/%E6%B8%A9%E6%95%85%E7%9F%A5%E6%96%B0-455768) / [故事ことわざ辞典](http://kotowaza-allguide.com/o/onkochishin.html) | OK | OK | OK | OK | OK |
 | koji-011 | 背水の陣 | はいすいのじん | [コトバンク](https://kotobank.jp/word/%E8%83%8C%E6%B0%B4%E3%81%AE%E9%99%A3-598884) / [故事ことわざ辞典](http://kotowaza-allguide.com/ha/haisuinojin.html) | OK | OK | OK | OK | OK |
 | koji-012 | 圧巻 | あっかん | [コトバンク](https://kotobank.jp/word/%E5%9C%A7%E5%B7%BB-425447) / [故事ことわざ辞典](http://kotowaza-allguide.com/a/akkan.html) | OK | OK | OK | OK | OK |
-| koji-013 | 朝三暮四 | ちょうさんぼし | [コトバンク](https://kotobank.jp/word/%E6%9C%9D%E4%B8%89%E6%9A%AE%E5%9B%9B-568433) / [故事ことわざ辞典](http://kotowaza-allguide.com/ti/tyousanboshi.html) | OK | OK | OK | OK | 要判断(軽微) |
+| koji-013 | 朝三暮四 | ちょうさんぼし | [コトバンク](https://kotobank.jp/word/%E6%9C%9D%E4%B8%89%E6%9A%AE%E5%9B%9B-568433) / [故事ことわざ辞典](http://kotowaza-allguide.com/ti/tyousanboshi.html) | OK | OK | OK | OK | 要判断→処理済み(追加12) |
 | koji-014 | 完璧 | かんぺき | [コトバンク](https://kotobank.jp/word/%E5%AE%8C%E7%92%A7-471421) / [故事ことわざ辞典](http://kotowaza-allguide.com/ka/kanpeki.html) | OK | OK | OK | OK | OK |
 | koji-015 | 推敲 | すいこう | [コトバンク](https://kotobank.jp/word/%E6%8E%A8%E6%95%B2-539689) / [故事ことわざ辞典](http://kotowaza-allguide.com/su/suikou.html) | OK | OK | OK | OK | OK |
 | koji-016 | 登竜門 | とうりゅうもん | [コトバンク](https://kotobank.jp/word/%E7%99%BB%E7%AB%9C%E9%96%80-581641) / [故事ことわざ辞典](http://kotowaza-allguide.com/to/touryuumon.html) | OK | OK | OK | OK | OK(参考) |
@@ -95,7 +95,7 @@
 | koji-022 | 白眉 | はくび | [コトバンク](https://kotobank.jp/word/%E7%99%BD%E7%9C%89-600456) / [故事ことわざ辞典](http://kotowaza-allguide.com/ha/hakubi.html) | OK | OK | OK | OK | OK |
 | koji-023 | 五里霧中 | ごりむちゅう | [コトバンク](https://kotobank.jp/word/%E4%BA%94%E9%87%8C%E9%9C%A7%E4%B8%AD-505210) / [故事ことわざ辞典](http://kotowaza-allguide.com/ko/gorimutyuu.html) | OK | OK | OK | OK | OK |
 | koji-024 | 蛍雪の功 | けいせつのこう | [コトバンク](https://kotobank.jp/word/%E8%9B%8D%E9%9B%AA%E3%81%AE%E5%8A%9F-488919) / [故事ことわざ辞典](http://kotowaza-allguide.com/ke/keisetsu.html) | OK | OK | OK | OK | OK |
-| koji-025 | 臥薪嘗胆 | がしんしょうたん | [コトバンク](https://kotobank.jp/word/%E8%87%A5%E8%96%AA%E5%98%97%E8%83%86-462474) / [故事ことわざ辞典](http://kotowaza-allguide.com/ka/gashinsyoutan.html) | OK | OK | OK | OK | 要判断 |
+| koji-025 | 臥薪嘗胆 | がしんしょうたん | [コトバンク](https://kotobank.jp/word/%E8%87%A5%E8%96%AA%E5%98%97%E8%83%86-462474) / [故事ことわざ辞典](http://kotowaza-allguide.com/ka/gashinsyoutan.html) | OK | OK | OK | OK | 要判断→処理済み(追加12) |
 | koji-026 | 羊頭狗肉 | ようとうくにく | [Weblio](https://www.weblio.jp/content/%E7%BE%8A%E9%A0%AD%E7%8B%97%E8%82%89) / [故事ことわざ辞典](http://kotowaza-allguide.com/yo/youtoukuniku.html) | OK | OK | OK | OK | OK |
 | koji-027 | 鶏口牛後 | けいこうぎゅうご | [コトバンク](https://kotobank.jp/word/%E9%B6%8F%E5%8F%A3%E7%89%9B%E5%BE%8C-667232) / [故事ことわざ辞典](http://kotowaza-allguide.com/ke/keikougyuugo.html) | OK | OK | OK | OK | OK |
 | koji-028 | 泣いて馬謖を斬る | ないてばしょくをきる | [コトバンク](https://kotobank.jp/word/%E6%B3%A3%E3%81%84%E3%81%A6%E9%A6%AC%E8%AC%96%E3%82%92%E6%96%AC%E3%82%8B-588395) / [故事ことわざ辞典](http://kotowaza-allguide.com/na/naitebasyoku.html) | OK | OK | OK | OK | OK |
@@ -107,7 +107,7 @@
 - **kotowaza-013 猫に小判**: 選択肢: 「犬に小判」も、猫に小判と同じ意味の言い方として辞書に載っている(コトバンク「犬に小判」・Weblio「猫に小判」の同義句)。「犬」も正解になり得たので、誤答の選択肢を「牛」に差し替えた(「牛に小判」は、コトバンク・故事ことわざ辞典に見出しがない)。
   - 変更: 誤答の選択肢 `犬[いぬ]` → `牛[うし]`(`src/data/kotowaza/kotowaza.ts`)。正解は「猫」のまま。
 
-## 要判断(直していない)
+## 要判断(2026-10-22 追加12で処理した。結果は、このあとの「要判断の処理」)
 
 - **kotowaza-006 急がば回れ**(要判断): 由来: 「宗長の歌がもと」とする説明が一般的だが、作者は源俊頼とする記録もあり、「この古歌からことわざが生まれたのではなく、すでにあることわざを詠み込んだ」という見方もある(故事ことわざ辞典・Weblio)。いまの文は「室町時代の歌に…とよまれたことが由来とされる」と、ぼかしてある。直すなら案: 「室町時代の歌に、『急がば回れ』の意味をよみこんだものがあり、ことわざのもとになったとも言われる。」(断定しない形)。瀬田の唐橋は、古歌の「瀬田の長橋」と同じ橋(辞書の注)。
 - **koji-025 臥薪嘗胆**(要判断): 由来: 「史記などにある、呉と越の争いの話」。「嘗胆」(勾践)は史記に見えるが、「臥薪」を夫差の話とするのは後代(十八史略など)で、「臥薪嘗胆」と続けた形は宋代以降、との指摘がある(Weblio)。いまの文は「史記などにある…がもとになっている」と、ぼかしてある。直すなら案: 「中国の「史記」や「十八史略」などにある、呉と越の争いの話がもとになっている。」
@@ -128,3 +128,14 @@
 なし。ただし、次の点は、辞書の解説の範囲でしか確認していない(原典は、確かめていない)。
 - 故事成語の細部(登場人物・場面)は、辞書とことわざ辞典の要約と照合した。原典(史記・戦国策・三国志など)の本文までは、確かめていない。
 - 「例文」は、データに項目がないので、確認していない。
+
+## 要判断の処理(2026-10-22 追加12)
+
+議論が分かれる主張は、言い切らない書き方に直した(確実な事実だけを残す)。問題・選択肢・正解・読みは、変えていない。
+
+| id | 変更前 | 変更後 | 根拠 |
+| --- | --- | --- | --- |
+| kotowaza-006 急がば回れ(由来) | 室町時代の歌に、急ぐなら、近道の舟より遠回りでも安全な陸路(瀬田の唐橋)を行け、とよまれたことが由来とされる。 | 室町時代の歌に、急ぐなら、近道の舟より遠回りでも安全な陸路(瀬田の唐橋)を行け、という意味をよみこんだものがあり、このことわざの由来といわれることがある。 | 作者(宗長とも源俊頼とも)や、「歌がことわざのもと」か「ことわざを歌によみこんだ」かが、辞書で分かれる。歌があったことと、由来「といわれる」ことだけを残した。[コトバンク](https://kotobank.jp/word/%E6%80%A5%E3%81%8C%E3%81%B0%E5%9B%9E%E3%82%8C-432744)・[故事ことわざ辞典](http://kotowaza-allguide.com/i/isogabamaware.html) |
+| koji-025 臥薪嘗胆(由来) | 中国の「史記」などにある、呉と越の争いの話がもとになっている。呉王は…とされる。 | 中国の「史記」や「十八史略」などにある、呉と越の争いの話がもとになっているといわれる。呉王は…とされる。 | 「嘗胆」(勾践)は「史記」に見えるが、「臥薪」(夫差)を含めて「臥薪嘗胆」と続けた形は、のちの書物(十八史略など)とする指摘がある。出典を「史記」だけにせず、「十八史略」も挙げて、「といわれる」にした。[コトバンク](https://kotobank.jp/word/%E8%87%A5%E8%96%AA%E5%98%97%E8%83%86-462474)・[故事ことわざ辞典](http://kotowaza-allguide.com/ka/gashinsyoutan.html) |
+| koji-013 朝三暮四(出典) | 中国の「荘子」などにある話。猿に… | 中国の「荘子」「列子」などにある話。猿に…(「荘子」に「そうじ」、「列子」に「れっし」のふりがなを付けた) | 「荘子」斉物論とする辞書と、「列子」黄帝篇とする辞書があるので、両方を挙げた。[コトバンク](https://kotobank.jp/word/%E6%9C%9D%E4%B8%89%E6%9A%AE%E5%9B%9B-568433)・[故事ことわざ辞典](http://kotowaza-allguide.com/ti/tyousanboshi.html) |
+
