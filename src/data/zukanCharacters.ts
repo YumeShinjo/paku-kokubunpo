@@ -302,7 +302,7 @@ export const ZUKAN_CHARACTERS: readonly CharacterSlot[] = [
         image: IMAGE.lastBossPurified,
         name: "ヴェルバルト",
         nameNote: "もとは 王様",
-        origin: "ラテン語 verbum「言葉」+ -bald「支配者」",
+        origin: "ラテン語 verbum「言葉」+ -bald「勇ましい」",
         place: "王座の間",
         hitokoto: "……ここは……わたしは、一体……",
         memoBy: "コレット",
