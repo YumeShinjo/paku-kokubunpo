@@ -13,6 +13,8 @@ for line in ledger.split("\n"):
     cells = [c.strip() for c in s.strip("|").split("|")]
     if len(cells) < 6 or cells[0] == "素材名" or set(cells[0]) <= set("-: ") or cells[0].startswith("(例)"):
         continue
+    if cells[4].startswith("使用なし"):
+        continue  # 使うのをやめた素材(台帳には残すが、出典の一覧には出さない)
     rows.append(dict(zip(["name", "kind", "source", "license", "usage", "url"], cells[:6])))
 
 GROUPS = [
@@ -54,8 +56,9 @@ for title, kinds in GROUPS:
 out.append("## クレジットの表記が必要・希望されている素材\n")
 out.append("- 効果音「holy1」(ポケットサウンド): **規約で必要**。「効果音：ポケットサウンド – https://pocket-se.info/」(教育機関でリンクが困難な場合は免除だが、書ける場合は書く。規約 https://pocket-se.info/rules/)")
 out.append("- BGM「Prairie4」(PeriTune): **規約(CC BY 4.0)で必要**。曲名・作者・ライセンス名・入手元を示す(https://peritune.com/blog/2019/03/01/prairie4/)")
+out.append("- 効果音「オノマトペ キラキラ04」(OtoLogic): **規約(CC BY 4.0)で必要**。「音素材：OtoLogic(https://otologic.jp) / CC BY 4.0(長さと音量を調整)」(改変した旨を添える。規約 https://otologic.jp/free/license.html)")
 out.append("- ロゴのフォント「あかずきんポップ」: **作者の希望**(必須ではない)。「フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058」")
-out.append("- 上の3つは、アプリの「くわしい出典」に載せている。ゲーム内のクレジット画面には、ポケットサウンドの1行だけを載せている\n")
+out.append("- 上の4つは、アプリの「くわしい出典」に載せている。ゲーム内のクレジット画面には、ポケットサウンド・Prairie4・OtoLogic・On-Jin の表記の行を載せている\n")
 
 out.append("## 要確認の一覧\n")
 pending = [r for r in rows if "要確認" in r["license"] or "要確認" in r["url"] or "要確認" in r["source"]]

@@ -136,12 +136,12 @@ describe("くわしい出典ページ", () => {
     expect(text).not.toContain("入手元: 要確認");
   });
 
-  it("表記が必須の素材(ポケットサウンド・Prairie4)だけに、小さな「表記必須」の印が付く。区分の見出し・説明の文章(「表記が必要・希望」など)は、ない", () => {
+  it("表記が必須の素材(ポケットサウンド・Prairie4・OtoLogic)だけに、小さな「表記必須」の印が付く。区分の見出し・説明の文章(「表記が必要・希望」など)は、ない", () => {
     act(() => root.render(<SourcesScreen next={{ name: "title" }} />));
     act(() => (container.querySelector(".sources-open") as HTMLButtonElement).click());
     const marked = [...container.querySelectorAll(".sources-item")].filter((li) => li.querySelector(".sources-badge"));
-    expect(marked.map((li) => li.querySelector(".sources-name")!.textContent)).toEqual([expect.stringContaining("Prairie4"), "holy1"]);
-    expect(container.querySelectorAll(".sources-badge")).toHaveLength(2);
+    expect(marked.map((li) => li.querySelector(".sources-name")!.textContent)).toEqual([expect.stringContaining("Prairie4"), "holy1", expect.stringContaining("オノマトペ キラキラ04")]);
+    expect(container.querySelectorAll(".sources-badge")).toHaveLength(3);
     expect(container.querySelector(".sources-badge")!.textContent).toBe("表記必須");
     // ポケットサウンドの行の要点に、指定の書式がある。あかずきんポップの行にも、作者が希望する書式がある
     expect(container.textContent).toContain("効果音：ポケットサウンド – https://pocket-se.info/");

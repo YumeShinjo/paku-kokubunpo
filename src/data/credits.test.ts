@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assetCredits, buildCreditGroups, formatMusicCredit, parseAssetCredits, softwareCredits, withoutNote } from "./credits";
+import { buildSourceGroups } from "./sources";
 
 const SAMPLE = `# 素材管理表
 
@@ -147,7 +148,7 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     }
   });
 
-  it("表記が必要な素材は、規約が示す形の行になり、リンクになる(ポケットサウンド・On-Jin・Prairie4)", () => {
+  it("表記が必要な素材は、規約が示す形の行になり、リンクになる(ポケットサウンド・On-Jin・OtoLogic・Prairie4)", () => {
     const groups = buildCreditGroups(assetCredits);
     const se = groups.find((g) => g.kind === "SE")!;
     const bgm = groups.find((g) => g.kind === "BGM")!;
@@ -158,7 +159,10 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     expect(se.lines).not.toContain("ポケットサウンド"); // 同じ出典の行が、二重にならない
     expect(se.lines).toContain(onJin);
     expect(se.lines).not.toContain("On-Jin ～音人～");
-    expect(se.links).toEqual({ [pocket]: "https://pocket-se.info/", [onJin]: "https://on-jin.com/" });
+    const otoLogic = "音素材：OtoLogic(https://otologic.jp) / CC BY 4.0(長さと音量を調整)";
+    expect(se.lines).toContain(otoLogic);
+    expect(se.lines).not.toContain("OtoLogic");
+    expect(se.links).toEqual({ [pocket]: "https://pocket-se.info/", [onJin]: "https://on-jin.com/", [otoLogic]: "https://otologic.jp" });
     expect(bgm.lines).toContain(prairie);
     expect(bgm.lines).not.toContain("PeriTune");
     expect(bgm.links).toEqual({ [prairie]: "https://peritune.com/blog/2019/03/01/prairie4/" });
@@ -206,7 +210,7 @@ describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", 
   });
 
   it("Springin' の効果音には、Sound Stockのガイドラインが適用され、アプリ本体の規約は混ぜない", () => {
-    for (const name of ["正解4", "jingle_23", "衝撃", "ジングル21"]) {
+    for (const name of ["正解4", "jingle_23", "ジングル21"]) {
       const row = byName(name);
       expect(row.license, name).toContain("https://www.springin.org/sound-stock/guideline/");
       expect(row.license, name).toContain("Springin'アプリ本体の利用規約");
@@ -284,4 +288,51 @@ describe("素材管理表: 2026-10-15 に特定した出典・規約の反映", 
     expect(mplus.license).toContain("SIL Open Font License, Version 1.1");
     expect(mplus.url).toContain("https://github.com/coz-m/MPLUS_FONTS");
   });
+
+describe("素材管理表: 小ボス撃破・称号の音(OtoLogic「オノマトペ キラキラ04」。2026-10-22)", () => {
+  const byName = (part: string) => assetCredits.find((c) => c.name.includes(part));
+
+  it("OtoLogic の行: 効果音。CC BY 4.0・表記必須・改変(長さと音量)・素材ページ・規約・CC BY 4.0 のURL", () => {
+    const row = byName("オノマトペ キラキラ04")!;
+    expect(row.kind).toBe("SE");
+    expect(row.source).toBe("OtoLogic");
+    expect(row.name).toContain("Onoma-Sparkle04-3Timbre2-Short");
+    expect(row.usage).toContain("subBossPurify");
+    expect(row.usage).toContain("長さと音量を調整");
+    for (const url of ["https://otologic.jp/free/se/sparkle01.html", "https://otologic.jp/free/license.html", "https://creativecommons.org/licenses/by/4.0/deed.ja"]) {
+      expect(row.url).toContain(url);
+    }
+    expect(row.license).toContain("CC BY 4.0");
+    expect(row.license).toContain("docs/license-snapshots/otologic-2026-10-22.md");
+    expect(row.summary).toBe("【表記必須】CC BY 4.0。クレジット表示必須(改変したことも)。長さと音量を調整して使用");
+  });
+
+  it("使わなくなった素材(衝撃)は、台帳には残るが、「使用なし」の印がついて、アプリ内の表示・出典の一覧からは外れる", () => {
+    const markdown = readFileSync("docs/ASSET_CREDITS.md", "utf-8");
+    expect(markdown).toContain("| 衝撃 |");
+    expect(markdown).toMatch(/\| 衝撃 \|[^\n]*\| 使用なし\(2026-10-22 差し替え/);
+    expect(byName("衝撃")).toBeUndefined(); // parseAssetCredits が、「使用なし」の行を除く
+    const lines = buildCreditGroups(assetCredits).flatMap((g) => g.lines);
+    expect(lines.some((l) => l.includes("衝撃"))).toBe(false);
+    expect(buildSourceGroups(assetCredits).flatMap((g) => g.items).some((i) => i.name.includes("衝撃"))).toBe(false);
+    // Springin' の素材は、ほかに3つ使っているので、クレジットの行は残る
+    expect(lines).toContain("Springin' Sound Stock");
+    expect(parseAssetCredits(["| 素材名 | 種別 | 出典 | ライセンス | 使用箇所 |", "| a | SE | s | l | 使用なし(理由) |", "| b | SE | s | l | 正解音 |"].join("\n")).map((c) => c.name)).toEqual(["b"]);
+  });
+
+  it("OtoLogic の行は、くわしい出典で「表記必須」の印がつき、効果音の区分に出る", () => {
+    const se = buildSourceGroups(assetCredits).find((g) => g.id === "se")!;
+    const item = se.items.find((i) => i.name.includes("オノマトペ キラキラ04"))!;
+    expect(item.mustCredit).toBe(true);
+    expect(item.urls).toContain("https://otologic.jp/free/license.html");
+    expect(item.summary).toBe("CC BY 4.0。クレジット表示必須(改変したことも)。長さと音量を調整して使用");
+  });
+
+  it("規約の保存(スナップショット)がある", () => {
+    const snapshot = readFileSync("docs/license-snapshots/otologic-2026-10-22.md", "utf-8");
+    expect(snapshot).toContain("https://otologic.jp/free/license.html");
+    expect(snapshot).toContain("2026-10-22");
+    expect(snapshot).toContain("クレジット表記をすれば無料");
+  });
+});
 });

@@ -18,6 +18,9 @@ export interface AssetCredit {
   summary: string;
 }
 
+/** 台帳の「使用箇所」の先頭に書く、使うのをやめた素材の印(例: 「使用なし(2026-10-22 差し替え)」) */
+export const USAGE_ENDED_MARK = "使用なし";
+
 const isSeparatorCell = (cell: string) => /^:?-{2,}:?$/.test(cell);
 
 /** 素材管理表(Markdownの表)から素材の行を取り出す。見出し行・区切り行・「(例)」の行は除く。 */
@@ -35,6 +38,7 @@ export function parseAssetCredits(markdown: string): AssetCredit[] {
     const [name, kind, source, license, usage, url = "", summary = ""] = cells;
     if (cells.every(isSeparatorCell) || name === "素材名" || name === "") continue;
     if (/^[(（]例[)）]/.test(name)) continue;
+    if (usage.startsWith(USAGE_ENDED_MARK)) continue; // 使うのをやめた素材(台帳には残すが、アプリ内の表示・出典の一覧には出さない)
     credits.push({ name, kind, source, license, usage, url, summary });
   }
   return credits;
@@ -66,6 +70,11 @@ export const REQUIRED_CREDIT_LINES: Record<string, { line: string; url: string }
   // ポケットサウンドの規約(https://pocket-se.info/rules/)が示す書式どおり(全角のコロン)
   ポケットサウンド: { line: "効果音：ポケットサウンド – https://pocket-se.info/", url: "https://pocket-se.info/" },
   // CC BY 4.0(Prairie4)は、曲名・作者・ライセンス名・入手元を示す必要がある。曲のページに、そのとおりの記載がある
+  // OtoLogic(CC BY 4.0): クレジットの表示が必須。改変(長さと音量の調整)したことを添える。素材のページは、くわしい出典に載せている
+  OtoLogic: {
+    line: "音素材：OtoLogic(https://otologic.jp) / CC BY 4.0(長さと音量を調整)",
+    url: "https://otologic.jp",
+  },
   PeriTune: {
     line: "BGM：Prairie4 - PeriTune(CC BY 4.0) https://peritune.com/blog/2019/03/01/prairie4/",
     url: "https://peritune.com/blog/2019/03/01/prairie4/",
