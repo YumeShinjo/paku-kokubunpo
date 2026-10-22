@@ -1,4 +1,11 @@
-# 素材ライセンスの棚卸し(2026-10-15 更新。下の A〜D は 2026-09-26 時点の記載で、この節が新しい)
+# 素材ライセンスの棚卸し(2026-10-22 更新。下の A〜D は 2026-09-26 時点の記載で、この節が新しい)
+
+## 00. 2026-10-22 の更新(小ボス撃破の効果音の差し替え)
+
+- **小ボスの撃破(浄化)の音と、称号の授与の音**を、Springin'「衝撃」から、**OtoLogic「オノマトペ キラキラ04」(`se/subBossPurify.mp3`)**に差し替えた。先生から、斬る音のようで、作風に合わないという指摘があったため。
+- OtoLogic: **CC BY 4.0。クレジット表示が必須**(学校の授業でも必須)。ゲーム可・営利可・改変可・申請不要。入手元: https://otologic.jp/free/se/sparkle01.html ・規約: https://otologic.jp/free/license.html 。規約の保存: [docs/license-snapshots/otologic-2026-10-22.md](license-snapshots/otologic-2026-10-22.md)。
+- 加工: 長さと音量を調整(2.8秒・44.1kHz・ステレオ・128kbpsのmp3。先頭0.1秒を切り、末尾をフェードアウト。アプリ内でさらに-3dB)。CC BY 4.0 は、改変したことを示すことも求めるので、クレジット画面の表記に「(長さと音量を調整)」を添えた。
+- 「衝撃」の行は、台帳に「使用なし(2026-10-22 差し替え)」として残し、アプリ内の表示・出典の一覧からは外した。Springin'の素材は、ほかに3つ(正解4・jingle_23・ジングル21)使っているので、クレジットの「Springin' Sound Stock」の行は残る。
 
 ## 0. 2026-10-15 の確認結果(講義の評価項目「出典の特定」に合わせて、入手元URLと規約を特定した)
 
@@ -13,7 +20,7 @@
 | se_cancel15(効果音工房) | https://umipla.com/soundeffect/4388 | 個人・サークルは商用・非商用可、報告・クレジット不要。再配布・Content ID登録は禁止。法人は要連絡 |
 | VSQ_JINGLE_0067_Otoboke_01(VSQ plus+) | https://vsq.co.jp/plus/wordpress/wp-content/uploads/2021/07/VSQ_JINGLE_0067_Otoboke_01.mp3 | 商用・非商用可、ゲーム可、クレジット任意。そのままの単体での頒布は禁止 |
 | holy1(ポケットサウンド) | https://pocket-se.info/archives/412/ | **クレジット表記かリンクが必須**。書式「効果音：ポケットサウンド – https://pocket-se.info/」。素材への直リンクは禁止 |
-| 正解4・jingle_23・衝撃・ジングル21(Springin') | https://www.springin.org/sound-stock/ のカテゴリのページ | 適用されるのは、Sound Stockのガイドライン https://www.springin.org/sound-stock/guideline/ 。Springin'アプリ本体の規約は、効果音素材の規約ではないので含めない |
+| 正解4・jingle_23・ジングル21(Springin'。「衝撃」は、2026-10-22 に使用をやめた) | https://www.springin.org/sound-stock/ のカテゴリのページ | 適用されるのは、Sound Stockのガイドライン https://www.springin.org/sound-stock/guideline/ 。Springin'アプリ本体の規約は、効果音素材の規約ではないので含めない |
 | ボタン音17(On-Jin) | https://on-jin.com/sound/muci.php | 学校・個人は無料。クレジット任意。企業の営利利用は連絡が必要 |
 
 ### BGM
@@ -45,6 +52,7 @@
 
 - **ポケットサウンド(holy1)**: 規約で必要。ゲーム内のクレジット画面に「効果音:ポケットサウンド – https://pocket-se.info/」の1行(リンク)を載せた。「くわしい出典」にも載せている。
 - **Prairie4(PeriTune)**: CC BY 4.0。ゲーム内のクレジットには「PeriTune」がある。「くわしい出典」に、曲名・作者・ライセンス・入手元を載せた。
+- **OtoLogic(オノマトペ キラキラ04)**: CC BY 4.0。ゲーム内のクレジット画面に「音素材：OtoLogic(https://otologic.jp) / CC BY 4.0(長さと音量を調整)」の1行(リンク)を載せた。「くわしい出典」(効果音)にも、「表記必須」の印つきで載せている。
 - **あかずきんポップ**: 作者の希望(必須ではない)。「フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058」を、「くわしい出典」に載せた。
 
 ### 要確認(残っているもの)
@@ -90,7 +98,7 @@
 | `tap.mp3` | ボタン音17 | On-Jin ～音人～ | ボタンのタップ音 |
 | `clear.mp3` | jingle_23 | Springin' Sound Stock | ステージクリア音(48→44.1kHz に再エンコード済み) |
 | `growth.mp3` | holy1 | ポケットサウンド | マスコット成長音 |
-| `subBossClear.mp3` | 衝撃 | Springin' Sound Stock | 小ボス撃破音 |
+| `subBossClear.mp3`(2026-10-22 に使用をやめた。`subBossPurify.mp3` に差し替え) | 衝撃 | Springin' Sound Stock | 小ボス撃破音(使用なし) |
 | `lastBossClear.mp3` | hit02 | くらげ工匠 | ラスボス撃破音 |
 | `pageUnlock.mp3` | VSQ_JINGLE_0067_Otoboke_01 | VSQ plus+ | 図鑑ページ解放音(現在はページ解放の通知は出していないが、素材は同梱。48→44.1kHz に再エンコード済み) |
 | `bonus.mp3` | one23 | くらげ工匠 | 克服ボーナス音 |

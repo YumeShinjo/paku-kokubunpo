@@ -193,3 +193,11 @@
 3. 台帳: ビルドツール(Vite・vite-plugin-pwa・Workbox)の1行を追加。`docs/SOURCES_FOR_REPORT.md` を作り直した。
 
 判断が必要なものは、直していない(第6節の12項目)。
+
+## 8. 追記(2026-10-22 追加14。小ボス撃破の効果音の差し替え)
+
+- 小ボスの撃破(浄化)の音と、称号の授与の音を、Springin'「衝撃」(`subBossClear.mp3`)から、**OtoLogic「オノマトペ キラキラ04」(`se/subBossPurify.mp3`。CC BY 4.0)**に差し替えた。
+- 台帳は、「衝撃」の行を「使用なし」にして残し(アプリ内の表示・出典の一覧からは外れる)、OtoLogic の1行を足した。台帳の行は、全部で55行(使用中は54行)。
+- 状態: OtoLogic は OK(入手元・規約を、2026-10-22 に公開ページで確認。保存: `docs/license-snapshots/otologic-2026-10-22.md`)。「衝撃」(Springin')は、使用なしになったので、第3-2節の表の `subBossClear.mp3` の行(小ボス撃破・Springin')は、この追記のとおりに読み替える。第1節の件数は、OK が 23 → 23(衝撃 -1、OtoLogic +1)で、変わらない。
+- クレジット画面に、OtoLogic の表記(「音素材：OtoLogic(https://otologic.jp) / CC BY 4.0(長さと音量を調整)」)を、リンクで追加。「くわしい出典」(効果音)にも、「表記必須」の印つきで追加。
+

@@ -85,21 +85,22 @@ BGMの音量は、`stage`(-7.6)が最も大きく、`talk`(-16.1)が最も小さ
 | `correct.mp3` | 正解(通常・ボス戦の命中・言の葉の森) | 正解4 / Springin' Sound Stock | 確認済み | 1.31 | -14.0 | -0.4 |
 | `incorrect.mp3` | 不正解(通常・ボス戦の外れ・言の葉の森) | se_cancel15 / 効果音工房 | 要確認(入手元ページが未確認) | 1.44 | -15.2 | -2.9 |
 | `clear.mp3` | 通常ステージのクリア | jingle_23 / Springin' Sound Stock | 確認済み | 5.04 | -11.8 | -0.8 |
-| `subBossClear.mp3` | 小ボスの撃破(7エリアすべて。メイもここ)。称号の授与の画面 | 衝撃 / Springin' Sound Stock | 確認済み(個別ページは未確認) | 1.07 | -7.8 | 0.0 |
+| `subBossPurify.mp3`(2026-10-22 に、`subBossClear.mp3`(衝撃)から差し替え) | 小ボスの撃破(7エリアすべて。メイもここ)。称号の授与の画面(`subBossClear` の種類も、このファイルを鳴らす) | オノマトペ キラキラ04(04-3 音色2 短) / OtoLogic | 確認済み(CC BY 4.0。規約を保存: `docs/license-snapshots/otologic-2026-10-22.md`。クレジット必須) | 2.85 | -10.4 | -2.2 |
 | `lastBossClear.mp3` | ラスボスの撃破 | hit02 / くらげ工匠 | 要確認(入手元ページが未確認) | 0.60 | -15.7 | -6.0 |
 | `growth.mp3` | エリアクリアで、コトが成長したときの通知 | holy1 / ポケットサウンド | 規約は確認済み(表記が必須)。素材のページは要確認 | 3.69 | -15.1 | -3.5 |
 | `roundEnd.mp3` | 自由練習・苦手練習・言の葉の森の、ラウンドの終わり | ジングル21 / Springin' Sound Stock | 確認済み | 4.50 | -20.1 | -4.9 |
 | `bonus.mp3` | 苦手問題を克服したとき(正解音の250ms後) | one23 / くらげ工匠 | 要確認(入手元ページが未確認) | 1.70 | -13.9 | -8.6 |
 | `pageUnlock.mp3` | (いまは、どの場面でも鳴らしていない。ずかんのページ解放の通知は出していない) | VSQ_JINGLE_0067_Otoboke_01 / VSQ plus+ | 要確認(入手元ページが未確認) | 1.78 | -9.1 | 0.0 |
 
-効果音の音量は、`subBossClear`(-7.8)が最も大きく、`roundEnd`(-20.1)が最も小さい。`subBossClear`・`pageUnlock`・`stage` のBGMは、ピークが 0.0 dBFS に張りついている(割れている可能性)。
+効果音の音量は、`pageUnlock`(-9.1)が最も大きく、`roundEnd`(-20.1)が最も小さい(補正前)。`pageUnlock`・`stage` のBGMは、ピークが 0.0 dBFS に張りついている(割れている可能性)。小ボス撃破の音(`subBossPurify`)は、2026-10-22 に差し替えた(補正後 -13.4 LUFS)。
 
 ## 音量の補正(素材ごとのゲイン。2026-10-15)
 
 `src/assets/audioLevels.ts` に、測定値と、そこから決めた補正(dB)の表がある。補正は、Web Audio のゲインの値を変えるだけ(`lib/audio.ts`)。再生の仕組み(停止・再開の経路)は変えていない。
 - BGM: 統合ラウドネスを -16 LUFS にそろえる(補正 = -16 - 測定値)。曲を切り替えるとき(場面の曲・導入曲からループ曲へ)に、その曲の補正をかける。
 - 効果音: ピークが -1 dBFS 以下になるようにする。音は大きくしない(下げるだけ)。
-- 素材を差し替えたら、`AUDIO_MEASURED` の測定値を書き換える(補正は自動で決まる)。専用のファイルがない `subBossPurify` は、`subBossClear` のファイルと補正を使う。
+- 素材を差し替えたら、`AUDIO_MEASURED` の測定値を書き換える(補正は自動で決まる)。専用のファイルがない `subBossClear`(称号の授与)は、`subBossPurify` のファイルと補正を使う。
+- 聴感で足す補正(`AUDIO_TRIM_DB`。マイナスだけ)がある。いまは `se/subBossPurify` の -3.0 dB だけ(キラキラ系の音は、ピークが小さく、平均が大きく出るので)。
 
 | ファイル | 補正(dB) | 補正前 LUFS | 補正後 LUFS | 補正前 ピーク | 補正後 ピーク |
 | --- | --- | --- | --- | --- | --- |
@@ -117,7 +118,7 @@ BGMの音量は、`stage`(-7.6)が最も大きく、`talk`(-16.1)が最も小さ
 | `se/correct` | -0.6 | -14.0 | -14.6 | -0.4 | -1.0 |
 | `se/incorrect` | 0 | -15.2 | -15.2 | -2.9 | -2.9 |
 | `se/clear` | -0.2 | -11.8 | -12.0 | -0.8 | -1.0 |
-| `se/subBossClear`(`subBossPurify` も) | -1.0 | -7.8 | -8.8 | 0.0 | -1.0 |
+| `se/subBossPurify`(`subBossClear` も。ピークの補正は 0、聴感の補正 -3.0) | -3.0 | -10.4 | -13.4 | -2.2 | -5.2 |
 | `se/lastBossClear` | 0 | -15.7 | -15.7 | -6.0 | -6.0 |
 | `se/growth` | 0 | -15.1 | -15.1 | -3.5 | -3.5 |
 | `se/roundEnd` | 0 | -20.1 | -20.1 | -4.9 | -4.9 |
@@ -131,7 +132,7 @@ BGMの音量は、`stage`(-7.6)が最も大きく、`talk`(-16.1)が最も小さ
 | 場面 | 鳴る音 |
 | --- | --- |
 | 通常ステージの敵を倒す(クリア) | `clear` |
-| 小ボス(メイほか)を倒す | 命中ごとに `correct`。HPが0になって、結果画面に切り替わった瞬間に `subBossPurify`(いまは `subBossClear` のファイルを使う)。「先へすすむ」の場面でも、ボスが浄化される3行目で鳴る |
+| 小ボス(メイほか)を倒す | 命中ごとに `correct`。HPが0になって、結果画面に切り替わった瞬間に `subBossPurify`(OtoLogic「オノマトペ キラキラ04」。約2.8秒。そのあいだ、BGMを下げる)。「先へすすむ」の場面でも、ボスが浄化される3行目で鳴る |
 | ボス戦の正解 / 不正解 | `correct` / `incorrect`(通常ステージと同じ音。メッセージだけ「ヒット!」「はずれた!」) |
 | ボス戦の撃破 | 小ボスは `subBossPurify`、ラスボスは `lastBossClear` |
 | ドラッグ問題でカードを置く | マウス・ペン・指のどれでも、置いたときに `tap` が1回鳴る(2026-10-15 に、そろえた。ドラッグの終わりの click は、アプリ全体のタップ音に届かないようにしている) |
@@ -141,6 +142,6 @@ BGMの音量は、`stage`(-7.6)が最も大きく、`talk`(-16.1)が最も小さ
 
 ## 差し替えやすさ(小ボスを倒したときの音)
 
-- 小ボスを倒したときに鳴るのは、専用の種類 `subBossPurify`(`src/assets/audio/se/subBossPurify.mp3`)。ファイルがなければ、`subBossClear.mp3`(素材名「衝撃」)を使う。
-- 新しい音は、`src/assets/audio/se/subBossPurify.mp3` として置けば、コードを変えずに差し替わる(`AUDIO_MEASURED` に `se/subBossPurify` の測定値を足し、台帳(`docs/ASSET_CREDITS.md`)にも1行足すこと)。
-- `subBossClear` は、7エリアの小ボスすべてと、称号の授与の画面(`EndingResultScreen`)で共通。メイだけ別の音にしたいときは、効果音の種類を1つ足す(`SeKind` と `StageScreen` の1か所)。
+- 小ボスを倒したときに鳴るのは、専用の種類 `subBossPurify`(`src/assets/audio/se/subBossPurify.mp3`。OtoLogic「オノマトペ キラキラ04」)。以前の音(Springin'「衝撃」の `subBossClear.mp3`)は、2026-10-22 に、アプリから外した(ファイルは、`C:\dev\sozai-box\files` に、名前を変えて置いてある。削除はしていない)。
+- 音を替えるときは、`src/assets/audio/se/subBossPurify.mp3` を置き換え、`AUDIO_MEASURED` の `se/subBossPurify` の測定値と、台帳(`docs/ASSET_CREDITS.md`)を書き換える。
+- `subBossPurify` は、7エリアの小ボスすべてで共通。称号の授与の画面(`EndingResultScreen`・言の葉の森の称号)の `subBossClear` も、同じファイルを鳴らす(`registry.ts` の `SE_FILE_FALLBACK`)。メイだけ別の音にしたいときは、効果音の種類を1つ足す(`SeKind` と `StageScreen` の1か所)。
