@@ -55,5 +55,6 @@ describe("小ボス撃破の効果音(subBossPurify)", () => {
       container.remove();
       root = createRoot((container = document.createElement("div")));
     }
-  });
+    // 7エリア分、モジュールを読み込み直すので、動作の遅い環境では5秒の既定値に収まらない(30秒)
+  }, 30_000);
 });
