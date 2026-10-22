@@ -73,6 +73,7 @@ export function SourcesScreen({ next }: { next: Screen }) {
                         </a>
                       ))}
                       {item.urlUnknown && <span className="sources-unknown">入手元: 要確認</span>}
+                      {!item.urlUnknown && item.urls.length === 0 && item.note !== "" && <span className="sources-unknown">入手元: {item.note}</span>}
                     </p>
                     <p className="sources-summary">{item.summary}</p>
                   </li>

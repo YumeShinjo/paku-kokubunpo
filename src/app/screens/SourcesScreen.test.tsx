@@ -131,8 +131,9 @@ describe("くわしい出典ページ", () => {
       expect(a.getAttribute("target")).toBe("_blank");
       expect(a.getAttribute("rel")).toContain("noopener");
     }
-    // 見つからなかったものは、「要確認」と明記している
-    expect(text).toContain("要確認");
+    // 入手元が、ほかの行の参照(生成AIのイラスト)や自作の行は、「要確認」ではなく、その説明を出す。「要確認」と出る行は、ない(台帳に、入手元が未特定の行がないため)
+    expect(text).toContain("入手元: 生成AIモデルの行を参照");
+    expect(text).not.toContain("入手元: 要確認");
   });
 
   it("表記が必須の素材(ポケットサウンド・Prairie4)だけに、小さな「表記必須」の印が付く。区分の見出し・説明の文章(「表記が必要・希望」など)は、ない", () => {
@@ -189,6 +190,17 @@ describe("くわしい出典ページ", () => {
     expect(splitUrlCell("https://a.example/ https://b.example/x")).toEqual({ urls: ["https://a.example/", "https://b.example/x"], note: "" });
     expect(splitUrlCell("要確認")).toEqual({ urls: [], note: "要確認" });
     expect(splitUrlCell("なし(自作)")).toEqual({ urls: [], note: "なし(自作)" });
+  });
+
+  it("入手元の説明がある行(生成AIのイラスト・自作)は「要確認」にしない。URLも説明もない行だけが要確認", () => {
+    const image = buildSourceGroups(assetCredits).find((g) => g.id === "image")!;
+    for (const item of image.items) {
+      expect(item.urls, item.name).toEqual([]);
+      expect(item.note, item.name).not.toBe("");
+      expect(item.urlUnknown, item.name).toBe(false);
+    }
+    const unknown = buildSourceGroups([{ name: "x", kind: "SE", source: "s", license: "l", usage: "u", url: "", summary: "" }]);
+    expect(unknown[0].items[0].urlUnknown).toBe(true);
   });
 
   it("区分の並び: BGM → 効果音 → 画像 → 制作素材 → ソフトウェア", () => {

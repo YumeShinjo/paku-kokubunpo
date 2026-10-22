@@ -12,8 +12,10 @@ export interface SourceItem {
   source: string;
   /** 入手元のURL(複数あることがある)。分からないものは空 */
   urls: string[];
-  /** 入手元が「要確認」か(URLが分からない、または、確認が済んでいない) */
+  /** 入手元が「要確認」か(URLが分からない、または、確認が済んでいない)。「生成AIモデルの行を参照」「なし(自作)」のような、入手元の説明がある行は、要確認ではない */
   urlUnknown: boolean;
+  /** URL以外の入手元の補足(「生成AIモデルの行を参照」など)。ないときは空 */
+  note: string;
   /** 条件の要点(1行)。先頭の「【表記必須】」は、取り除いてある */
   summary: string;
   /** 規約で、クレジットの表記が必須の素材(行に「表記必須」の印を付ける) */
@@ -60,7 +62,8 @@ export function buildSourceGroups(credits: AssetCredit[]): SourceGroup[] {
           name: c.name,
           source: c.source,
           urls,
-          urlUnknown: note.includes("要確認") || urls.length === 0,
+          urlUnknown: note.includes("要確認") || (urls.length === 0 && note === ""),
+          note,
           summary: mustCredit ? c.summary.slice(MUST_CREDIT_MARK.length).trim() : c.summary,
           mustCredit,
         };
