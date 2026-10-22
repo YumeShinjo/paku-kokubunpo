@@ -97,6 +97,7 @@
 | React / React DOM 18.3.1 | Meta(Facebook) | https://react.dev https://github.com/facebook/react | MIT License | アプリ全体の画面 |
 | Zustand 5.0.15 | Paul Henschel ほか(pmndrs) | https://github.com/pmndrs/zustand | MIT License | 進行状況などの状態の保存 |
 | Firebase JS SDK 11.10.0 | Google | https://firebase.google.com/ https://github.com/firebase/firebase-js-sdk | Apache License 2.0 | ランキング・引き継ぎ(Firebase) |
+| Vite 5.4.21 / vite-plugin-pwa 0.21.2 / Workbox 7.4.1 | Evan You と Vite のコントリビューター(Vite)、Anthony Fu(vite-plugin-pwa)、Google(Workbox) | https://vite.dev https://github.com/vite-pwa/vite-plugin-pwa https://github.com/GoogleChrome/workbox | MIT License | アプリのビルドと、オフラインで動くしくみ(ビルド結果に、Workbox の実行コードが入る) |
 
 ## クレジットの表記が必要・希望されている素材
 

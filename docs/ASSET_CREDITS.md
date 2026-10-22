@@ -64,6 +64,7 @@
 | React / React DOM 18.3.1 | ライブラリ | Meta(Facebook) | MIT License | アプリ全体の画面 | https://react.dev https://github.com/facebook/react | MIT License |
 | Zustand 5.0.15 | ライブラリ | Paul Henschel ほか(pmndrs) | MIT License | 進行状況などの状態の保存 | https://github.com/pmndrs/zustand | MIT License |
 | Firebase JS SDK 11.10.0 | ライブラリ | Google | Apache License 2.0 | ランキング・引き継ぎ(Firebase) | https://firebase.google.com/ https://github.com/firebase/firebase-js-sdk | Apache License 2.0 |
+| Vite 5.4.21 / vite-plugin-pwa 0.21.2 / Workbox 7.4.1 | ライブラリ | Evan You と Vite のコントリビューター(Vite)、Anthony Fu(vite-plugin-pwa)、Google(Workbox) | MIT License | アプリのビルドと、オフラインで動くしくみ(ビルド結果に、Workbox の実行コードが入る) | https://vite.dev https://github.com/vite-pwa/vite-plugin-pwa https://github.com/GoogleChrome/workbox | MIT License |
 
 **ライセンス確認の棚卸し**: 「要確認」のままの素材と、確認してほしい点は [ASSET_LICENSE_CHECKLIST.md](ASSET_LICENSE_CHECKLIST.md) にまとめてある。
 
