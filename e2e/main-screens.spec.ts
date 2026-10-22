@@ -260,9 +260,10 @@ test.describe("ホーム画面: コトの影・光の輪", () => {
     await page.locator(".title-primary").waitFor();
     await page.waitForTimeout(400);
     const stageBottom = await page.evaluate(() => document.querySelector(".title-koto-stage")!.getBoundingClientRect().bottom);
-    const withDecoration = (await page.screenshot()).toString("base64");
+    // 動くもの(苦手問題の帯の点の拍動など)が、2枚の撮影のあいだに動いて、画素が変わらないよう、アニメーションを止めて撮る(PCが遅いときに落ちていた原因)
+    const withDecoration = (await page.screenshot({ animations: "disabled" })).toString("base64");
     await page.addStyleTag({ content: ".title-koto-glow,.title-koto-shadow{visibility:hidden!important}" });
-    const without = (await page.screenshot()).toString("base64");
+    const without = (await page.screenshot({ animations: "disabled" })).toString("base64");
     const changed = await page.evaluate(
       async ([a, b, top]) => {
         const load = async (data: string) => {
