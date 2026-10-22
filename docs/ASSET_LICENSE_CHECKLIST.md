@@ -1,5 +1,12 @@
 # 素材ライセンスの棚卸し(2026-10-22 更新。下の A〜D は 2026-09-26 時点の記載で、この節が新しい)
 
+## 000. 2026-10-22 の更新(保存した規約ページの読み取り。追加16)
+
+- 保存した規約ページ(`docs/license-snapshots/`。9件)を読んだ。zippy・Hareno「禁忌の詠唱」・EigHt・くらげ工匠・ICOON MONO は、台帳と合った(確認済み)。Gemini も、原文で確認した。
+- **要差し替え**: OpenTracks のBGM(`bgm/title.mp3`)。禁止事項8が、Webアプリの形態(音声ファイルをブラウザから取り出せる)に当たるおそれがある。
+- **判断が必要**: あかずきんポップ(M+ FONTS 2018年版のライセンス本文)・LoRA(ページに、ライセンスの欄がない)。保存がなく、未確認のまま: Hareno「千年の内緒話」・Illustrious(Hugging Face・CivitAI)。
+- 読み取った内容・引用・対応案: [ASSET_TERMS_REVIEW_2026-10-22.md](ASSET_TERMS_REVIEW_2026-10-22.md)。保存ファイルの一覧: [license-snapshots/README.md](license-snapshots/README.md)。
+
 ## 00. 2026-10-22 の更新(小ボス撃破の効果音の差し替え・コトの表情 combo/hungry の差し替え)
 
 - **小ボスの撃破(浄化)の音と、称号の授与の音**を、Springin'「衝撃」から、**OtoLogic「オノマトペ キラキラ04」(`se/subBossPurify.mp3`)**に差し替えた。先生から、斬る音のようで、作風に合わないという指摘があったため。
