@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | (例)相棒_通常.png | 画像 | 生成AIツール名を記載 | 利用規約確認済み | マスコット全般 | 入手元のURL | 1行の要点 |
 | マスコット コト(通常) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの表示全般(タイトル・ストーリー・正誤フィードバック・結果画面) | 生成AIモデルの行を参照 | 生成AI(Stable Diffusion・Illustrious-XL・LoRA)で制作 |
-| マスコット コト 表情差分(喜び・しょんぼり・もぐもぐ・びっくり・眠そう・combo・hungry) | 画像 | 生成AIによる画像編集(ベース立ち絵から加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの表示全般(正誤フィードバック・結果画面など。combo・hungry はホーム画面のコトの吹き出し) | 生成AIモデルの行を参照 | 生成AI。元の絵を、Geminiで編集 |
+| マスコット コト 表情差分(喜び・しょんぼり・もぐもぐ・びっくり・眠そう・combo・hungry) | 画像 | 生成AIによる画像編集(ベース立ち絵から加工)。combo・hungry は、切り抜きを直した版に差し替え(2026-10-22。生成AI(Gemini)のままで、ライセンス上の変更はない) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | マスコットの表示全般(正誤フィードバック・結果画面など。combo・hungry はホーム画面のコトの吹き出し) | 生成AIモデルの行を参照 | 生成AI。元の絵を、Geminiで編集 |
 | マスコット 本来の姿(コレット) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ラスボス撃破後・エンディング結果 | 生成AIモデルの行を参照 | 生成AI(Stable Diffusion・Illustrious-XL・LoRA)で制作 |
 | 王様ヴェルバルト(取り憑かれた姿) | 画像 | 生成AIによるオリジナル制作 | 生成AI(Stable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ラスボス戦のパネル、ストーリーの王様の台詞 | 生成AIモデルの行を参照 | 生成AI(Stable Diffusion・Illustrious-XL・LoRA)で制作 |
 | 王様ヴェルバルト(浄化後の姿) | 画像 | 生成AIによる画像編集(ベース立ち絵から加工) | 生成AI(Geminiによる画像編集。元絵はStable Diffusion / Illustrious-XL v2.0 + LoRA「Chibi Lerasigma 228 style」)によるオリジナル制作 | ストーリーの王様(ヴェルバルト)の台詞 | 生成AIモデルの行を参照 | 生成AI。元の絵を、Geminiで編集 |
