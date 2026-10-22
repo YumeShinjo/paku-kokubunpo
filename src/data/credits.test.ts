@@ -147,14 +147,24 @@ describe("素材管理表: 入手元URL(講義の評価項目: 曲名・タイ�
     }
   });
 
-  it("ポケットサウンドは、規約が必須とする書式「効果音:ポケットサウンド – https://pocket-se.info/」の1行になり、リンクになる", () => {
-    const se = buildCreditGroups(assetCredits).find((g) => g.kind === "SE")!;
-    expect(se.lines).toContain("効果音:ポケットサウンド – https://pocket-se.info/");
+  it("表記が必要な素材は、規約が示す形の行になり、リンクになる(ポケットサウンド・On-Jin・Prairie4)", () => {
+    const groups = buildCreditGroups(assetCredits);
+    const se = groups.find((g) => g.kind === "SE")!;
+    const bgm = groups.find((g) => g.kind === "BGM")!;
+    const pocket = "効果音：ポケットサウンド – https://pocket-se.info/";
+    const onJin = "効果音：On-Jin ～音人～ https://on-jin.com/ (音源の二次配布・無断利用は禁止)";
+    const prairie = "BGM：Prairie4 - PeriTune(CC BY 4.0) https://peritune.com/blog/2019/03/01/prairie4/";
+    expect(se.lines).toContain(pocket);
     expect(se.lines).not.toContain("ポケットサウンド"); // 同じ出典の行が、二重にならない
-    expect(se.links).toEqual({ "効果音:ポケットサウンド – https://pocket-se.info/": "https://pocket-se.info/" });
+    expect(se.lines).toContain(onJin);
+    expect(se.lines).not.toContain("On-Jin ～音人～");
+    expect(se.links).toEqual({ [pocket]: "https://pocket-se.info/", [onJin]: "https://on-jin.com/" });
+    expect(bgm.lines).toContain(prairie);
+    expect(bgm.lines).not.toContain("PeriTune");
+    expect(bgm.links).toEqual({ [prairie]: "https://peritune.com/blog/2019/03/01/prairie4/" });
     // ほかの出典の行は、これまでどおり(曲名・効果音名は出さない)
     expect(se.lines).toContain("Springin' Sound Stock");
-    expect(buildCreditGroups(assetCredits).find((g) => g.kind === "BGM")!.links).toBeUndefined();
+    expect(bgm.lines).toContain("zippy");
   });
 
   it("つかったソフトウェアに、lucide-react・qrcode-generator・jsQR がある(ライセンス名つき)。くわしい出典にも、同じ3つがある", () => {

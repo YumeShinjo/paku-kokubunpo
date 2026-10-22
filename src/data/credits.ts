@@ -63,7 +63,18 @@ export interface CreditGroup {
  * キーは、素材管理表の「出典」(作者・サイト名)。
  */
 export const REQUIRED_CREDIT_LINES: Record<string, { line: string; url: string }> = {
-  ポケットサウンド: { line: "効果音:ポケットサウンド – https://pocket-se.info/", url: "https://pocket-se.info/" },
+  // ポケットサウンドの規約(https://pocket-se.info/rules/)が示す書式どおり(全角のコロン)
+  ポケットサウンド: { line: "効果音：ポケットサウンド – https://pocket-se.info/", url: "https://pocket-se.info/" },
+  // CC BY 4.0(Prairie4)は、曲名・作者・ライセンス名・入手元を示す必要がある。曲のページに、そのとおりの記載がある
+  PeriTune: {
+    line: "BGM：Prairie4 - PeriTune(CC BY 4.0) https://peritune.com/blog/2019/03/01/prairie4/",
+    url: "https://peritune.com/blog/2019/03/01/prairie4/",
+  },
+  // On-Jinの規約: 音源がシステム上むき出しになる場合は、著作表記と「音源の二次配布、無断利用禁止」の表記が必要(ブラウザで音声ファイルを取り出せるため、念のため載せる)
+  "On-Jin ～音人～": {
+    line: "効果音：On-Jin ～音人～ https://on-jin.com/ (音源の二次配布・無断利用は禁止)",
+    url: "https://on-jin.com/",
+  },
 };
 
 /** 出典「サイト名 / 作曲者名」を、「作曲者名 - サイト名」に直す。「 / 」がなければ、そのまま */
