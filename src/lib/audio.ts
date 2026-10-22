@@ -116,7 +116,7 @@ export type SeKind =
   | "incorrect"
   | "clear"
   | "subBossClear"
-  /** 小ボスの撃破(浄化)。7エリアの小ボス戦と、「先へすすむ」の場面で鳴る。称号の授与などは subBossClear のまま */
+  /** 小ボスの撃破(浄化)。7エリアの小ボス戦と、「先へすすむ」の場面で鳴る。称号の授与は subBossClear(ファイルは、この音と同じ) */
   | "subBossPurify"
   | "lastBossClear"
   | "tap"

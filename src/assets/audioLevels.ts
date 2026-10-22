@@ -27,7 +27,7 @@ export const AUDIO_MEASURED: Readonly<Record<string, { lufs: number; peak: numbe
   "se/correct": { lufs: -14.0, peak: -0.4 },
   "se/incorrect": { lufs: -15.2, peak: -2.9 },
   "se/clear": { lufs: -11.8, peak: -0.8 },
-  "se/subBossClear": { lufs: -7.8, peak: 0.0 },
+  "se/subBossPurify": { lufs: -10.4, peak: -2.2 },
   "se/lastBossClear": { lufs: -15.7, peak: -6.0 },
   "se/growth": { lufs: -15.1, peak: -3.5 },
   "se/roundEnd": { lufs: -20.1, peak: -4.9 },
@@ -54,6 +54,14 @@ export const AUDIO_DURATION_SEC: Readonly<Record<string, number>> = {
   "bgm/kotonoha": 168.28,
 };
 
+/**
+ * 聴感で足す補正(dB。マイナスだけ)。測定値から決まる補正(ピークを -1 dBFS 以下に)に、さらに足す。
+ * キラキラ系の音は、ピークが小さく、平均(LUFS)が大きく出る。ステージクリア音(-12.0 LUFS)より小さく、正解音(-14.6 LUFS)より少し大きい -13.4 LUFS にそろえる。
+ */
+export const AUDIO_TRIM_DB: Readonly<Record<string, number>> = {
+  "se/subBossPurify": -3.0,
+};
+
 /** BGMの、そろえる音量(LUFS) */
 export const BGM_TARGET_LUFS = -16;
 /** 効果音の、ピークの上限(dBFS) */
@@ -71,7 +79,7 @@ export function gainDbFor(name: string, measured: { lufs: number; peak: number }
 
 /** 素材ごとのゲイン補正(dB)の表(測定値から決まる)。表にない素材は 0 */
 export const AUDIO_GAIN_DB: Readonly<Record<string, number>> = Object.fromEntries(
-  Object.entries(AUDIO_MEASURED).map(([name, m]) => [name, gainDbFor(name, m)]),
+  Object.entries(AUDIO_MEASURED).map(([name, m]) => [name, round1(gainDbFor(name, m) + (AUDIO_TRIM_DB[name] ?? 0))]),
 );
 
 /** dB → 倍率 */

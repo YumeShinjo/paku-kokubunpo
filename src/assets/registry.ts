@@ -180,9 +180,10 @@ export const seAssetName = (kind: string) => `se/${kind}`;
 
 /**
  * 専用のファイルがない効果音の種類は、代わりに、ほかの種類のファイルを指す(新しい音を用意して、同じ名前で置けば、そちらが鳴る)。
- * subBossPurify(小ボス撃破)は、当面、subBossClear のファイルを使う。
+ * subBossClear(称号の授与)は、専用のファイルを持たず、小ボス撃破(subBossPurify)と同じ音を使う(2026-10-22。
+ * 小ボス撃破の音を、やさしい浄化の音に差し替えたとき、斬る音の「衝撃」は、どこでも使わなくなった)。
  */
-export const SE_FILE_FALLBACK: Record<string, string> = { subBossPurify: "subBossClear" };
+export const SE_FILE_FALLBACK: Record<string, string> = { subBossClear: "subBossPurify" };
 
 /** 効果音の種類のゲイン(倍率)。素材ごとの補正(audioLevels.ts)。専用のファイルがなければ、代わりの種類のファイルの補正。表にないものは 1(補正なし) */
 export const seGain = (kind: string): number => {

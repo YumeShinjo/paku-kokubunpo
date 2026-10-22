@@ -70,8 +70,8 @@ describe("素材の受け皿(registry)", () => {
     expect(findBgm("stage")?.intro).toBeUndefined();
   });
 
-  it("効果音は10種すべてに実ファイルが置かれている(SeKind と同じ名前)", () => {
-    for (const kind of ["tap", "correct", "incorrect", "clear", "roundEnd", "subBossClear", "lastBossClear", "growth", "pageUnlock", "bonus"]) {
+  it("効果音は10ファイルが置かれている(subBossClear は専用のファイルを持たず、subBossPurify のファイルを使う)", () => {
+    for (const kind of ["tap", "correct", "incorrect", "clear", "roundEnd", "subBossPurify", "lastBossClear", "growth", "pageUnlock", "bonus"]) {
       expect(findAudio(seAssetName(kind)), kind).toBeTruthy();
     }
   });
