@@ -6209,8 +6209,14 @@ ruby rt {
   margin: 0;
 }
 
+/*
+ * 入口のユライとコトの大きさ。もとの大きさ(--yurai-base。画面の高さに合わせた、これまでの値)に、画面の高さが余っているぶんだけ、足す
+ * (背の低い画面では、これまでと同じ。「すすむ」まで、スクロールなしで入る。高い画面では、最大 1.8 倍)。
+ * 足す量は、画面の高さ(100dvh)が 645px を超えたぶんの 0.7 倍(下の余白の実測より、少なめ)。
+ */
 .screen-kotonoha-entry .kotonoha-scene:not(.has-bubble) {
-  --yurai-size: clamp(3.6rem, 10.5dvh, 8rem);
+  --yurai-base: clamp(3.6rem, 10.5dvh, 8rem);
+  --yurai-size: min(calc(var(--yurai-base) * 1.8), calc(var(--yurai-base) + max(0px, (100dvh - 645px) * 0.7)));
 }
 
 .screen-kotonoha-entry .kotonoha-about {
@@ -6236,7 +6242,9 @@ html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-about {
 }
 
 html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scene:not(.has-bubble) {
-  --yurai-size: clamp(3rem, 9dvh, 6rem);
+  --yurai-base: clamp(3rem, 9dvh, 6rem);
+  /* 「大」は、文字の分だけ詰まっているので、足す量は少なめ(100dvh が 670px を超えたぶんの 0.6 倍。最大 1.8 倍) */
+  --yurai-size: min(calc(var(--yurai-base) * 1.8), calc(var(--yurai-base) + max(0px, (100dvh - 670px) * 0.6)));
 }
 
 html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scope-list button {
@@ -6271,5 +6279,10 @@ html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-zukan-link {
 @media (max-height: 660px) {
   html[data-text-size="large"] .screen-kotonoha-entry .scene-bubbles {
     display: none;
+  }
+
+  /* 一言を出さない分、下の余白が増える(実測 約60px)ので、ユライとコトを、1.45 倍にする */
+  html[data-text-size="large"] .screen-kotonoha-entry .kotonoha-scene:not(.has-bubble) {
+    --yurai-size: calc(var(--yurai-base) * 1.45);
   }
 }

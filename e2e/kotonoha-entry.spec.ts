@@ -79,4 +79,37 @@ test.describe("言の葉の森の入口: 範囲は選ぶだけ、「すすむ」
       }
     }
   });
+
+  test("ユライとコトは、画面の高さに余りがあるぶんだけ大きい(高い画面で 1.5〜1.8 倍)。背の低い画面は、これまでと同じ。押すものは44px以上で、スクロールしない", async ({ page }) => {
+    await openEntry(page);
+    const size = () => page.evaluate(() => document.querySelector(".kotonoha-scene .yurai")!.getBoundingClientRect().height);
+    const rem = 16;
+    // これまでの大きさ(画面の高さに合わせた式): 標準 clamp(3.6rem, 10.5dvh, 8rem)、大 clamp(3rem, 9dvh, 6rem)
+    const before = (h: number, large: boolean) => (large ? Math.min(Math.max(3 * rem, 0.09 * h), 6 * rem) : Math.min(Math.max(3.6 * rem, 0.105 * h), 8 * rem));
+    const cases: { w: number; h: number; large: boolean; min: number; max: number }[] = [
+      { w: 360, h: 640, large: false, min: 1.0, max: 1.02 }, // 余りがない: これまでと同じ
+      { w: 375, h: 667, large: false, min: 1.0, max: 1.3 },
+      { w: 360, h: 740, large: false, min: 1.5, max: 1.82 },
+      { w: 390, h: 844, large: false, min: 1.5, max: 1.82 },
+      { w: 400, h: 800, large: false, min: 1.5, max: 1.82 },
+      { w: 360, h: 640, large: true, min: 1.4, max: 1.5 }, // 一言を出さない分、余りがある
+      { w: 375, h: 667, large: true, min: 1.0, max: 1.02 },
+      { w: 360, h: 740, large: true, min: 1.4, max: 1.82 },
+      { w: 390, h: 844, large: true, min: 1.5, max: 1.82 },
+    ];
+    for (const { w, h, large, min, max } of cases) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.evaluate((large) => {
+        if (large) document.documentElement.dataset.textSize = "large";
+        else delete document.documentElement.dataset.textSize;
+      }, large);
+      const ratio = (await size()) / before(h, large);
+      const label = `${w}×${h} ${large ? "大" : "標準"}`;
+      expect(ratio, `${label}: 倍率 ${ratio.toFixed(2)}`).toBeGreaterThanOrEqual(min - 0.02);
+      expect(ratio, `${label}: 倍率 ${ratio.toFixed(2)}`).toBeLessThanOrEqual(max + 0.02);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight), `${label}: スクロール`).toBeLessThanOrEqual(0);
+      const heights = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>(".kotonoha-scope-list button, .kotonoha-start, .kotonoha-zukan-link")].map((e) => e.getBoundingClientRect().height));
+      for (const hh of heights) expect(hh, `${label}: 押すものの高さ`).toBeGreaterThanOrEqual(43.5);
+    }
+  });
 });
