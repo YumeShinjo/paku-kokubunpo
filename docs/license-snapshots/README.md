@@ -26,5 +26,3 @@
 | `gemini-terms-2026-10-22.pdf` | Google 利用規約(日本版。発効日 2026-07-30) | https://policies.google.com/terms | 2026-10-22 | Gemini(画像生成・画像編集) |
 
 保存していないもの(ユーザーの判断): Illustrious-XL v2.0 の Hugging Face(creativeml-openrail-m)と CivitAI(Fair AI Public License 1.0-SD)のページ。2つの表記が食い違うことを、台帳に記録するだけにしている。
-
-注意: 以前の `akazukin-pop-2026-10-22.png`(BOOTHにログインした画面で、アカウント名が写っていた)は、2026-10-23 に、作業ツリーから削除した。ただし、2026-10-22 のコミット(`13f8643`)には、残っている(公開のリポジトリ。くわしくは、2026-10-23 の報告)。
