@@ -208,6 +208,7 @@ SortingQuestionに再構成した。1バッチ=1画面として複数語を同�
 ## デプロイ(Firebase Hosting)
 `firebase.json` を用意済み(公開フォルダは `dist`。sw.js / index.html / manifest はキャッシュさせず、`assets/` は長期キャッシュ)。
 手順: `npm run build` → 初回のみ `npx firebase-tools login` と `npx firebase-tools use --add`(プロジェクト選択)→ `npx firebase-tools deploy --only hosting`。
+バージョンは `package.json` の `version` が元。デプロイのたびに上げる。設定の表示と、デプロイされた版の確認(`/version.json`・設定の「最新の版をたしかめる」)は、[docs/VERSIONING.md](docs/VERSIONING.md)。
 
 ## 初回プレイの操作ガイド
 出題画面([QuizPlayer](src/features/quiz/QuizPlayer.tsx))で、出題形式ごとに**初めて遊ぶときだけ**、問題の上に操作の説明カードを出す。

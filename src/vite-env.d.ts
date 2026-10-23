@@ -7,6 +7,10 @@ declare module "*.md?public" {
 
 /** package.json の version(vite.config.ts の define で埋め込む) */
 declare const __APP_VERSION__: string;
+/** git の短いコミットID(ビルドのときだけ。開発サーバー・テストでは "dev") */
+declare const __APP_COMMIT__: string;
+/** ビルドの日時(日本時間。"2026-10-23 12:34"。開発サーバー・テストでは、ビルドしていない時刻) */
+declare const __APP_BUILD_TIME__: string;
 
 interface ImportMetaEnv {
   readonly VITE_FIREBASE_API_KEY?: string;

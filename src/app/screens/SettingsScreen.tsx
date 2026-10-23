@@ -9,6 +9,8 @@ import { reloadApp, resetAllData } from "@/features/settings/resetData";
 import { Rb } from "@/components/Rb";
 import { BackButton } from "@/components/BackButton";
 import { ContactLink } from "@/components/ContactLink";
+import { VersionCheck } from "@/components/VersionCheck";
+import { APP_VERSION_LABEL } from "@/lib/appVersion";
 import { AudioDebugPanel } from "./AudioDebugPanel";
 import { DebugUnlockPanel } from "./DebugUnlockPanel";
 import { useDebugUnlock } from "@/lib/debugUnlock";
@@ -183,10 +185,12 @@ export function SettingsScreen() {
           </button>
           {/* お問い合わせフォーム(外部のブラウザで開く) */}
           <ContactLink className="settings-row" />
+          {/* デプロイされた最新の版を、たしかめる(version.json と、いま動いている版を比べる) */}
+          <VersionCheck className="settings-row" />
         </div>
-        {/* バージョン表記。5回続けてタップすると、「音のログ」の項目が出る(調査用。押せるようには見せない) */}
+        {/* バージョン表記(「v0.9.0(abc1234・2026-10-23 12:34)」)。5回続けてタップすると、「音のログ」の項目が出る(調査用。押せるようには見せない) */}
         <p className="settings-version" onClick={handleVersionTap}>
-          v{__APP_VERSION__}
+          {APP_VERSION_LABEL}
         </p>
       </section>
 

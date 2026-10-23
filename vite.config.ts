@@ -2,8 +2,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import type { Plugin } from "vite";
 import path from "node:path";
 import { readFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { buildVersionInfo, versionJsonText } from "./src/lib/versionInfo";
 
 /**
  * プライバシーポリシー(docs/PRIVACY_POLICY.md)は、末尾に「運営者向けメモ」の節を持つ(公開前に削除するための内部メモ)。
@@ -23,13 +26,43 @@ const policyPublicOnly = () => ({
 
 const appVersion = (JSON.parse(readFileSync("./package.json", "utf-8")) as { version: string }).version;
 
+/**
+ * 版の情報(バージョン・git の短いコミットID・ビルドの日時(日本時間))。ビルド(vite build)のときだけ、本物の値を入れる。
+ * 開発サーバー・テストでは、コミットIDを取らず、"dev" にする(git がない環境でも、動くように)。
+ * 設定の表示(__APP_VERSION__ ほか)と、dist の version.json は、ここで作った同じ値から出す。
+ */
+const isBuild = process.argv.includes("build");
+const gitCommit = (): string | undefined => {
+  if (!isBuild) return undefined;
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString();
+  } catch {
+    return undefined;
+  }
+};
+const versionInfo = buildVersionInfo(appVersion, gitCommit(), new Date());
+
+/** ビルドの結果(dist)に、version.json を出す。デプロイされた最新の版を、確かめるため(Cache-Control: no-cache は firebase.json) */
+const versionJson = (): Plugin => ({
+  name: "version-json",
+  apply: "build",
+  generateBundle() {
+    this.emitFile({ type: "asset", fileName: "version.json", source: versionJsonText(versionInfo) });
+  },
+});
+
 // 9章 技術要件: PWA化(オフラインキャッシュ) / レスポンシブ対応 を反映した基本設定。
 // 配色・アイコンは未決事項(12章)のため仮値。デザイン確定後に manifest を更新する。
 export default defineConfig({
   // 最初の画面に出すバージョン表記。package.json の version が元(ここだけを直せばよい)
-  define: { __APP_VERSION__: JSON.stringify(appVersion) },
+  define: {
+    __APP_VERSION__: JSON.stringify(versionInfo.version),
+    __APP_COMMIT__: JSON.stringify(versionInfo.commit),
+    __APP_BUILD_TIME__: JSON.stringify(versionInfo.buildTime),
+  },
   plugins: [
     policyPublicOnly(),
+    versionJson(),
     react(),
     VitePWA({
       registerType: "autoUpdate",
@@ -67,7 +100,9 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Firebase(ランキング用・約0.7MB)は、ランキングを開いたときに、通信して読み込む。オフラインでは使えないので、最初の保存(プリキャッシュ)には含めない
         // QRコードの読み取り(jsQR・約0.13MB)も、引き継ぎで読み取るときだけ通信して読み込む。(初回の読み込みを軽くする)。
-        globIgnores: ["**/firebase-*.js", "**/jsQR-*.js"],
+        globIgnores: ["**/firebase-*.js", "**/jsQR-*.js", "**/version.json"],
+        // version.json は、デプロイされた最新の版を確かめるためのファイル。プリキャッシュにも、アプリの画面への読み替えにも入れず、いつも通信して取る
+        navigateFallbackDenylist: [/^\/version\.json$/],
         runtimeCaching: [
           {
             // 音声(src/assets/audio)は dist/assets/audio/ へ出る。BGMは容量が大きく、iOSのSafariは

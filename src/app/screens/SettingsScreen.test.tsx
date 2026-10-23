@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationStore } from "@/app/store/navigationStore";
 import { AUDIO_DEBUG_FULL_KEY, AUDIO_DEBUG_KEY, AUDIO_EXPERIMENT_KEYS, isBufferEnabled, isExperimentOn, getAudioDebugEntries, isAudioDebugEnabled, logAudioDebug, resetAudioDebugForTest } from "@/lib/audioDebug";
 import { useSettingsStore } from "@/app/store/settingsStore";
+import { APP_VERSION_LABEL } from "@/lib/appVersion";
 
 const reset = vi.hoisted(() => ({
   resetAllData: vi.fn(async () => ({ removedKeys: [], ranking: "not-joined" as const })),
@@ -306,11 +307,13 @@ describe("設定画面: 見出しで分けた並び(おと・つかいかた・�
     expect(text(note)).toBe("古い端末で「つくる」→新しい端末で「いれる」");
   });
 
-  it("このアプリについて: プライバシーポリシー・くわしい出典・クレジット・お問い合わせの4行(縦)と、バージョン表記", () => {
-    const rows = [...container.querySelectorAll(".settings-links > *")];
-    expect(rows.map((r) => text(r).replace("(新しいタブで、お問い合わせフォームを開きます)", ""))).toEqual(["プライバシーポリシー", "くわしい出典", "クレジット", "お問い合わせ"]);
+  it("このアプリについて: プライバシーポリシー・くわしい出典・クレジット・お問い合わせ・「最新の版をたしかめる」の5行(縦)と、バージョン表記", () => {
+    const rows = [...container.querySelectorAll(".settings-links > *")].filter((r) => text(r) !== ""); // (結果の文は、押すまで空)
+    expect(rows.map((r) => text(r).replace("(新しいタブで、お問い合わせフォームを開きます)", ""))).toEqual(["プライバシーポリシー", "くわしい出典", "クレジット", "お問い合わせ", "最新の版をたしかめる"]);
     expect(rows[3].tagName).toBe("A"); // お問い合わせは、外のサイトへのリンク
-    expect(container.querySelector(".settings-version")!.textContent).toMatch(/^v\d/);
+    // バージョン表記: 「v0.9.0(abc1234・2026-10-23 12:34)」。開発・テストでは「v0.9.0(dev)」
+    expect(container.querySelector(".settings-version")!.textContent).toBe(APP_VERSION_LABEL);
+    expect(container.querySelector(".settings-version")!.textContent).toMatch(/^v\d+\.\d+\.\d+\((dev|[0-9a-f]{7,}・\d{4}-\d{2}-\d{2} \d{2}:\d{2})\)$/);
   });
 
   it("クレジット・くわしい出典・プライバシーポリシーは、設定から開いて、もどると設定に戻る", () => {

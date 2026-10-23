@@ -88,8 +88,9 @@ for (const { w, h } of SIZES) {
       expect(report.clipped, "文字が、ボタンからはみ出していない").toEqual([]);
       expect(report.resetGap, "初期化は、ほかと十分に離れている").toBeGreaterThanOrEqual(36);
       console.log(`SETTINGS ${w}x${h} ${large ? "大" : "標準"}: docHeight=${report.docH}`);
-      // デバッグ項目を出していないとき、設定画面の高さは、これまでと変わらない(幅360のとき: 標準 1,232px / 大 1,498px)
-      if (w === 360) expect(report.docH, "デバッグ項目を出していない設定画面の高さ").toBe(large ? 1498 : 1232);
+      // デバッグ項目を出していないときの、設定画面の高さ(幅360のとき: 標準 1,288px / 大 1,564px)。
+      // 2026-10-23 に、「最新の版をたしかめる」の1行(標準 +56px / 大 +66px)を足したので、前の 1,232px / 1,498px から、その分だけ増えた
+      if (w === 360) expect(report.docH, "デバッグ項目を出していない設定画面の高さ").toBe(large ? 1564 : 1288);
     });
   }
 }
