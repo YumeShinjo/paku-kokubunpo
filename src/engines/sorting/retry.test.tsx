@@ -63,6 +63,7 @@ describe("仕分け: 1回だけやり直せる(1回目に外したカードだ�
     act(() => submit().click());
     expect(onAnswer).toHaveBeenCalledTimes(1);
     expect(judgeAnswer(question, onAnswer.mock.calls[0][0])).toBe(true);
+    expect((onAnswer.mock.calls[0][0] as { recoveredOnRetry?: boolean }).recoveredOnRetry).toBeUndefined(); // やり直していない
     expect(note()).toBeNull();
     expect(container.querySelector(".sorting-results")).not.toBeNull();
   });
@@ -101,6 +102,7 @@ describe("仕分け: 1回だけやり直せる(1回目に外したカードだ�
     const answer = onAnswer.mock.calls[0][0] as Extract<Answer, { engine: "sorting" }>;
     expect(answer.placements).toEqual({ i1: "c1", i2: "c3", i3: "c3" }); // 1回目の入れ方
     expect(judgeAnswer(question, answer)).toBe(false);
+    expect(answer.recoveredOnRetry).toBeUndefined(); // 2回目も外した: 「2かいめで せいかい」の表示にはしない
     const results = container.querySelector(".sorting-results")!;
     expect(results.textContent).toContain("解説2");
     expect(results.querySelectorAll("li.incorrect")).toHaveLength(1);
@@ -120,6 +122,10 @@ describe("仕分け: 1回だけやり直せる(1回目に外したカードだ�
     act(() => submit().click());
     expect(onAnswer).toHaveBeenCalledTimes(1);
     expect(judgeAnswer(question, onAnswer.mock.calls[0][0])).toBe(false); // 星・ライフは、1回目で決まる
+    // 2回目で全部合った、という印(recoveredOnRetry)が付く。判定・集計は変わらない(placements は1回目の入れ方のまま)
+    const answer = onAnswer.mock.calls[0][0] as Extract<Answer, { engine: "sorting" }>;
+    expect(answer.recoveredOnRetry).toBe(true);
+    expect(answer.placements).toEqual({ i1: "c1", i2: "c3", i3: "c3" });
     expect(container.querySelectorAll(".sorting-results li.correct")).toHaveLength(3);
   });
 

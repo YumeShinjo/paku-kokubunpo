@@ -195,6 +195,17 @@ ruby > rt {
   color: #b5533f;
 }
 
+/* 仕分けで、1回目に外して、2回目で全部合ったとき: できたことを認める色(不正解の赤ではなく、正解の緑。大きな演出は付けない) */
+.feedback-recovered {
+  color: var(--color-correct-text);
+}
+
+.feedback-recovered-hint {
+  margin: 0.1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
 .feedback-explanation {
   color: var(--color-text);
   font-size: 0.9rem;
@@ -3871,6 +3882,12 @@ button.title-primary:not(:disabled):not([aria-disabled="true"]):not(.tap-to-star
 }
 
 .feedback-overlay .feedback-correct {
+  box-shadow:
+    0 10px 30px rgba(75, 58, 46, 0.4),
+    inset 0 0 0 3px var(--color-correct);
+}
+
+.feedback-overlay .feedback-recovered {
   box-shadow:
     0 10px 30px rgba(75, 58, 46, 0.4),
     inset 0 0 0 3px var(--color-correct);

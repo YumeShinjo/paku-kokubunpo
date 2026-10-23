@@ -7,7 +7,13 @@ import type { Question, SortingQuestion } from "@/data/schema";
 
 export type Answer =
   /** sorting: itemId -> 選んだcategoryId */
-  | { engine: "sorting"; placements: Record<string, string> }
+  | {
+      engine: "sorting";
+      /** 判定に使う入れ方(1回目に外したときは、やり直す前の1回目の入れ方。集計は、1回目で決まる) */
+      placements: Record<string, string>;
+      /** 1回目に外して、やり直した2回目で、全部合ったとき true(判定・集計は変えない。画面の表示だけを変えるための印) */
+      recoveredOnRetry?: boolean;
+    }
   /** assembly: 選んだ/並べたcardIdの配列 */
   | { engine: "assembly"; order: string[] }
   /** choice: 選んだchoiceId(文中タップ表示のときは、タップした文節のid) */

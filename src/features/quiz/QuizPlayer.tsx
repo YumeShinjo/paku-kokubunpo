@@ -1,3 +1,4 @@
+import { recoveredOnRetryMessage } from "@/data/feedbackMessages";
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Flame, Heart, Sparkles, Star, X as CloseIcon } from "lucide-react";
 import type { Question, RubyText } from "@/data/schema";
@@ -85,6 +86,8 @@ interface Feedback {
   review: ReviewOutcome | null;
   /** 「にがて」マークが付いていた単元の問題に正解したときだけ true(演出のみ。経験値などのボーナスはない) */
   weakBonus: boolean;
+  /** 仕分けで、1回目に外して、2回目で全部合ったとき true(集計は不正解扱い。表示だけ「2かいめで せいかい!」) */
+  recovered: boolean;
 }
 
 /**
@@ -178,8 +181,10 @@ export function QuizPlayer({
     if (correct) recordCorrect(question.id);
 
     const kind = boss ? (correct ? "bossHit" : "bossMiss") : correct ? "correct" : "incorrect";
-    const message = pickMessage(kind, lastMessage.current[kind]);
-    lastMessage.current[kind] = message;
+    // 仕分けで、1回目に外して、2回目で全部合った: 集計は不正解のまま。表示だけ、できたことを認める文にする
+    const recovered = !correct && answer.engine === "sorting" && answer.recoveredOnRetry === true;
+    const message = recovered ? recoveredOnRetryMessage.title : pickMessage(kind, lastMessage.current[kind]);
+    if (!recovered) lastMessage.current[kind] = message;
 
     // 星(復習)の更新と、克服したときの音。解答の直後に必ず反映する
     const review = recordReviewResult(question.id, correct);
@@ -206,6 +211,7 @@ export function QuizPlayer({
       effect,
       review: review.overcame ? review : null,
       weakBonus: wasWeakUnit,
+      recovered,
     });
 
     // 再開用に、解答のたびに進行状況を通知する(次に解く位置。最後の問題のときは位置を進めない)
@@ -383,10 +389,10 @@ export function QuizPlayer({
         >
           <div
             role="dialog"
-            aria-label={feedback.correct ? "せいかい" : "ざんねん"}
+            aria-label={feedback.correct ? "せいかい" : feedback.recovered ? "2かいめで せいかい" : "ざんねん"}
             className={[
               "feedback",
-              feedback.correct ? "feedback-correct" : "feedback-incorrect",
+              feedback.correct ? "feedback-correct" : feedback.recovered ? "feedback-recovered" : "feedback-incorrect",
               feedback.effect ? `effect-${feedback.effect}` : "",
               !twoStage && question.explanation ? "" : "feedback-compact",
             ]
@@ -415,13 +421,16 @@ export function QuizPlayer({
                     : combo >= COMBO_EXCITED_THRESHOLD
                       ? "combo"
                       : "happy"
-                  : "sad"
+                  : feedback.recovered
+                    ? "happy"
+                    : "sad"
               }
               size="small"
             />
             <p className="feedback-message">
               <Rb t={feedback.message} />
             </p>
+            {feedback.recovered && <p className="feedback-recovered-hint">{recoveredOnRetryMessage.hint}</p>}
             {feedback.correct && !seenGuides.includes("paku") && (
               <p className="feedback-paku" role="note">
                 <Ruby text={rb(PAKU_NOTE)} />

@@ -311,7 +311,9 @@ export function SortingEngine({ question, onAnswer }: Props) {
     // 確定: 全問正解の1回目、または2回目。解答は、1回目の入れ方で、1回だけ通知する
     submittedRef.current = true;
     setSubmitted(true);
-    onAnswer({ engine: "sorting", placements: first ?? placements });
+    // 2回目で全部合ったか(recoveredOnRetry)は、表示のための印。判定・集計は、1回目の入れ方で決まる(変えない)
+    const recoveredOnRetry = first !== null && wrongIds.length === 0;
+    onAnswer({ engine: "sorting", placements: first ?? placements, ...(recoveredOnRetry ? { recoveredOnRetry: true } : {}) });
   }
 
   const categoryLabel = (categoryId: string) =>

@@ -27,3 +27,12 @@ export const feedbackMessages = {
 } as const;
 
 export type FeedbackMessageKind = keyof typeof feedbackMessages;
+
+/**
+ * 仕分けで、1回目に外して、やり直した2回目で全部合ったときの表示。集計は、1回目で決まる(不正解扱い)ので、
+ * 不正解向けの文言(「大丈夫、次はいけるよ」など)や、正解の大きな演出は出さず、できたことを認めて、復習をすすめる。
+ */
+export const recoveredOnRetryMessage = {
+  title: "2かいめで せいかい!",
+  hint: "もういちど ふくしゅうしてみよう",
+} as const;
