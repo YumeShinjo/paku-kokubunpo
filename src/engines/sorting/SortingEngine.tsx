@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { playSe } from "@/lib/audio";
 import type { SortingQuestion } from "@/data/schema";
@@ -50,6 +50,9 @@ export function SortingEngine({ question, onAnswer }: Props) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [drag, setDrag] = useState<DragState | null>(null);
+  /** 「もんだいぶん」の欄を、開いているか。まだ触っていないとき(null)は、同じ表記のカードがある問題(①②)だけ、開いておく */
+  const [sentencesOpenSetting, setSentencesOpenSetting] = useState<boolean | null>(null);
+  const sentencesId = useId();
   /**
    * 1回だけやり直せる。1回目に1枚でも外したら、外したカードだけをカゴから戻し、合っているカードは固定する(lockedIds)。
    * 2回目の「こたえる」で確定する。解答(onAnswer)は、確定のときに1回だけ、1回目の入れ方で通知する
@@ -373,6 +376,13 @@ export function SortingEngine({ question, onAnswer }: Props) {
   }
 
   const unplaced = question.items.filter((item) => !placements[item.id]);
+  /**
+   * カゴに入れたカードは、対象の語だけの小さな表示になり、文が見えなくなる。そこで、入れたカードの文を、いつでも見られる欄に出す
+   * (欄は、カゴの下に置く。カードやカゴを下へ押し下げて、ドラッグ・タップのじゃまにならないように)
+   * (①②の番号と、文の中の語が、対応して分かる)。まだ入れていないカードは、上に文のまま出ているので、この欄には出さない。
+   */
+  const placedSentences = question.items.filter((item) => placements[item.id] && targetOnly(item.text) !== null);
+  const sentencesOpen = sentencesOpenSetting ?? marks.size > 0;
   const draggedItem = drag ? question.items.find((item) => item.id === drag.itemId) : undefined;
 
   return (
@@ -415,6 +425,29 @@ export function SortingEngine({ question, onAnswer }: Props) {
           </div>
         ))}
       </div>
+
+      {!submitted && placedSentences.length > 0 && (
+        <div className="sorting-sentences">
+          <button
+            type="button"
+            className="sorting-sentences-toggle"
+            aria-expanded={sentencesOpen}
+            aria-controls={sentencesId}
+            onClick={() => setSentencesOpenSetting(!sentencesOpen)}
+          >
+            {sentencesOpen ? "もんだいぶんを とじる" : "もんだいぶんを みる"}
+          </button>
+          {sentencesOpen && (
+            <ul id={sentencesId} className="sorting-sentences-list" aria-label="カゴに入れたカードの文">
+              {placedSentences.map((item) => (
+                <li key={item.id}>
+                  <TargetText text={item.text} mark={marks.get(item.id)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {draggedItem && drag && (
         <div className="sorting-ghost" style={{ left: Math.min(Math.max(drag.x, 56), window.innerWidth - 56), top: drag.y }} aria-hidden="true">

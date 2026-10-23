@@ -3692,6 +3692,39 @@ html[data-text-size="large"] .zukan-tablist[data-count="5"] .zukan-tab:last-chil
   border-width: 1.5px;
 }
 
+/* 「もんだいぶんを みる」: カゴに入れたカードの文(カゴの中は、対象の語だけの小さな表示になるため)。押すところは44px以上 */
+.sorting-sentences {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sorting-sentences-toggle {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background: rgba(255, 253, 247, 0.95);
+  border: 2px solid var(--color-primary-strong);
+  box-shadow: none;
+  color: var(--color-text);
+}
+
+.sorting-sentences-list {
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  list-style: none;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.sorting-sentences-list li + li {
+  border-top: 1px dashed rgba(75, 58, 46, 0.25);
+}
+
 /* ドラッグ中の複製: 折り返さず、対象の語だけを小さく出す */
 .sorting-ghost {
   white-space: nowrap;
