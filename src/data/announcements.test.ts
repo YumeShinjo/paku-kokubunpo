@@ -20,8 +20,9 @@ describe("お知らせのデータ", () => {
     }
   });
 
-  it("新しいお知らせ7件(2026-10-23〜2026-10-15)が、古いお知らせの上にある", () => {
-    expect(announcements.slice(0, 7).map((a) => a.id)).toEqual([
+  it("新しいお知らせ8件(2026-10-23〜2026-10-15)が、古いお知らせの上にある", () => {
+    expect(announcements.slice(0, 8).map((a) => a.id)).toEqual([
+      "2026-10-23-sorting",
       "2026-10-23-version",
       "2026-10-22-questions",
       "2026-10-22-boss-sound",
@@ -36,8 +37,11 @@ describe("お知らせのデータ", () => {
     }
   });
 
-  it("バージョンの表示と「最新の版をたしかめる」のお知らせは、v0.9.0 を添えている", () => {
-    const a = announcements[0];
+  it("バージョンの表示と「最新の版をたしかめる」のお知らせは v0.9.0、仕分けの表示などのお知らせは v0.9.1 を添えている", () => {
+    const sorting = announcements[0];
+    expect(plain(sorting.title)).toBe("仕分けの表示などを直しました(v0.9.1)");
+    expect(plain(sorting.body.join(""))).toContain("「もんだいぶんを みる」");
+    const a = announcements[1];
     expect(plain(a.title)).toBe("バージョン表示と「最新の版をたしかめる」を追加しました(v0.9.0)");
     expect(plain(a.body[0])).toContain("「最新の版をたしかめる」を押すと");
   });

@@ -1,9 +1,10 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { startApp } from "./helpers";
 
 /**
  * 設定の、バージョン表示と「最新の版をたしかめる」のE2E。
- * 開発サーバーでは、コミットIDを取らないので、表示は「v0.9.0(dev)」。version.json は、通信を差し替えて、同じ版・違う版・読めない場合を作る。
+ * 開発サーバーでは、コミットIDを取らないので、表示は「v(package.json の version)(dev)」。version.json は、通信を差し替えて、同じ版・違う版・読めない場合を作る。
  */
 async function openSettings(page: Page, large = false) {
   await startApp(page);
@@ -23,9 +24,9 @@ const runningVersion = (page: Page) =>
   });
 
 test.describe("設定: バージョン表示と「最新の版をたしかめる」", () => {
-  test("バージョン表示は「v0.9.0(dev)」(開発サーバー)。押す前は、結果の文は出ない", async ({ page }) => {
+  test("バージョン表示は「v(package.json の version)(dev)」(開発サーバー)。押す前は、結果の文は出ない", async ({ page }) => {
     await openSettings(page);
-    await expect(page.locator(".settings-version")).toHaveText("v0.9.0(dev)");
+    await expect(page.locator(".settings-version")).toHaveText(`v${(JSON.parse(readFileSync("package.json", "utf-8")) as { version: string }).version}(dev)`);
     await expect(check(page)).toBeVisible();
     await expect(status(page)).toBeHidden();
   });

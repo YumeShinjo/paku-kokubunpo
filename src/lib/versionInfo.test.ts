@@ -32,7 +32,7 @@ describe("版の情報(バージョン・コミット・ビルド日時)", () =>
 
   it("package.json の version が元。いま動いている版(テストでは dev)も、それと同じ", () => {
     const pkg = JSON.parse(readFileSync("package.json", "utf-8")) as { version: string };
-    expect(pkg.version).toBe("0.9.0");
+    expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/); // 版を上げるたびに、このテストを書き換えなくてよいように、形だけ確かめる
     expect(APP_VERSION_INFO.version).toBe(pkg.version);
     expect(APP_VERSION_INFO.commit).toBe("dev");
     expect(APP_VERSION_LABEL).toBe(`v${pkg.version}(dev)`);
