@@ -1,4 +1,6 @@
-# 保存した規約ページの読み取りと判定(2026-10-22)
+# 保存した規約ページの読み取りと判定(2026-10-22。2026-10-23に、第5節を追加)
+
+> 2026-10-23: ユーザーの判断で、OpenTracks・あかずきんポップ・LoRA・Illustrious の扱いが決まった(第5節)。下の第3・4節の「要差し替え」「判断が必要」は、その前の時点の判定。
 
 `docs/license-snapshots/` に保存された規約ページ(PDF・PNG)を読んで、台帳(`docs/ASSET_CREDITS.md`)と合うかを、素材ごとに確かめた記録。
 読み取りは、PDFのテキストを取り出して(判読できない部分は、そう書いた)、PNG は画面を見て行った。引用は、原文の短い抜き出し。**規約に書かれていないことは、「明示なし」と書いた**(推測で埋めていない)。
@@ -12,7 +14,7 @@
 | `eight-fanbox-2026-10-22.pdf`(3ページ) | EigHt「利用規約」(FANBOX。2024-03-22公開) | 凍てつく世界の果て |
 | `kurage-kosho-2026-10-22.pdf`(2ページ) | くらげ工匠「ご利用ガイド」(http://www.kurage-kosho.info/guide.html) | hit02・one23 |
 | `icooon-mono-2026-10-22.pdf`(3ページ) | ICOON MONO「ライセンスについて」(https://icooon-mono.com/license/) | 肉球のアイコン3・葉っぱアイコン |
-| `akazukin-pop-2026-10-22.png`(1952×13680。画像のみ) | BOOTH「あかずきんポップ」の商品ページ(画面の全体) | あかずきんポップ・M+ FONTS |
+| `akazukin-pop-2026-10-23-cropped.png`(1952×4533。画像のみ。2026-10-23に、アカウント名が写らないよう切り取ったものに置き換えた) | BOOTH「あかずきんポップ」の商品ページ(画面の全体) | あかずきんポップ・M+ FONTS |
 | `opentracks-license-2026-10-22.pdf`(5ページ) | OpenTracks「音源利用ライセンス」 | 爽やかなアイリッシュ的なBGM_2(タイトル画面などのBGM) |
 | `lora-civarchive-2026-10-22.pdf`(5ページ) | civarchive「Chibi Lerasigma 228 style Illustrious」 | Chibi Lerasigma 228 style(LoRA) |
 | `gemini-terms-2026-10-22.pdf`(24ページ) | Google 利用規約(日本版。発効日 2026年7月30日) | Gemini |
@@ -69,12 +71,12 @@
 - **教育**: 明示なし
 - **その他**: 「ロゴに使って商標をとりたい」→「商標に登録すると…使えなくなるのでお控えください」
 
-### あかずきんポップ(`akazukin-pop-2026-10-22.png`。画面の画像。文字は読めた)
+### あかずきんポップ(`akazukin-pop-2026-10-23-cropped.png`。画面の画像。文字は読めた。最初に読んだのは、切り取る前の画像)
 - **ゲーム・アプリ**: 可。「プログラムへの埋め込みが可能です」
 - **営利**: 可。「商用・非商用問わず使用可能」「その商用・非商用にかかわらず印刷、放送、通信、各種記録メディアなどの媒体の形式も問わず、使用をすることができます」
 - **クレジット**: 任意(動画向けの依頼)。「ご利用の際は次のクレジットを入れていただけると、ものすごく喜びます！ フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058」
 - **改変・二次配布・教育**: 明示なし(フォントファイルの再配布の可否も、書かれていない)
-- **その他**: 「M+FONTS派生のフリーフォント」「フォントは以下のライセンスに準じます。Copyright(c) 2018 M+ FONTS PROJECT」。「Format: Open Type / License: フリーフォント（商用可）」。**この画面からは、ページが公開か非公開かは判読不能**(BOOTHにログインした状態の画面。上部に、利用者のアカウント名が写っている)。M+ FONTS のライセンス本文は、この画面にない
+- **その他**: 「M+FONTS派生のフリーフォント」「フォントは以下のライセンスに準じます。Copyright(c) 2018 M+ FONTS PROJECT」。「Format: Open Type / License: フリーフォント（商用可）」。**この画面からは、ページが公開か非公開かは判読不能**(切り取る前の画像は、BOOTHにログインした状態の画面で、アカウント名が写っていた。2026-10-23に、切り取った画像に置き換えた)。M+ FONTS のライセンス本文は、この画面にない
 
 ### OpenTracks(`opentracks-license-2026-10-22.pdf`)
 - **ゲーム・アプリ**: 可。「有償・無償の製品・作品（ゲーム・DVD等）での利用」「有償・無償のアプリ（iPhone・android等）・WEBサービス等での利用」。ただし「ツールアプリ・プラットフォーム等には適用されません」
@@ -132,3 +134,52 @@
 
 ### Hareno「千年の内緒話」・Illustrious・zippy「The Forgotten Girl」— 保存がない
 - YouTube の概要欄(https://youtu.be/CGjkJKXqgHY ・ https://www.youtube.com/watch?v=ZBIg90S5vaI)と、Hugging Face(https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0)の License ファイルを、保存してほしい。保存できたら、台帳の該当の行を更新する。
+
+## 5. 追加分の読み取りと、ユーザーの判断(2026-10-23)
+
+### 5-1. ユーザーの判断(台帳に記録した)
+
+| 素材 | 判断 |
+| --- | --- |
+| OpenTracks のBGM(`bgm/title.mp3`) | 禁止事項8(エンドユーザーが容易に音源ファイルにアクセス・複製できる状態での利用の禁止)に当たるおそれを認識したうえで、**授業課題の範囲で、そのまま使う**。課題の結果が出たあとに、差し替えるか、公開を止める。クレジット画面・くわしい出典の表示は、変えない |
+| あかずきんポップ | 元の M+ FONTS のライセンスに準じる。そのまま使う |
+| LoRA(Chibi Lerasigma 228 style) | 配布元は削除済みで、ライセンスの欄がない。そのまま使い、事実を記録する |
+| Illustrious-XL v2.0 | Hugging Face(creativeml-openrail-m)と CivitAI(Fair AI Public License 1.0-SD)の表記が食い違う。記録のみ。スナップショットは保存しない |
+
+### 5-2. 新しく保存されたファイル
+
+| 保存ファイル | 内容 | 対応する素材 |
+| --- | --- | --- |
+| `hareno-sennen-no-naisyobanashi-youtube-2026-10-23.pdf`(2ページ) | YouTube「【フリーBGM】千年の内緒話…」の概要欄 | Hareno「千年の内緒話」 |
+| `zippy-forgotten-girl-youtube-2026-10-23.pdf`(2ページ) | YouTube「【フリーBGM】The Forgotten Girl…」のページ | zippy「The Forgotten Girl」 |
+| `mplus-fonts-license-2026-10-23.pdf`(14ページ) | M+ FONTS の公式ページ(https://mplusfonts.github.io) | M+ FONTS |
+| `akazukin-pop-2026-10-23-cropped.png` | BOOTH「あかずきんポップ」の商品ページ(切り取り) | あかずきんポップ |
+
+ファイル名は、中身と合っていた(名前の変更なし)。
+
+### 5-3. 読み取った条件(S1。「明示なし」=そのページに書かれていない)
+
+| 素材 | ゲーム・アプリ | 営利 | クレジット | 改変 | 二次配布・取り出し | 教育 | その他 | 判定 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hareno「千年の内緒話」(概要欄) | 可。「収益化された動画や配信、ゲーム等での使用も可能です」 | 可。「楽曲は無料で商用利用可能です」 | 必須ではない。「この動画かこのチャンネルのリンクを貼っていただけると嬉しいです」 | 明示なし | 禁止は「楽曲自体の二次配布、販売」。ファイルの取り出しは、明示なし | 明示なし | 「楽曲自体をYouTubeコンテンツID登録するなど楽曲の権利を主張する行為」は禁止。「全年齢、R18作品問わず」 | **OK**(ただし、台帳にあった「教育での配信: 可」「改変: 可」は、この概要欄の記載ではないので、台帳の書き方を直した) |
+| zippy「The Forgotten Girl」(YouTube) | (概要欄に、規約の本文はなく、FANBOXの規約への案内だけ) | 同上 | 同上 | 同上 | 同上 | 同上 | 「ご利用の前に下記URLより利用規約をご一読ください。【利用規約/Terms of Use】https://zippysound.fanbox.cc/posts/85...」「利用許諾に関するお問い合わせには基本的に返信できません」 | **OK**(下の「対象の確認」) |
+| M+ FONTS(公式ページ) | 「自由に行うことができます」(下の引用) | 「パッケージ化しての販売などを自由に」 | 「このライセンスを保持する場合に限り」(OFL。著作権表示とライセンスの保持) | 可。「改変…再配布…を自由に」 | 可。「改変の有無にかかわらず再配布、ドキュメントへの埋め込み」 | 明示なし | 「新しい M+ FONTS は SIL Open Font License で公開されています」。**2018年版のライセンスは、このページに書かれていない**(「新しい」版の説明) | **判断済み**(ユーザーの判断: 元の M+ FONTS のライセンスに準じる。そのまま使う) |
+| あかずきんポップ(BOOTH・切り取り) | 可。「プログラムへの埋め込みが可能です」 | 可。「商用・非商用問わず使用可能」 | 任意。「次のクレジットを入れていただけると、ものすごく喜びます！ フォント：あかずきんポップ フリーダウンロード：https://flopdesign.booth.pm/items/1748058」 | 明示なし | 明示なし | 明示なし | 「M+FONTS派生のフリーフォントになります。フォントは以下のライセンスに準じます。Copyright(c) 2018 M+ FONTS PROJECT」。商品公開日 2019年12月29日。**「非公開」の表示は、この画像にない** | **OK**(ユーザーの判断あり) |
+
+M+ FONTS の公式ページの原文(英語。日本語訳つき): 「The new M+ FONTS is released under the SIL Open Font License…If you keep this license, you are permitted to use, modify, and redistribute the modified or not modified font, embed it in the document, and package it for sale freely.」
+
+### 5-4. zippy「The Forgotten Girl」は、FANBOXの規約の対象(【フリーBGM】の曲)に入っているか
+
+- **入っている**と判断した。理由: (1) 動画の題名が「【フリーBGM】The Forgotten Girl…」(保存したページの最初の行)、(2) 概要欄の「🎵フリーBGMのご利用について🎵 ご利用の前に下記URLより利用規約をご一読ください」の下に、FANBOXの「利用規約/Terms of Use」へのリンクがある。FANBOXの規約は、「このページは【フリーBGM】の記載がある楽曲の利用規約です」としている。
+- **読み取れなかった点**: 概要欄のFANBOXのURLは、「https://zippysound.fanbox.cc/posts/85...」と、途中までしか表示されておらず、完全なURLは、このページから判読できない(`zippy-fanbox-2026-10-22.pdf` の規約と同じ記事かどうかは、URLの前半の一致だけが根拠)。
+- 同じ概要欄に、ダウンロードリンク(Google Drive・BOOTH)がある。
+
+### 5-5. 「規約本文未確認」が残る素材
+
+3件(いずれも、ユーザーの判断で、記録のみ):
+1. **LoRA「Chibi Lerasigma 228 style」**: ライセンスの欄がない(本文がそもそもない)。
+2. **Illustrious-XL v2.0**: Hugging Face の license 欄(creativeml-openrail-m)だけ。CivitAI 側は、制作者が見たときの記録のみ。スナップショットは保存しない。
+3. **M+ FONTS の2018年版**: 公式ページには「新しい」版のライセンス(OFL)しかなく、2018年版の本文はない。
+
+なお、次の素材は、2026-10-22に公開ページで内容を確認したが、スナップショットは保存していない: Springin'(4件)・効果音工房・On-Jin・ポケットサウンド・VSQ plus+・にゃるぱかBGM工房・PeriTune・Vサムネ・Photopea・Monomaniac One・M PLUS Rounded 1c(`node_modules` のLICENSE)。
+

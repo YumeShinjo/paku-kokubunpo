@@ -17,12 +17,14 @@
 | `eight-fanbox-2026-10-22.pdf` | EigHt「利用規約」 | https://eight-novel.fanbox.cc/posts/7647818 | 2026-10-22 | 凍てつく世界の果て |
 | `kurage-kosho-2026-10-22.pdf` | くらげ工匠「ご利用ガイド」 | http://www.kurage-kosho.info/guide.html | 2026-10-22 | hit02・one23 |
 | `icooon-mono-2026-10-22.pdf` | ICOON MONO「ライセンスについて」 | https://icooon-mono.com/license/ | 2026-10-22 | 肉球のアイコン3(ICOON MONO)・葉っぱアイコン(ICOON MONO) |
-| `akazukin-pop-2026-10-22.png` | あかずきんポップ(BOOTHの商品ページの画面) | https://flopdesign.booth.pm/items/1748058 | 2026-10-22 | あかずきんポップ(M+ FONTS派生。M+ FONTS の行は、本文の保存なし) |
+| `akazukin-pop-2026-10-23-cropped.png` | あかずきんポップ(BOOTHの商品ページの画面。アカウント名が写らないよう切り取った版。2026-10-22 の全体の画面と置き換えた) | https://flopdesign.booth.pm/items/1748058 | 2026-10-23 | あかずきんポップ |
+| `hareno-sennen-no-naisyobanashi-youtube-2026-10-23.pdf` | Hareno「【フリーBGM】千年の内緒話」の概要欄 | https://youtu.be/CGjkJKXqgHY | 2026-10-23 | 千年の内緒話 / A secret whispered for a millennium |
+| `zippy-forgotten-girl-youtube-2026-10-23.pdf` | zippy「【フリーBGM】The Forgotten Girl」のYouTubeページ | https://www.youtube.com/watch?v=ZBIg90S5vaI | 2026-10-23 | The Forgotten Girl 1Loop |
+| `mplus-fonts-license-2026-10-23.pdf` | M+ FONTS 公式ページ(「新しい M+ FONTS」は SIL Open Font License) | https://mplusfonts.github.io | 2026-10-23 | M+ FONTS(あかずきんポップの元のフォント) |
 | `opentracks-license-2026-10-22.pdf` | OpenTracks「音源利用ライセンス」 | https://opentracks.com/help/articles/license/ | 2026-10-22 | 爽やかなアイリッシュ的なBGM_2(2021年リミックス版) |
 | `lora-civarchive-2026-10-22.pdf` | civarchive「Chibi Lerasigma 228 style Illustrious」 | https://civarchive.com/models/966828?modelVersionId=1399629 | 2026-10-22 | Chibi Lerasigma 228 style(LoRA) |
 | `gemini-terms-2026-10-22.pdf` | Google 利用規約(日本版。発効日 2026-07-30) | https://policies.google.com/terms | 2026-10-22 | Gemini(画像生成・画像編集) |
 
-まだ保存されていないもの: Harenoの「千年の内緒話」のYouTube概要欄(https://youtu.be/CGjkJKXqgHY)、zippy「The Forgotten Girl」のYouTubeページ(https://www.youtube.com/watch?v=ZBIg90S5vaI)、Illustrious-XL v2.0 の Hugging Face(https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0)と CivitAI のページ。
+保存していないもの(ユーザーの判断): Illustrious-XL v2.0 の Hugging Face(creativeml-openrail-m)と CivitAI(Fair AI Public License 1.0-SD)のページ。2つの表記が食い違うことを、台帳に記録するだけにしている。
 
-注意: `akazukin-pop-2026-10-22.png` は、BOOTHにログインした状態の画面で、上部に、利用者のアカウント名が写っている。公開の前に、その部分を消す(切り取る)かどうかは、ご判断ください。
-
+注意: 以前の `akazukin-pop-2026-10-22.png`(BOOTHにログインした画面で、アカウント名が写っていた)は、2026-10-23 に、作業ツリーから削除した。ただし、2026-10-22 のコミット(`13f8643`)には、残っている(公開のリポジトリ。くわしくは、2026-10-23 の報告)。

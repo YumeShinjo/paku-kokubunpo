@@ -36,6 +36,7 @@ out = []
 out.append("# 出典一覧(解説書への転記用)\n")
 out.append("パクっと国文法で使った、すべての素材・ツール・ライブラリの出典の一覧。`docs/ASSET_CREDITS.md`(素材管理表)から、`scripts/export-sources.py` で作った。")
 out.append("アプリの中では、クレジット画面の「くわしい出典」でも、同じ内容を見られる。\n")
+out.append("- 規約ページの保存(スナップショット)は、docs/license-snapshots/ にある(2026-10-22・2026-10-23 に追加)")
 out.append("- 確認日: 2026-10-15(小ボス戦の曲と言の葉の森の曲は、制作者が 2026-10-14 に確認)")
 out.append("- 「要確認」は、配布ページ・規約が見つからなかった、または規約の本文を取得できなかったもの。URLや条件は、推測では書いていない")
 out.append("- 音声・画像のファイルそのものは、GitHub のリポジトリに入れていない(曲の二次配布の禁止のため。`.gitignore` で除外)")
@@ -74,5 +75,7 @@ for r in pending:
         notes.append("出典")
     out.append(f"| {esc(r['name'])} | {'・'.join(notes)} |")
 out.append("")
+if not pending:
+    out.append("(なし。2026-10-23 の時点で、入手元URLと規約の確認が済んでいない行は、ない。判断を残している素材は、docs/ASSET_TERMS_REVIEW_2026-10-22.md を参照)")
 open("docs/SOURCES_FOR_REPORT.md", "w", encoding="utf-8", newline="\n").write("\n".join(out))
 print(len(rows), "rows;", len(pending), "pending")
