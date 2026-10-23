@@ -79,7 +79,13 @@ describe("最初の画面(TapToStart)", () => {
   it("お知らせのボタンを押すと、お知らせが開く。ゲームは始まらず、音声も解禁されない", () => {
     click(".splash-announce");
     expect(q('[role="dialog"]')?.getAttribute("aria-label")).toBe("お知らせ");
-    for (const a of announcements) expect(container.textContent).toContain(a.title.replace(/\[[^\]]*\]/g, ""));
+    // ふりがな(rt)は、文字に数えない(「言の葉の森」のように、ふりがなが残る語が、見出しにあるため)
+    const titles = [...container.querySelectorAll(".announce-title")].map((el) => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll("rt").forEach((rt) => rt.remove());
+      return clone.textContent;
+    });
+    expect(titles).toEqual(announcements.map((a) => a.title.replace(/\[[^\]]*\]/g, "")));
     expect(useSettingsStore.getState().audioUnlocked).toBe(false);
     click(".announce-close");
     expect(q('[role="dialog"]')).toBeNull();
@@ -101,7 +107,7 @@ describe("最初の画面(TapToStart)", () => {
     expect(single.querySelector("p.announce-text")).not.toBeNull();
     expect(single.querySelector("ul")).toBeNull();
     // 本文が複数のお知らせは、これまでどおり箇条書き
-    const multi = [...container.querySelectorAll(".announce-item")].find((el) => el.textContent?.includes("今日の更新"))!;
+    const multi = [...container.querySelectorAll(".announce-item")].find((el) => el.textContent?.includes("問題を増やし"))!;
     expect(multi.querySelectorAll("li")).toHaveLength(4);
   });
 
