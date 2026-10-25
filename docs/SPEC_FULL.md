@@ -28,3 +28,4 @@
 | 12 | 音 | [spec/12-sound.md](spec/12-sound.md) |
 | 13 | 画像素材 | [spec/13-images.md](spec/13-images.md) |
 | 14 | 出典・ライセンス・プライバシー | [spec/14-credits-privacy.md](spec/14-credits-privacy.md) |
+| 15 | テストと品質 | [spec/15-testing-quality.md](spec/15-testing-quality.md) |
