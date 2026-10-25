@@ -17,3 +17,4 @@
 | 1 | 概要 | [spec/01-overview.md](spec/01-overview.md) |
 | 2 | 画面一覧と画面遷移 | [spec/02-screens.md](spec/02-screens.md) |
 | 3 | ゲームの進行 | [spec/03-progression.md](spec/03-progression.md) |
+| 4 | 出題の仕組み | [spec/04-quiz.md](spec/04-quiz.md) |
