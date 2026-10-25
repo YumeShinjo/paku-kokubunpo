@@ -20,3 +20,4 @@
 | 4 | 出題の仕組み | [spec/04-quiz.md](spec/04-quiz.md) |
 | 5 | ボス戦のルール | [spec/05-boss.md](spec/05-boss.md) |
 | 6 | ストーリー | [spec/06-story.md](spec/06-story.md) |
+| 7 | キャラクターと図鑑 | [spec/07-characters.md](spec/07-characters.md) |
