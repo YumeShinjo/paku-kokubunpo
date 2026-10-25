@@ -15,3 +15,4 @@
 | 章 | タイトル | ファイル |
 |---|---|---|
 | 1 | 概要 | [spec/01-overview.md](spec/01-overview.md) |
+| 2 | 画面一覧と画面遷移 | [spec/02-screens.md](spec/02-screens.md) |
