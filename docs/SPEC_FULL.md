@@ -25,3 +25,4 @@
 | 9 | 称号・成績・ランキング | [spec/09-titles-ranking.md](spec/09-titles-ranking.md) |
 | 10 | 設定・引き継ぎ・データ | [spec/10-settings-data.md](spec/10-settings-data.md) |
 | 11 | 表示とアクセシビリティ | [spec/11-display-accessibility.md](spec/11-display-accessibility.md) |
+| 12 | 音 | [spec/12-sound.md](spec/12-sound.md) |
