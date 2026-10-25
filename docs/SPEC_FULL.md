@@ -26,3 +26,4 @@
 | 10 | 設定・引き継ぎ・データ | [spec/10-settings-data.md](spec/10-settings-data.md) |
 | 11 | 表示とアクセシビリティ | [spec/11-display-accessibility.md](spec/11-display-accessibility.md) |
 | 12 | 音 | [spec/12-sound.md](spec/12-sound.md) |
+| 13 | 画像素材 | [spec/13-images.md](spec/13-images.md) |
