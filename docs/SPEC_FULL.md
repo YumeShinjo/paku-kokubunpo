@@ -19,3 +19,4 @@
 | 3 | ゲームの進行 | [spec/03-progression.md](spec/03-progression.md) |
 | 4 | 出題の仕組み | [spec/04-quiz.md](spec/04-quiz.md) |
 | 5 | ボス戦のルール | [spec/05-boss.md](spec/05-boss.md) |
+| 6 | ストーリー | [spec/06-story.md](spec/06-story.md) |
