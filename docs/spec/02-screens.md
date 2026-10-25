@@ -43,7 +43,7 @@
 
 ```mermaid
 flowchart TD
-  SPL["スプラッシュ<br/>タッチして はじめる"] -->|タップ(音声を解禁)| T[title ホーム]
+  SPL["スプラッシュ<br/>タッチして はじめる"] -->|"タップ(音声を解禁)"| T[title ホーム]
   SPL -->|クレジット| CR[credits]
   SPL -->|プライバシー| PV[privacy]
   T -->|左上の家| SPL
@@ -70,7 +70,7 @@ flowchart TD
   RES -->|ラスボス撃破| SY4["story 連鎖<br/>(分岐・後日談・締め)"]
   SY4 --> ER[endingResult]
   ER --> CR
-  CR -->|おわる(エンディング後)| SS
+  CR -->|"おわる(エンディング後)"| SS
   SG -->|負け| LOSS["もう少し! / ライフがなくなった"]
   LOSS -->|もういちど| SG
   LOSS -->|先へすすむ 小ボスのみ| SY5[story 助太刀]

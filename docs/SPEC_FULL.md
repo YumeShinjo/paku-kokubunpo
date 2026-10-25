@@ -12,21 +12,24 @@
 
 ## 目次
 
-| 章 | タイトル | ファイル |
-|---|---|---|
-| 1 | 概要 | [spec/01-overview.md](spec/01-overview.md) |
-| 2 | 画面一覧と画面遷移 | [spec/02-screens.md](spec/02-screens.md) |
-| 3 | ゲームの進行 | [spec/03-progression.md](spec/03-progression.md) |
-| 4 | 出題の仕組み | [spec/04-quiz.md](spec/04-quiz.md) |
-| 5 | ボス戦のルール | [spec/05-boss.md](spec/05-boss.md) |
-| 6 | ストーリー | [spec/06-story.md](spec/06-story.md) |
-| 7 | キャラクターと図鑑 | [spec/07-characters.md](spec/07-characters.md) |
-| 8 | 言の葉の森 | [spec/08-kotonoha.md](spec/08-kotonoha.md) |
-| 9 | 称号・成績・ランキング | [spec/09-titles-ranking.md](spec/09-titles-ranking.md) |
-| 10 | 設定・引き継ぎ・データ | [spec/10-settings-data.md](spec/10-settings-data.md) |
-| 11 | 表示とアクセシビリティ | [spec/11-display-accessibility.md](spec/11-display-accessibility.md) |
-| 12 | 音 | [spec/12-sound.md](spec/12-sound.md) |
-| 13 | 画像素材 | [spec/13-images.md](spec/13-images.md) |
-| 14 | 出典・ライセンス・プライバシー | [spec/14-credits-privacy.md](spec/14-credits-privacy.md) |
-| 15 | テストと品質 | [spec/15-testing-quality.md](spec/15-testing-quality.md) |
-| 16 | 既知の課題と今後の候補 | [spec/16-issues-future.md](spec/16-issues-future.md) |
+| 章 | タイトル | ファイル | 字数 |
+|---|---|---|---:|
+| 1 | 概要 | [spec/01-overview.md](spec/01-overview.md) | 6,905 |
+| 2 | 画面一覧と画面遷移 | [spec/02-screens.md](spec/02-screens.md) | 7,045 |
+| 3 | ゲームの進行 | [spec/03-progression.md](spec/03-progression.md) | 7,837 |
+| 4 | 出題の仕組み | [spec/04-quiz.md](spec/04-quiz.md) | 10,704 |
+| 5 | ボス戦のルール | [spec/05-boss.md](spec/05-boss.md) | 6,609 |
+| 6 | ストーリー | [spec/06-story.md](spec/06-story.md) | 11,402 |
+| 7 | キャラクターと図鑑 | [spec/07-characters.md](spec/07-characters.md) | 9,667 |
+| 8 | 言の葉の森 | [spec/08-kotonoha.md](spec/08-kotonoha.md) | 6,479 |
+| 9 | 称号・成績・ランキング | [spec/09-titles-ranking.md](spec/09-titles-ranking.md) | 8,256 |
+| 10 | 設定・引き継ぎ・データ | [spec/10-settings-data.md](spec/10-settings-data.md) | 7,934 |
+| 11 | 表示とアクセシビリティ | [spec/11-display-accessibility.md](spec/11-display-accessibility.md) | 6,933 |
+| 12 | 音 | [spec/12-sound.md](spec/12-sound.md) | 7,029 |
+| 13 | 画像素材 | [spec/13-images.md](spec/13-images.md) | 7,115 |
+| 14 | 出典・ライセンス・プライバシー | [spec/14-credits-privacy.md](spec/14-credits-privacy.md) | 6,780 |
+| 15 | テストと品質 | [spec/15-testing-quality.md](spec/15-testing-quality.md) | 6,554 |
+| 16 | 既知の課題と今後の候補 | [spec/16-issues-future.md](spec/16-issues-future.md) | 4,926 |
+| 17 | 付録 | [spec/17-appendix.md](spec/17-appendix.md) | 6,479 |
+
+全17章の合計: 128,654字(各ファイルの文字数。Markdownの記号を含む)。
