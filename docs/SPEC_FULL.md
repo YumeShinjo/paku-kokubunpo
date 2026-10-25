@@ -23,3 +23,4 @@
 | 7 | キャラクターと図鑑 | [spec/07-characters.md](spec/07-characters.md) |
 | 8 | 言の葉の森 | [spec/08-kotonoha.md](spec/08-kotonoha.md) |
 | 9 | 称号・成績・ランキング | [spec/09-titles-ranking.md](spec/09-titles-ranking.md) |
+| 10 | 設定・引き継ぎ・データ | [spec/10-settings-data.md](spec/10-settings-data.md) |
