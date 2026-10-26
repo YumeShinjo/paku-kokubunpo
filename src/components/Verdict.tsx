@@ -5,7 +5,7 @@ import { recoveredOnRetryMessage } from "@/data/feedbackMessages";
 export type VerdictKind = "correct" | "incorrect" | "recovered";
 
 const VERDICT_LABEL: Record<VerdictKind, string> = {
-  correct: "せいかい!",
+  correct: "せいかい！",
   incorrect: "ざんねん",
   recovered: recoveredOnRetryMessage.title,
 };

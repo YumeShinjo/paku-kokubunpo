@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { feedbackMessages } from "./feedbackMessages";
 import { STATUS_LINES, TAP_LINES } from "./homeLines";
@@ -35,5 +37,34 @@ describe("セリフの「!」「?」は全角(！？)", () => {
 
   it("全角にしても、三点リーダーの方針は変わらない(物語・セリフは「……」。「…」だけの省略はない)", () => {
     for (const { where, text } of [...storyTexts, ...sceneTexts]) expect(text, where).not.toMatch(/(?<!…)…(?!…)/);
+  });
+});
+
+/**
+ * 画面の文言(コトの口調の見出し・案内文・メッセージ)の「!」「?」も、全角(！？)。
+ * 例外: ボタンの短いラベル(「たたかう!」「わかった!」)、お知らせ(announcements.ts)、出題(data/questions・data/kotowaza)、
+ * コメント、テスト、コード(正規表現・三項演算子など。日本語の文字のすぐあとに付いた「!」「?」だけを調べる)。
+ */
+describe("画面の文言の「!」「?」は全角(ボタンの短いラベル・お知らせ・出題は除く)", () => {
+  const files = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const path = join(dir, e.name);
+      return e.isDirectory() ? files(path) : /\.tsx?$/.test(e.name) && !/\.test\./.test(e.name) ? [path] : [];
+    });
+  const EXCLUDED = [/data[\\/]questions/, /data[\\/]kotowaza/, /announcements\.ts$/];
+  const BUTTON_LABELS = ["たたかう!", "わかった!"];
+  const HALF_AFTER_JAPANESE = /(?:\[[぀-ヿ・ー]{1,12}\]|[぀-ヿ一-鿿々ー」』）。、…〜~♪])[!?]/;
+
+  it("src の画面の文言に、日本語のすぐあとの半角「!」「?」が残っていない", () => {
+    const found: string[] = [];
+    for (const path of files("src").filter((p) => !EXCLUDED.some((re) => re.test(p)))) {
+      readFileSync(path, "utf-8").split(/\r?\n/).forEach((line, i) => {
+        if (/^\s*(\/\/|\*|\/\*|\{\/\*)/.test(line)) return; // コメント
+        if (BUTTON_LABELS.some((w) => line.includes(w))) return;
+        if (/\.(split|replace|test|match)\(\//.test(line)) return; // 正規表現(コード)
+        if (HALF_AFTER_JAPANESE.test(line)) found.push(`${path}:${i + 1}: ${line.trim().slice(0, 80)}`);
+      });
+    }
+    expect(found).toEqual([]);
   });
 });

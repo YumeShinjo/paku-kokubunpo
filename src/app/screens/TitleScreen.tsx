@@ -88,9 +88,9 @@ export function TitleScreen() {
       <div className="title-hero">
         <div className="title-bubble" role="status">
           <p key={line.id} className="title-bubble-text">
-            {/* 句読点(。、?!)のところで折り返す(単語の途中で、折り返さない)。1つの区切りは、ひとかたまり */}
+            {/* 句読点(。、?!！？)のところで折り返す(単語の途中で、折り返さない)。1つの区切りは、ひとかたまり */}
             {homeLineText(line, leafCount)
-              .split(/(?<=[。、?!])/)
+              .split(/(?<=[。、?!！？])/)
               .map((part, i) => (
                 <span key={i} className="title-bubble-part">
                   <Rb t={part} />

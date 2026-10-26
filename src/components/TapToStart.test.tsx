@@ -47,8 +47,8 @@ describe("最初の画面(TapToStart)", () => {
     expect(q(".tap-to-start-hint")?.classList.contains("is-ready")).toBe(false);
   });
 
-  it("コトの横に、吹き出し「いっしょに ことばを あつめよう!」がある", () => {
-    expect(q(".splash-bubble")?.textContent?.replace(/\s+/g, " ").trim()).toBe("いっしょに ことばを あつめよう!");
+  it("コトの横に、吹き出し「いっしょに ことばを あつめよう！」がある", () => {
+    expect(q(".splash-bubble")?.textContent?.replace(/\s+/g, " ").trim()).toBe("いっしょに ことばを あつめよう！");
   });
 
   it("下部は、「v… ・ クレジット ・ プライバシーポリシー」の1行(その下に、講義の自作証明の行)。バージョンは押せない文字で、2つは押せるボタン", () => {

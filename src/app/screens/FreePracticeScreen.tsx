@@ -56,7 +56,7 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
     return (
       <div className="screen screen-stage-result">
         <h2>
-          れんしゅう おわり!
+          れんしゅう おわり！
         </h2>
         <p>
           <Ruby text={meta.label} />
@@ -66,7 +66,7 @@ export function FreePracticeScreen({ unitId }: { unitId: string }) {
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく！
           </p>
         )}
         <button type="button" onClick={again}>

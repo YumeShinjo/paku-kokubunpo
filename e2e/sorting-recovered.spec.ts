@@ -57,7 +57,7 @@ const submit = (page: Page) => page.getByRole("button", { name: "こたえる" }
 const firstItem = question.items[0];
 
 test.describe("仕分け: 1回外して、2回目で全部合ったとき", () => {
-  test("見出しは「2かいめで せいかい!」と短い一言。不正解向けの文言・きらきら・コンボの顔は出ない。星はつく(集計は不正解のまま)", async ({ page }) => {
+  test("見出しは「2かいめで せいかい！」と短い一言。不正解向けの文言・きらきら・コンボの顔は出ない。星はつく(集計は不正解のまま)", async ({ page }) => {
     await openQuestion(page);
     await placeAll(page, firstItem.id);
     await submit(page).click(); // 1回目: 1枚外れる → 外したカードだけ戻る(ポップアップは出ない)
@@ -68,7 +68,7 @@ test.describe("仕分け: 1回外して、2回目で全部合ったとき", () =
 
     const dialog = page.getByRole("dialog", { name: "2かいめで せいかい" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator(".verdict")).toHaveText("2かいめで せいかい!");
+    await expect(dialog.locator(".verdict")).toHaveText("2かいめで せいかい！");
     await expect(dialog.locator(".feedback-recovered-hint")).toHaveText("もういちど ふくしゅうしてみよう");
     // 不正解向けの文言は出ない
     const text = (await dialog.textContent()) ?? "";
@@ -99,7 +99,7 @@ test.describe("仕分け: 1回外して、2回目で全部合ったとき", () =
     await expect(ok).not.toContainText("2かいめで");
   });
 
-  test("2回目も外したときは、「ざんねん」の表示(不正解向けの文言)。「2かいめで せいかい!」は出ない", async ({ page }) => {
+  test("2回目も外したときは、「ざんねん」の表示(不正解向けの文言)。「2かいめで せいかい！」は出ない", async ({ page }) => {
     await openQuestion(page);
     await placeAll(page, firstItem.id);
     await submit(page).click();

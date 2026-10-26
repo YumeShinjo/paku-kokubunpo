@@ -60,7 +60,7 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
   },
   // 「パクっと」の説明(最初の正解のポップアップ。EngineGuide では出さない。「そうさの せつめいを もういちど 見る」で、もう一度出る)
   paku: {
-    title: t("パクっと って なに?"),
+    title: t("パクっと って なに？"),
     steps: [rb(PAKU_NOTE)],
   },
   // ことだまの書(図鑑)の、初回に出す使い方
@@ -77,7 +77,7 @@ export const engineGuides: Record<GuideKey, EngineGuide> = {
 };
 
 /** 全ガイド共通の、最後のひとこと(まちがえても失敗にならない: 3章) */
-export const guideFooter: RubyText = t("まちがえても だいじょうぶ。何度[なんど]でも やりなおせるよ!");
+export const guideFooter: RubyText = t("まちがえても だいじょうぶ。何度[なんど]でも やりなおせるよ！");
 
 export const guideKeys = Object.keys(engineGuides) as GuideKey[];
 

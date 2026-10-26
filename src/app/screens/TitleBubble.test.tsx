@@ -81,7 +81,14 @@ describe("ホーム画面: コトの吹き出し", () => {
     expect(text()).toContain("ぜんぶそろったね");
   });
 
-  it("状況の一言ごとの表情: 星1〜4問=ハングリー、5問以上=眠そう、葉=コンボ、そのほか=通常", () => {
+  it("吹き出しの文は、句読点と、全角の「！」「？」のところで、ひとかたまりずつに区切る(折り返しは、かたまりの境目だけ)", () => {
+    setState({ stars: 2 }); // 「苦手な問題が残ってるよ。いっしょにやっつけよう！」
+    render("split");
+    const parts = [...container.querySelectorAll(".title-bubble-part")].map((p) => p.textContent);
+    expect(parts).toEqual(["苦手な問題が残ってるよ。", "いっしょにやっつけよう！"]);
+  });
+
+  it("状況の一言ごとの表情:星1〜4問=ハングリー、5問以上=眠そう、葉=コンボ、そのほか=通常", () => {
     setState({ stars: 3 });
     render("a");
     expect(shownImage()).toBe("mascot/hungry");

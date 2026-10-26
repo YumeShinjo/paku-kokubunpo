@@ -77,20 +77,20 @@ describe("ボス戦に負けたとき: 連敗の救済(ライフ+1)・負けた�
     expect(seen).toEqual([6, 7, 8, 9, 9, 9]); // 最大 +4
   });
 
-  it("再挑戦のはじめに、「ライフが 1 ふえたよ!」の一言を出す(ぜんぶでいくつかも)。最大になったあとは、ふえている数の言い方", async () => {
+  it("再挑戦のはじめに、「ライフが 1 ふえたよ！」の一言を出す(ぜんぶでいくつかも)。最大になったあとは、ふえている数の言い方", async () => {
     await setup();
     complete(LOSS);
     act(() => button("もういちど").click());
-    expect(captured.props!.lifeNote).toBe("ライフが 1 ふえたよ!(ぜんぶで 6つ)");
+    expect(captured.props!.lifeNote).toBe("ライフが 1 ふえたよ！(ぜんぶで 6つ)");
     complete(LOSS);
     act(() => button("もういちど").click());
-    expect(captured.props!.lifeNote).toBe("ライフが 1 ふえたよ!(ぜんぶで 7つ)");
+    expect(captured.props!.lifeNote).toBe("ライフが 1 ふえたよ！(ぜんぶで 7つ)");
     for (let i = 0; i < 3; i++) {
       complete(LOSS);
       act(() => button("もういちど").click());
     }
     expect(captured.props!.maxLives).toBe(9);
-    expect(captured.props!.lifeNote).toBe("ライフが 4 ふえているよ!(ぜんぶで 9つ)");
+    expect(captured.props!.lifeNote).toBe("ライフが 4 ふえているよ！(ぜんぶで 9つ)");
   });
 
   it("負けた画面: 見出しは「ライフが なくなっちゃった…」。1回目は、「もういちど」を横いっぱいに、その下に「もどる」。「先へすすむ」は出ない", async () => {

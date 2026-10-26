@@ -101,7 +101,7 @@ export function TapToStart() {
           )}
           <span className="splash-bubble">
             いっしょに <br />
-            ことばを あつめよう!
+            ことばを あつめよう！
           </span>
           <span className={`tap-to-start-hint${ready ? " is-ready" : ""}`}>
             <span className="tap-to-start-hint-text">タッチして はじめる</span>

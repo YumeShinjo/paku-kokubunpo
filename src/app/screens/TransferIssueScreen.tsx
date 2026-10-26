@@ -80,7 +80,7 @@ export function TransferIssueScreen() {
       )}
       {copied === "done" && (
         <p role="status">
-          <Rb t="コピーしたよ!メモやメッセージに貼[は]り付[つ]けて、新[あたら]しい端末[たんまつ]へ送[おく]ってね。" />
+          <Rb t="コピーしたよ！メモやメッセージに貼[は]り付[つ]けて、新[あたら]しい端末[たんまつ]へ送[おく]ってね。" />
         </p>
       )}
       {copied === "failed" && (

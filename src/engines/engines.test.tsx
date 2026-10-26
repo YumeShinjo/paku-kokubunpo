@@ -292,7 +292,7 @@ describe("QuizPlayer: 続けて届いた同じ問題の解答は、ボスのHP�
       />,
     );
     const message = container.querySelector(".boss-appear-message");
-    expect(message?.textContent).toBe("メイが あらわれた!");
+    expect(message?.textContent).toBe("メイが あらわれた！");
     expect(message?.getAttribute("role")).toBe("status");
     // 説明のポップアップの中にあり、戦闘の画面(ボスのパネル・HPゲージ)も、すでに出ている
     expect(container.querySelector(".stage-intro .boss-appear-message")).not.toBeNull();
@@ -304,7 +304,7 @@ describe("QuizPlayer: 続けて届いた同じ問題の解答は、ボスのHP�
     expect(container.querySelector('[data-testid="engine"]')).not.toBeNull();
   });
 
-  it("再開・「もう少し」の再挑戦(appear を渡さない)では、「あらわれた!」を出さない", async () => {
+  it("再開・「もう少し」の再挑戦(appear を渡さない)では、「あらわれた！」を出さない", async () => {
     const { QuizPlayer } = await import("@/features/quiz/QuizPlayer");
     render(
       <QuizPlayer

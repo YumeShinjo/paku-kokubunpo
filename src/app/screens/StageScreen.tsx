@@ -65,8 +65,8 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     lifeBonus <= 0
       ? undefined
       : lifeJustIncreased && bossLosses <= BOSS_LIFE_BONUS_MAX
-        ? `ライフが 1 ふえたよ!(ぜんぶで ${maxLives}つ)`
-        : `ライフが ${lifeBonus} ふえているよ!(ぜんぶで ${maxLives}つ)`;
+        ? `ライフが 1 ふえたよ！(ぜんぶで ${maxLives}つ)`
+        : `ライフが ${lifeBonus} ふえているよ！(ぜんぶで ${maxLives}つ)`;
   // 小ボス戦は、戦闘に入ったとき、説明のポップアップの先頭に「○○が あらわれた!」を出す(途中からの再開・「もう少し」からの再挑戦では出さない)
   const [appearName] = useState(() => (stage?.type === "subBoss" && restored === null ? areas.find((a) => a.id === areaId)?.subBossName : undefined));
 
@@ -153,13 +153,13 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
     return (
       <div className="screen screen-stage-result screen-boss-loss">
         <MascotFace expression="sad" size="large" />
-        <h2>{result.lifeOut ? "ライフが なくなっちゃった…" : "もう少し!"}</h2>
+        <h2>{result.lifeOut ? "ライフが なくなっちゃった…" : "もう少し！"}</h2>
         <p>
           <Rb
             t={
               result.lifeOut
-                ? "でも大丈夫[だいじょうぶ]!ずかんを見[み]ながら、最初[さいしょ]からもう一度[いちど]挑戦[ちょうせん]しよう!"
-                : "あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ!"
+                ? "でも大丈夫[だいじょうぶ]！ずかんを見[み]ながら、最初[さいしょ]からもう一度[いちど]挑戦[ちょうせん]しよう！"
+                : "あと少[すこ]しで浄化[じょうか]できたよ。何度[なんど]でも挑戦[ちょうせん]できるよ！"
             }
           />
         </p>
@@ -191,10 +191,10 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
         <MascotFace expression={justClearedArea ? "surprised" : "happy"} size="large" />
         <h2>
           {label === null ? (
-            "クリア!"
+            "クリア！"
           ) : (
             <>
-              {label}を<Rb t="浄化[じょうか]した!" />
+              {label}を<Rb t="浄化[じょうか]した！" />
             </>
           )}
         </h2>
@@ -203,7 +203,7 @@ export function StageScreen({ areaId, stageId }: { areaId: string; stageId: stri
         </p>
         {result.maxCombo >= 2 && (
           <p>
-            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく！
           </p>
         )}
         <button

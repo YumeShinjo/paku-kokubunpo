@@ -64,7 +64,7 @@ async function defeatBoss(page: Page) {
   const correctIndex = q.choices.findIndex((c) => c.id === q.correctChoiceId);
   await page.locator(".engine-choice-list button").nth(correctIndex).click();
   await page.locator(".feedback-next").first().click();
-  await expect(page.getByRole("heading", { name: /小ボスを.*した!/ })).toBeVisible(); // 「小ボスを浄化した!」(ふりがなで文字が分かれる)
+  await expect(page.getByRole("heading", { name: /小ボスを.*した！/ })).toBeVisible(); // 「小ボスを浄化した！」(ふりがなで文字が分かれる)
   await page.waitForTimeout(300);
   return page.evaluate(() => (window as unknown as { __played: { duration: number; gain: number }[] }).__played);
 }

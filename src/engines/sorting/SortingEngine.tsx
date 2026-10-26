@@ -393,14 +393,14 @@ export function SortingEngine({ question, onAnswer }: Props) {
 
       {retryWrongCount > 0 && !submitted && (
         <p className="sorting-retry-note" role="status">
-          あと{retryWrongCount}枚 ちがうよ。もういちど、えらんでみよう!
+          あと{retryWrongCount}枚 ちがうよ。もういちど、えらんでみよう！
         </p>
       )}
 
       <div className="sorting-items" aria-label="まだ 入れていない言葉">
         {unplaced.map((item) => renderItem(item))}
         {unplaced.length === 0 && !submitted && <p className="sorting-empty">
-            <Rb t="ぜんぶ入れたよ!まちがいがないか見てから「こたえる」を押してね。" />
+            <Rb t="ぜんぶ入れたよ！まちがいがないか見てから「こたえる」を押してね。" />
           </p>}
       </div>
 

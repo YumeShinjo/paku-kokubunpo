@@ -383,7 +383,7 @@ function JoinedView({
       {confirmingLeave ? (
         <div className="quit-confirm" role="alertdialog" aria-label="クラスをぬける確認">
           <p>
-            <Rb t="クラスを抜[ぬ]けると、ランキングからあなたの得点[とくてん]が消[き]えるよ。抜[ぬ]ける?" />
+            <Rb t="クラスを抜[ぬ]けると、ランキングからあなたの得点[とくてん]が消[き]えるよ。抜[ぬ]ける？" />
           </p>
           <div className="quit-confirm-buttons">
             <button type="button" className="quit-yes" disabled={busy} onClick={onLeave}>

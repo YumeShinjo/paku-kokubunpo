@@ -49,10 +49,10 @@ export function AccuracyTab() {
         <section className="zukan-weak-callout" role="status">
           <p className="zukan-weak-callout-title">
             <TriangleAlert className="inline-icon" aria-hidden="true" size="1.05em" />
-            にがてかも?
+            にがてかも？
           </p>
           <p className="zukan-weak-callout-lead">
-            <Rb t="正答率[せいとうりつ]が低[ひく]い単元[たんげん]があるよ。タップして練習[れんしゅう]してみよう!" />
+            <Rb t="正答率[せいとうりつ]が低[ひく]い単元[たんげん]があるよ。タップして練習[れんしゅう]してみよう！" />
           </p>
           <ul className="zukan-weak-callout-list">
             {weakRows.map((row) => (
@@ -71,7 +71,7 @@ export function AccuracyTab() {
         <Rb t="単元[たんげん]ごとの正答率[せいとうりつ]" />
       </h3>
       <p className="zukan-lead">
-        <Rb t={`単元[たんげん]ごとの、直近[ちょっきん]${UNIT_ACCURACY_WINDOW}問[もん]の正答率[せいとうりつ]。行[ぎょう]をタップすると、その単元[たんげん]を自由[じゆう]練習[れんしゅう]できるよ!`} />
+        <Rb t={`単元[たんげん]ごとの、直近[ちょっきん]${UNIT_ACCURACY_WINDOW}問[もん]の正答率[せいとうりつ]。行[ぎょう]をタップすると、その単元[たんげん]を自由[じゆう]練習[れんしゅう]できるよ！`} />
       </p>
 
       {areaOrder.map((area) => (
@@ -133,7 +133,7 @@ export function AccuracyTab() {
       <p className="zukan-review">
         <Star className="inline-icon icon-gold" aria-hidden="true" size="1.05em" fill="currentColor" />
         <Rb t="苦手[にがて]問題[もんだい]:" /> <strong>{starredIds.length}</strong>
-        <Rb t="問[もん](コトの好物[こうぶつ]!正解[せいかい]すると克服[こくふく]できるよ)" />
+        <Rb t="問[もん](コトの好物[こうぶつ]！正解[せいかい]すると克服[こくふく]できるよ)" />
       </p>
     </>
   );

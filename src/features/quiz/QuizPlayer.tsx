@@ -350,8 +350,8 @@ export function QuizPlayer({
             <Rb
               t={
                 canResumeLater
-                  ? "ここまでの進[すす]み具合[ぐあい]は残[のこ]るよ。あとで続[つづ]きから遊[あそ]べるよ。やめる?"
-                  : "ここでやめると、このステージはクリアにならないよ。やめる?"
+                  ? "ここまでの進[すす]み具合[ぐあい]は残[のこ]るよ。あとで続[つづ]きから遊[あそ]べるよ。やめる？"
+                  : "ここでやめると、このステージはクリアにならないよ。やめる？"
               }
             />
           </p>
@@ -443,7 +443,7 @@ export function QuizPlayer({
             )}
             {feedback.review && <p className="feedback-overcome">
                 <Star className="inline-icon icon-gold" aria-hidden="true" size="1.05em" fill="currentColor" />
-                にがてを こくふくした!
+                にがてを こくふくした！
               </p>}
             {feedback.weakBonus && (
               <p className="feedback-weak-bonus">
@@ -492,7 +492,7 @@ export function QuizPlayer({
           <div role="dialog" aria-label="ステージのせつめい" className="feedback stage-intro">
             {boss && appear && (
               <p className="boss-appear-message" role="status">
-                {appear}が あらわれた!
+                {appear}が あらわれた！
               </p>
             )}
             <p className="engine-flavor-label">

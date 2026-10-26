@@ -55,7 +55,7 @@ describe("言の葉の森: 入口の説明・80枚そろったときの称号", 
   });
 
   it("入口に、説明がいつでも出る(初回の会話の前後・2回目以降のどちらでも)。ネタバレなし", () => {
-    const expected = "言の葉の森は、ことわざ・故事成語を あつめる ミニゲームだよ。1ラウンド10問。本編のとちゅうでも、いつでも あそべるよ。80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ!";
+    const expected = "言の葉の森は、ことわざ・故事成語を あつめる ミニゲームだよ。1ラウンド10問。本編のとちゅうでも、いつでも あそべるよ。80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ！";
     expect(plain(KOTONOHA_ABOUT)).toBe(expected);
     act(() => root.render(<KotonohaScreen />));
     expect(withoutRt(q(".kotonoha-about")!)).toBe(expected);
@@ -103,7 +103,7 @@ describe("言の葉の森: 入口の説明・80枚そろったときの称号", 
     expect(useKotonohaStore.getState().collectedIds).toHaveLength(80);
     const award = q(".kotonoha-title-award");
     expect(award).not.toBeNull();
-    expect(award!.textContent).toContain("ユライから しょうごう(二つ名)を もらったよ!");
+    expect(award!.textContent).toContain("ユライから しょうごう(二つ名)を もらったよ！");
     expect(award!.querySelector(".title-badge")?.getAttribute("aria-label")).toBe("称号 言の葉をひろいし者");
     expect(audio.playSe).toHaveBeenCalledWith("subBossClear");
     // 授与は、「ぜんぶ そろった」の会話(complete_all)と一緒に、1回だけ
@@ -113,6 +113,6 @@ describe("言の葉の森: 入口の説明・80枚そろったときの称号", 
 
   it("「あそびかた」の言の葉の森のカードに、称号の1文がある", () => {
     const forest = howToCards.find((c) => c.id === "forest")!;
-    expect(plain(forest.body)).toContain("80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ!");
+    expect(plain(forest.body)).toContain("80枚 ぜんぶ そろえると、ユライから しょうごうが もらえるよ！");
   });
 });

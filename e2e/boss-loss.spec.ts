@@ -116,11 +116,11 @@ test.describe("小ボスに負けた画面", () => {
     expect(scroll.y).toBeLessThanOrEqual(0);
   });
 
-  test("「もういちど」で、ライフが1ふえて(6つ)、「ライフが 1 ふえたよ!」の一言が出る", async ({ page }) => {
+  test("「もういちど」で、ライフが1ふえて(6つ)、「ライフが 1 ふえたよ！」の一言が出る", async ({ page }) => {
     await seed(page, 0);
     await loseOnce(page);
     await page.getByRole("button", { name: "もういちど" }).click();
-    await expect(page.locator(".boss-life-note")).toHaveText("ライフが 1 ふえたよ!(ぜんぶで 6つ)");
+    await expect(page.locator(".boss-life-note")).toHaveText("ライフが 1 ふえたよ！(ぜんぶで 6つ)");
     await page.locator(".stage-intro .feedback-next").click();
     await expect(page.locator(".player-lives")).toHaveAttribute("aria-label", "ライフ 6 / 6");
     expect(await page.locator(".player-lives .life-icon").count()).toBe(6);

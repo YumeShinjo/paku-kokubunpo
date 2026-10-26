@@ -33,7 +33,7 @@ export function MasteryProgress({ className = "" }: { className?: string }) {
           <span className="mastery-complete">
             {" "}
             <PartyPopper aria-hidden="true" size={15} className="mastery-complete-icon" />
-            コンプリート!
+            コンプリート！
           </span>
         )}
       </p>

@@ -78,7 +78,7 @@ export function TransferRestoreScreen() {
   if (done) {
     return (
       <div className="screen screen-transfer">
-        <h2>ふっきゅうできたよ!</h2>
+        <h2>ふっきゅうできたよ！</h2>
         <p>
           <Rb t="進[すす]み具合[ぐあい]を、この端末[たんまつ]に移[うつ]したよ。続[つづ]きから遊[あそ]べるよ。" />
         </p>
@@ -159,7 +159,7 @@ export function TransferRestoreScreen() {
             </li>
           </ul>
           <p>
-            <Rb t="この端末[たんまつ]にいまあるデータは、上書[うわが]きされるよ。復元[ふくげん]する?" />
+            <Rb t="この端末[たんまつ]にいまあるデータは、上書[うわが]きされるよ。復元[ふくげん]する？" />
           </p>
           <div className="quit-confirm-buttons">
             <button type="button" className="quit-yes" onClick={restore}>

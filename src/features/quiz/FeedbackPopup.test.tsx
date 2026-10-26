@@ -297,9 +297,9 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
   const verdictOf = (container: HTMLElement) => container.querySelector(".feedback-overlay .verdict")!;
   const messageOf = (container: HTMLElement) => container.querySelector(".feedback-overlay .feedback-message")?.textContent ?? "";
 
-  it("通常の出題: 正解の見出しは「せいかい!」(○)、不正解は「ざんねん」(×)。一言は、見出しとは別の行", () => {
+  it("通常の出題: 正解の見出しは「せいかい！」(○)、不正解は「ざんねん」(×)。一言は、見出しとは別の行", () => {
     for (const [answer, label, kind, icon] of [
-      ["正しい", "せいかい!", "correct", "lucide-circle"],
+      ["正しい", "せいかい！", "correct", "lucide-circle"],
       ["誤り", "ざんねん", "incorrect", "lucide-x"],
     ] as const) {
       const { container, click, done } = setup();
@@ -311,12 +311,12 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
       expect(verdict.querySelector("svg")!.getAttribute("class")).toContain(icon); // 色だけに頼らない: 記号(lucide)
       expect(messageOf(container).length).toBeGreaterThan(0);
       expect(messageOf(container)).not.toBe(label);
-      expect(container.querySelector(".feedback-overlay [role=dialog]")!.getAttribute("aria-label")).toBe(label.replace("!", ""));
+      expect(container.querySelector(".feedback-overlay [role=dialog]")!.getAttribute("aria-label")).toBe(label.replace("！", ""));
       done();
     }
   });
 
-  it("見出しは、一言が何であっても変わらない(10回くり返しても、正解は「せいかい!」・不正解は「ざんねん」だけ)", () => {
+  it("見出しは、一言が何であっても変わらない(10回くり返しても、正解は「せいかい！」・不正解は「ざんねん」だけ)", () => {
     const labels = new Set<string>();
     for (let i = 0; i < 10; i++) {
       const { container, click, done } = setup(1);
@@ -324,13 +324,13 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
       labels.add(verdictOf(container).textContent!);
       done();
     }
-    expect([...labels].sort()).toEqual(["ざんねん", "せいかい!"]);
+    expect([...labels].sort()).toEqual(["ざんねん", "せいかい！"]);
   });
 
-  it("ボス戦: 命中は「せいかい!」、はずれは「ざんねん」。一言は、命中(ヒット！など)・はずれの文", () => {
+  it("ボス戦: 命中は「せいかい！」、はずれは「ざんねん」。一言は、命中(ヒット！など)・はずれの文", () => {
     const { container, click, done } = setup(3, true);
     click("正しい");
-    expect(verdictOf(container).textContent).toBe("せいかい!");
+    expect(verdictOf(container).textContent).toBe("せいかい！");
     expect(["ヒット！", "きまった！", "いい攻撃！", "効いてる！"]).toContain(messageOf(container));
     click("つぎへ");
     click("誤り");
@@ -339,13 +339,13 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
     done();
   });
 
-  it("仕分け: 全部合えば「せいかい!」、外せば(やり直しも外せば)「ざんねん」", () => {
+  it("仕分け: 全部合えば「せいかい！」、外せば(やり直しも外せば)「ざんねん」", () => {
     const place = (click: (l: string) => void, item: string, category: string) => (click(item), click(category));
     const a = mount([sortingQuestion, question("q2")]);
     place(a.click, "走る", "動詞");
     place(a.click, "山", "名詞");
     a.click("こたえる");
-    expect(verdictOf(a.container).textContent).toBe("せいかい!");
+    expect(verdictOf(a.container).textContent).toBe("せいかい！");
     a.done();
 
     const b = mount([sortingQuestion, question("q2")]);
@@ -360,7 +360,7 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
     b.done();
   });
 
-  it("仕分け: 1回外して2回目で全部合ったときは、見出しが「2かいめで せいかい!」(△)。その下に、復習のすすめだけ(一言は出さない)", () => {
+  it("仕分け: 1回外して2回目で全部合ったときは、見出しが「2かいめで せいかい！」(△)。その下に、復習のすすめだけ(一言は出さない)", () => {
     const place = (click: (l: string) => void, item: string, category: string) => (click(item), click(category));
     const { container, click, done } = mount([sortingQuestion, question("q2")]);
     place(click, "走る", "名詞");
@@ -370,7 +370,7 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
     place(click, "山", "名詞");
     click("こたえる");
     const verdict = verdictOf(container);
-    expect(verdict.textContent).toBe("2かいめで せいかい!");
+    expect(verdict.textContent).toBe("2かいめで せいかい！");
     expect(verdict.classList.contains("verdict-recovered")).toBe(true);
     expect(verdict.querySelector("svg")!.getAttribute("class")).toContain("lucide-triangle");
     expect(messageOf(container)).toBe("");

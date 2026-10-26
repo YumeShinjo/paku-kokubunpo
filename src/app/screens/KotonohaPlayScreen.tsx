@@ -250,7 +250,7 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
             {/* 80枚ぜんぶそろったときだけ、ユライから称号を授与する(王座の間の称号と同じ見た目の TitleBadge) */}
             {completions[0] === "all" && (
               <div className="kotonoha-title-award" role="status">
-                <p>ユライから しょうごう(二つ名)を もらったよ!</p>
+                <p>ユライから しょうごう(二つ名)を もらったよ！</p>
                 <p className="ending-title">
                   <TitleBadge title={kotonohaTitle} />
                 </p>

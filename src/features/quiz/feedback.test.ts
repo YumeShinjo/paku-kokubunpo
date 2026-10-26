@@ -50,12 +50,12 @@ describe("comboLabel", () => {
   });
 
   it("2連続から表示する", () => {
-    expect(comboLabel(2)).toBe("2れんぞく!");
-    expect(comboLabel(10)).toBe("10れんぞく!");
+    expect(comboLabel(2)).toBe("2れんぞく！");
+    expect(comboLabel(10)).toBe("10れんぞく！");
   });
 });
 
-describe("正誤の一言: 紛らわしい語を使わない(見出しは「せいかい!」「ざんねん」の固定ラベル)", () => {
+describe("正誤の一言: 紛らわしい語を使わない(見出しは「せいかい！」「ざんねん」の固定ラベル)", () => {
   const all = Object.entries(feedbackMessages).flatMap(([kind, list]) => list.map((text) => ({ kind, text })));
 
   it("「おいしい」「おしい」など、見間違えやすい語は、どの一言にもない", () => {
@@ -64,7 +64,7 @@ describe("正誤の一言: 紛らわしい語を使わない(見出しは「せ�
     }
   });
 
-  it("一言は、見出し(「せいかい!」「ざんねん」)と同じ文にしない。「せいかい」「ざんねん」の語も含めない", () => {
+  it("一言は、見出し(「せいかい！」「ざんねん」)と同じ文にしない。「せいかい」「ざんねん」の語も含めない", () => {
     for (const { kind, text } of all) expect(text, `${kind}: ${text}`).not.toMatch(/せいかい|ざんねん|正解|残念/);
   });
 

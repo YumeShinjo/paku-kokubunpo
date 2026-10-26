@@ -51,7 +51,7 @@ export function CreditsScreen({
       <h2>クレジット</h2>
       {ending && (
         <p className="credits-lead">
-          パクっと国文法を遊んでくれてありがとう!
+          パクっと国文法を遊んでくれてありがとう！
         </p>
       )}
 

@@ -155,7 +155,7 @@ describe("言の葉の森(画面)", () => {
         answerFirst();
         const card = q(".kotonoha-explain")!;
         expect(card).not.toBeNull();
-        expect(card.querySelector(".kotonoha-verdict")!.textContent).toMatch(/^(せいかい!|ざんねん)$/);
+        expect(card.querySelector(".kotonoha-verdict")!.textContent).toMatch(/^(せいかい！|ざんねん)$/);
         // 完全な形(空欄が埋まっている)。読みだけのひらがなの行は、出さない(完全な形に、ふりがながある)
         expect(card.querySelector(".kotonoha-full .kotonoha-blank")).toBeNull();
         expect(card.querySelector(".kotonoha-full")!.textContent!.length).toBeGreaterThan(0);
@@ -164,7 +164,7 @@ describe("言の葉の森(画面)", () => {
         // ほかの選択肢は消える。残るのは、選んだ答えと正解だけ(正解を選んだときは1行、まちがえたときは2行)
         expect(q(".kotonoha-choices")).toBeNull();
         const rows = qa(".kotonoha-answers li");
-        expect(rows.length).toBe(card.querySelector(".kotonoha-verdict")!.textContent === "せいかい!" ? 1 : 2);
+        expect(rows.length).toBe(card.querySelector(".kotonoha-verdict")!.textContent === "せいかい！" ? 1 : 2);
         expect(rows[rows.length - 1].className).toBe("correct");
         // ユライの一言は、ユライの立ち絵の隣の吹き出し(別のカードにしない)
         const bubble = q(".kotonoha-scene .yurai-bubble .yurai-text")!;
@@ -218,7 +218,7 @@ describe("言の葉の森(画面)", () => {
       play("koji");
       const store = useKotonohaStore.getState;
       click(q(".kotonoha-choices button"));
-      const pickedCorrect = q(".kotonoha-verdict")!.textContent === "せいかい!";
+      const pickedCorrect = q(".kotonoha-verdict")!.textContent === "せいかい！";
       expect(store().collectedIds.length + store().missedIds.length).toBe(1);
       expect(pickedCorrect ? store().collectedIds.length : store().missedIds.length).toBe(1);
       // 本編の進捗などは、変わらない

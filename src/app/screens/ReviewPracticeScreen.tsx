@@ -36,9 +36,9 @@ export function ReviewPracticeScreen() {
   if (questions.length === 0 && !result) {
     return (
       <div className="screen screen-stage-result">
-        <h2>にがて もんだいは ないよ!</h2>
+        <h2>にがて もんだいは ないよ！</h2>
         <p>
-          <Rb t="苦手[にがて]な問題[もんだい]は、ぜんぶ克服[こくふく]したよ。すごい!" />
+          <Rb t="苦手[にがて]な問題[もんだい]は、ぜんぶ克服[こくふく]したよ。すごい！" />
         </p>
         <button type="button" onClick={() => goTo({ name: "title" })}>
           ホームへ
@@ -50,12 +50,12 @@ export function ReviewPracticeScreen() {
   if (result) {
     return (
       <div className="screen screen-stage-result">
-        <h2>れんしゅう おわり!</h2>
+        <h2>れんしゅう おわり！</h2>
         <p>
           {result.correctCount} / {result.answered} もん せいかい
         </p>
         {result.maxCombo >= 2 && <p>
-            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく!
+            さいだい <Flame className="inline-icon icon-flame" aria-hidden="true" size="1.05em" /> {result.maxCombo}れんぞく！
           </p>}
         <p>
           <Rb t={`のこりの苦手[にがて]問題[もんだい]: ${starCount}問[もん]`} />

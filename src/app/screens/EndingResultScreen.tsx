@@ -29,13 +29,13 @@ export function EndingResultScreen({ areaId, next }: { areaId: string; next: Scr
   return (
     <div className="screen screen-ending-result">
       <h2>
-        エンディング おつかれさま!
+        エンディング おつかれさま！
       </h2>
       <Mascot form="true" />
       {title ? (
         <>
           <p>
-            しょうごう(二つ名)を てにいれた!
+            しょうごう(二つ名)を てにいれた！
           </p>
           <p className="ending-title">
             <TitleBadge title={title} />
@@ -46,7 +46,7 @@ export function EndingResultScreen({ areaId, next }: { areaId: string; next: Scr
         </>
       ) : (
         <p>
-          コトノハおうこくに ことばが もどったよ!
+          コトノハおうこくに ことばが もどったよ！
         </p>
       )}
       <button type="button" onClick={finish}>

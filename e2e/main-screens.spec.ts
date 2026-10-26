@@ -111,7 +111,7 @@ test.describe("ボス戦", () => {
     await seedProgress(page, clearedStagesThrough(["prologue", "kotobaNoIchiba"]).filter((id) => id !== "kotobaNoIchiba-subboss"));
   });
 
-  test("ボス戦に入ると「○○が あらわれた!」が出て、そのまま戦闘へ。HPゲージ・ライフが表示された状態で出題が始まる", async ({ page }) => {
+  test("ボス戦に入ると「○○が あらわれた！」が出て、そのまま戦闘へ。HPゲージ・ライフが表示された状態で出題が始まる", async ({ page }) => {
     await startApp(page);
     await page.locator(".title-primary").click();
     await page.locator(".area-list button:not(:disabled)").nth(1).click(); // ことばの市場
@@ -121,7 +121,7 @@ test.describe("ボス戦", () => {
 
     // 戦闘に入ると、説明のポップアップの先頭に「○○が あらわれた!」が出る。「あらわれた」だけの別の画面は、挟まない
     await expect(page.locator(".screen-boss-encounter")).toHaveCount(0);
-    await expect(page.locator(".boss-appear-message")).toContainText("が あらわれた!");
+    await expect(page.locator(".boss-appear-message")).toContainText("が あらわれた！");
     const fight = page.getByRole("button", { name: "たたかう!" });
     await expect(fight).toBeVisible();
     await expect(page.locator(".boss-panel")).toBeVisible(); // 戦闘の画面(ボスとHPゲージ)に、そのまま入っている

@@ -43,7 +43,7 @@ for (const [width, height] of [[360, 640], [375, 667]] as const) {
         const dialog = page.getByRole("dialog", { name: correct ? "せいかい" : "ざんねん" });
         await expect(dialog).toBeVisible();
         const verdict = dialog.locator(".verdict");
-        await expect(verdict).toHaveText(correct ? "せいかい!" : "ざんねん");
+        await expect(verdict).toHaveText(correct ? "せいかい！" : "ざんねん");
         await expect(verdict.locator("svg")).toBeVisible(); // ○(正解)・×(不正解)の記号
         const message = dialog.locator(".feedback-message");
         await expect(message).toBeVisible();

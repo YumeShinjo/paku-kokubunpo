@@ -26,8 +26,8 @@ export interface StageIntro {
 /** ボス戦の冒頭の説明(対決の場面用。出題形式の「お手伝い」の文言は使わない) */
 const BOSS_INTRO_MESSAGE = (type: "subBoss" | "lastBoss", lives: number): string =>
   type === "subBoss"
-    ? `ことばの力を うばう ボスが 立[た]ちはだかる!ライフは${lives}つ。なくなる前に、正[ただ]しい答[こた]えで 浄化[じょうか]しよう!`
-    : `王[おう]にとりついた 黒[くろ]い力[ちから]との、さいごの 決戦[けっせん]!ライフは${lives}つ。ことばの力[ちから]を 信[しん]じて、浄化[じょうか]しよう!`;
+    ? `ことばの力を うばう ボスが 立[た]ちはだかる！ライフは${lives}つ。なくなる前に、正[ただ]しい答[こた]えで 浄化[じょうか]しよう！`
+    : `王[おう]にとりついた 黒[くろ]い力[ちから]との、さいごの 決戦[けっせん]！ライフは${lives}つ。ことばの力[ちから]を 信[しん]じて、浄化[じょうか]しよう！`;
 
 /**
  * ステージの冒頭に、1度だけ出す説明。
@@ -48,7 +48,7 @@ export function buildStageIntro(
   const flavors = stageFlavors(areaId, questions);
   if (flavors.length === 1) return { title: flavors[0].label, message: flavors[0].situation };
   if (flavors.length > 1 && stageTitle) {
-    return { title: stageTitle, message: rb("いろいろな 形[かたち]の 問題[もんだい]に ちょうせん!") };
+    return { title: stageTitle, message: rb("いろいろな 形[かたち]の 問題[もんだい]に ちょうせん！") };
   }
   return null;
 }
