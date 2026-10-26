@@ -350,3 +350,18 @@ describe("用語の補足の台詞(2026-10-15)", () => {
     for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(added, word).not.toContain(word);
   });
 });
+
+describe("小ボスの乱れた話し方は、乱れだと分かる手がかりがある(誤植と見間違えない)", () => {
+  it("文官(オンヴィン)の戦闘前の台詞は、「言いた」のあとに、すぐ「いや、言った」と言い直す", () => {
+    const [line] = plain(getStoryEvent(subBossIntroStoryId("namerakaNoTaki"))!);
+    expect(line).toContain("言いた……いや、言った……");
+  });
+
+  it("どの小ボスの戦闘前の台詞にも、言い直し・迷い(「いや」「いえ」「あれ」「あら」「おかしいな」「ぐちゃぐちゃ」)の手がかりがある", () => {
+    const cues = ["いや", "いえ", "あれ", "あら", "おかしいな", "ぐちゃぐちゃ"];
+    for (const area of areas.filter((a) => a.subBoss)) {
+      const lines = plain(getStoryEvent(subBossIntroStoryId(area.id))!);
+      expect(lines.some((t) => cues.some((c) => t.includes(c))), `${area.id} の戦闘前`).toBe(true);
+    }
+  });
+});

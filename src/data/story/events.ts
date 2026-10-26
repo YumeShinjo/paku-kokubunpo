@@ -175,7 +175,7 @@ export const storyEvents: StoryEvent[] = [
   {
     id: subBossIntroStoryId("namerakaNoTaki"),
     lines: [
-      line("オンヴィン", "報告、いたし……言いた……もうしあげ……あれ、どの言い方が正しいのか、分からなく……"),
+      line("オンヴィン", "報告、いたし……言いた……いや、言った……もうしあげ……あれ、どの言い方が正しいのか、分からなく……"),
     ],
   },
   {
