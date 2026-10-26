@@ -87,11 +87,11 @@
 
 ## 1.5 バージョン管理
 
-バージョン番号は `package.json` の `version` だけが元(いまは **0.9.2**)。設定の表示・最初の画面の表示・`version.json` は、すべてビルド時にそこから作る。
+バージョン番号は `package.json` の `version` だけが元(いまは **0.9.3**)。設定の表示・最初の画面の表示・`version.json` は、すべてビルド時にそこから作る。
 
 | 項目 | 内容 | 根拠 |
 |---|---|---|
-| 版の表記 | 「v0.9.2(コミットID・ビルド日時(日本時間))」。開発・テストでは「v0.9.2(dev)」 | `src/lib/versionInfo.ts`、`src/lib/appVersion.ts` |
+| 版の表記 | 「v0.9.3(コミットID・ビルド日時(日本時間))」。開発・テストでは「v0.9.3(dev)」 | `src/lib/versionInfo.ts`、`src/lib/appVersion.ts` |
 | 最新の版の確認 | `/version.json`(`{version, commit, buildTime}`)。設定の「最新の版をたしかめる」が、毎回これを取りに行き、いまの版と比べる。違えば「新しい版があります。再読み込みします」 | `src/lib/versionCheck.ts`、`src/components/VersionCheck.tsx` |
 | 更新の反映 | 新しい版に入れ替わったら、途中経過のない画面(`title`・`areaSelect`・`stageSelect`)で、1度だけ読み込み直す。アプリに戻るたびの確認は、5分以上あけて行う | `src/lib/appUpdate.ts` |
 | 上げ方 | 機能の追加は minor、不具合の修正は patch。デプロイのたびに上げる。提出する版は 1.0.0 の予定 | `docs/VERSIONING.md` |
