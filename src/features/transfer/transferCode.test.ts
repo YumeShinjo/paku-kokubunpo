@@ -11,6 +11,7 @@ import { useStatsStore } from "@/app/store/statsStore";
 import { useStoryStore } from "@/app/store/storyStore";
 import { useTutorialStore } from "@/app/store/tutorialStore";
 import {
+  MAX_GROWTH_STAGE,
   TransferError,
   applyTransferData,
   checksum,
@@ -102,6 +103,29 @@ describe("データの引き継ぎコード", () => {
     for (const code of ["empty", "format", "unsupported", "broken"] as const) {
       expect(transferErrorMessage(new TransferError(code))).toMatch(/[コード。]/);
     }
+  });
+
+  it("王座の間をクリアして成長段階が8になった端末のコードも、版2・版1とも、そのまま復元できる", async () => {
+    for (const encode of [encodeTransferCode, encodeTransferCodeV1]) {
+      fillEverything();
+      useMascotStore.setState({ growthStage: MAX_GROWTH_STAGE });
+      expect(MAX_GROWTH_STAGE).toBe(8);
+      const code = await encode();
+      resetAll();
+      applyTransferData(await decodeTransferCode(code));
+      expect(useMascotStore.getState().growthStage).toBe(8);
+    }
+  });
+
+  it("成長段階の上限(8)を超えるコードは受け付けない", async () => {
+    const base = collectTransferData();
+    expect(validateTransferData({ ...base, growth: MAX_GROWTH_STAGE })?.growth).toBe(MAX_GROWTH_STAGE);
+    expect(validateTransferData({ ...base, growth: MAX_GROWTH_STAGE + 1 })).toBeNull();
+    expect(validateTransferData({ ...base, growth: -1 })).toBeNull();
+  });
+
+  it("形式エラーの案内は、いま発行するコードの頭(PAKU2)を伝える", () => {
+    expect(transferErrorMessage(new TransferError("format"))).toContain("PAKU2");
   });
 
   it("中身の形が正しくない(型・範囲がおかしい)コードは、チェックサムが合っていても受け付けない", async () => {

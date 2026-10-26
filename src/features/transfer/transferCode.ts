@@ -37,7 +37,7 @@ export interface TransferData {
   /** 進捗 */
   cleared: string[];
   score: number;
-  /** マスコットの成長段階(0〜7) */
+  /** マスコットの成長段階(0〜8。0=最初、序章のクリアで1、王座の間のクリアで8) */
   growth: number;
   /** ストーリー */
   seen: string[];
@@ -115,6 +115,9 @@ export function summarize(data: TransferData): TransferSummary {
 
 // ---------------------------------------------------------------- 検証(コードは外から来る値なので、形も範囲も確かめる)
 
+/** 成長段階の上限。序章のクリアで1になり、そこからアクセサリー(MASCOT_ACCESSORY_STAGES個)の分だけ増える */
+export const MAX_GROWTH_STAGE = MASCOT_ACCESSORY_STAGES + 1;
+
 const MAX_LIST = 5000;
 const MAX_TEXT = 120;
 const MAX_SCORE = 10_000_000;
@@ -138,7 +141,7 @@ export function validateTransferData(raw: unknown): TransferData | null {
   const score = r.score;
   if (typeof score !== "number" || !Number.isInteger(score) || score < 0 || score > MAX_SCORE) return null;
   const growth = r.growth;
-  if (typeof growth !== "number" || !Number.isInteger(growth) || growth < 0 || growth > MASCOT_ACCESSORY_STAGES) return null;
+  if (typeof growth !== "number" || !Number.isInteger(growth) || growth < 0 || growth > MAX_GROWTH_STAGE) return null;
   if (!isPlayerIconId(r.icon)) return null;
 
   const choicesRaw = r.choices;
@@ -267,7 +270,7 @@ export function transferErrorMessage(error: unknown): string {
     case "empty":
       return "コードを入れてね。";
     case "format":
-      return "コードの形がちがうよ。「PAKU1」ではじまるコードを、そのまま貼り付けてね。";
+      return "コードの形がちがうよ。「PAKU2」ではじまるコードを、そのまま貼り付けてね。";
     case "unsupported":
       return "このコードは、この端末では読めないよ。アプリを新しくしてから、もう一度ためしてね。";
     default:

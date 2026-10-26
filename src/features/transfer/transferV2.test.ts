@@ -66,6 +66,13 @@ describe("引き継ぎコード 版2(指紋)", () => {
     expect(await decodeTransferCode(v1)).toEqual(data);
   });
 
+  it("成長段階が8(王座の間をクリア済み)のデータも、版2・版1とも戻る。9は壊れているとして断る", async () => {
+    const data = { ...fullData(), growth: 8 };
+    expect(await decodeTransferCode(await encodeTransferCode(data))).toEqual(data);
+    expect(await decodeTransferCode(await encodeTransferCodeV1(data))).toEqual(data);
+    await expect(decodeTransferCode(await encodeTransferCode({ ...data, growth: 9 }))).rejects.toMatchObject({ code: "broken" });
+  });
+
   it("アプリの一覧に無いid(データの更新で消えたもの)は、飛ばして復元する。ほかは、そのまま戻る", async () => {
     const first = getAllQuestions()[0].id;
     const data = { ...fullData(), cleared: ["prologue-stage1", "removed-stage"], starred: [first, "removed-question"] };

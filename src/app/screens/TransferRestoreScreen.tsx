@@ -8,6 +8,7 @@ import { useNavigationStore } from "@/app/store/navigationStore";
 import {
   applyTransferData,
   decodeTransferCode,
+  MAX_GROWTH_STAGE,
   summarize,
   transferErrorMessage,
   type TransferData,
@@ -100,7 +101,7 @@ export function TransferRestoreScreen() {
         className="transfer-code"
         rows={6}
         value={input}
-        placeholder="PAKU1…"
+        placeholder="PAKU2…"
         aria-label="ひきつぎコード"
         autoCapitalize="off"
         autoCorrect="off"
@@ -152,7 +153,7 @@ export function TransferRestoreScreen() {
           <ul>
             <li>クリアしたステージ: {summary.clearedStages}こ</li>
             <li>とくてん: {summary.score}</li>
-            <li>コトの成長: {summary.growth} / 7</li>
+            <li>コトの成長: {summary.growth} / {MAX_GROWTH_STAGE}</li>
             <li>
               <Rb t={`にがて問題[もんだい]: ${summary.starred}こ`} />
             </li>
