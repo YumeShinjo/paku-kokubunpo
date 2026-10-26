@@ -1,6 +1,6 @@
 # バージョンの付け方と、デプロイでの確認
 
-バージョン番号は、`package.json` の `version` だけが元(設定の表示・最初の画面の表示・`version.json` は、すべて、ビルドのときに、そこから作る)。機能の追加は minor(0.9.0 → 0.10.0)、不具合の修正は patch(0.9.0 → 0.9.1)を上げる。**デプロイのたびに、`package.json` の `version` を上げ**(変更がなくても、デプロイするなら patch を上げる)、`npm install --package-lock-only` か手で、`package-lock.json` の最初の `version` も合わせる。提出する版は 1.0.0 にする予定(いまは、提出前の候補の 0.9.1)。
+バージョン番号は、`package.json` の `version` だけが元(設定の表示・最初の画面の表示・`version.json` は、すべて、ビルドのときに、そこから作る)。機能の追加は minor(0.9.0 → 0.10.0)、不具合の修正は patch(0.9.0 → 0.9.1)を上げる。**デプロイのたびに、`package.json` の `version` を上げ**(変更がなくても、デプロイするなら patch を上げる)、`npm install --package-lock-only` か手で、`package-lock.json` の最初の `version` も合わせる。提出する版は 1.0.0 にする予定(いまは、提出前の候補の 0.9.2)。
 
 - **設定の表示**: 「v0.9.0(abc1234・2026-10-23 12:34)」=バージョン・git の短いコミットID・ビルドの日時(日本時間)。ビルド(`npm run build`)のたびに、自動で入る。開発サーバー・テストでは、コミットIDを取らず「v0.9.0(dev)」。**ビルドは、コミットしたあとに行う**(コミットIDは、HEAD のもの。変更が未コミットだと、その変更の入った版でも、前のコミットIDになる)。
 - **デプロイされた最新の版の確認**: https://paku-kokubunpo.web.app/version.json(`{"version": …, "commit": …, "buildTime": …}`)。ビルドが `dist/version.json` に出す。`firebase.json` で、このファイルだけ `Cache-Control: no-cache`。Service Worker のプリキャッシュにも、画面の読み替えにも入れていない(`vite.config.ts`)。
