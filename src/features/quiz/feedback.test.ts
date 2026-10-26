@@ -54,3 +54,27 @@ describe("comboLabel", () => {
     expect(comboLabel(10)).toBe("10れんぞく!");
   });
 });
+
+describe("正誤の一言: 紛らわしい語を使わない(見出しは「せいかい!」「ざんねん」の固定ラベル)", () => {
+  const all = Object.entries(feedbackMessages).flatMap(([kind, list]) => list.map((text) => ({ kind, text })));
+
+  it("「おいしい」「おしい」など、見間違えやすい語は、どの一言にもない", () => {
+    for (const { kind, text } of all) {
+      expect(text, `${kind}: ${text}`).not.toMatch(/おいしい|おしい|惜しい/);
+    }
+  });
+
+  it("一言は、見出し(「せいかい!」「ざんねん」)と同じ文にしない。「せいかい」「ざんねん」の語も含めない", () => {
+    for (const { kind, text } of all) expect(text, `${kind}: ${text}`).not.toMatch(/せいかい|ざんねん|正解|残念/);
+  });
+
+  it("正解の一言と不正解の一言に、同じ文はない。正解の一言には、不正解を思わせる語(ちがう・間違え・復習・はずれ・おしい)がない", () => {
+    const hits = [...feedbackMessages.correct, ...feedbackMessages.bossHit] as string[];
+    const misses = [...feedbackMessages.incorrect, ...feedbackMessages.bossMiss] as string[];
+    for (const text of hits) {
+      expect(misses).not.toContain(text);
+      expect(text).not.toMatch(/ちがう|違[っう]|間違|復習|はずれ|おしい|それた|だいじょうぶ|大丈夫/);
+    }
+    for (const text of misses) expect(text).not.toMatch(/ヒット|ばっちり|ぴったり|おみごと|すごい/);
+  });
+});

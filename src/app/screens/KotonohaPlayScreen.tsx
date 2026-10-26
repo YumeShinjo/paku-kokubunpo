@@ -18,6 +18,7 @@ import {
 } from "@/data/yuraiScenes";
 import { completionsToShow } from "@/app/store/kotonohaStore";
 import { TitleBadge } from "@/components/TitleBadge";
+import { Verdict } from "@/components/Verdict";
 import { kotonohaTitle } from "@/data/titles";
 import { YuraiBubble } from "@/features/kotonoha/Yurai";
 import type { MascotExpression } from "@/assets/registry";
@@ -181,7 +182,7 @@ export function KotonohaPlayScreen({ scope }: { scope: KotonohaScope }) {
         <>
           {/* 答えたあと: 1枚のカードに、ひとこと・完全な形・選んだ答えと正解(1行ずつ)・意味・もとの話(折りたたみ) */}
           <section className="kotonoha-card kotonoha-explain" aria-label="かいせつ">
-            <p className="kotonoha-verdict">{lastCorrect ? "せいかい!" : "ざんねん"}</p>
+            <Verdict kind={lastCorrect ? "correct" : "incorrect"} className="kotonoha-verdict" />
             <p className="kotonoha-sentence kotonoha-full">
               <IdiomText text={question.full} />
             </p>

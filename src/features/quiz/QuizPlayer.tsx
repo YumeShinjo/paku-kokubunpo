@@ -1,4 +1,5 @@
 import { recoveredOnRetryMessage } from "@/data/feedbackMessages";
+import { Verdict } from "@/components/Verdict";
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Flame, Heart, Sparkles, Star, X as CloseIcon } from "lucide-react";
 import type { Question, RubyText } from "@/data/schema";
@@ -127,7 +128,7 @@ export function QuizPlayer({
   // ボス戦のプレイヤーのライフ(誤答で1減り、0でそのステージを最初からやり直す)
   const [lives, setLives] = useState(resume?.lives ?? maxLives);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  // 「せいかい!/おしい!」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
+  // 「せいかい!/ざんねん」のポップアップが開いているか。閉じたあとは、解説と「つぎへ」が下に残る
   const [popupOpen, setPopupOpen] = useState(false);
   const [zukanOpen, setZukanOpen] = useState(false);
   // ステージの冒頭の説明(出題形式の呼び名と場面)は、ステージを始めたときに1度だけ、ポップアップで出す(途中からの再開では出さない)
@@ -183,7 +184,8 @@ export function QuizPlayer({
     const kind = boss ? (correct ? "bossHit" : "bossMiss") : correct ? "correct" : "incorrect";
     // 仕分けで、1回目に外して、2回目で全部合った: 集計は不正解のまま。表示だけ、できたことを認める文にする
     const recovered = !correct && answer.engine === "sorting" && answer.recoveredOnRetry === true;
-    const message = recovered ? recoveredOnRetryMessage.title : pickMessage(kind, lastMessage.current[kind]);
+    // 見出し(Verdict)は固定のラベル。変わる一言(message)は、その下に小さく出す(2回目で正解のときは、一言のかわりに復習のすすめ)
+    const message = recovered ? "" : pickMessage(kind, lastMessage.current[kind]);
     if (!recovered) lastMessage.current[kind] = message;
 
     // 星(復習)の更新と、克服したときの音。解答の直後に必ず反映する
@@ -427,9 +429,12 @@ export function QuizPlayer({
               }
               size="small"
             />
-            <p className="feedback-message">
-              <Rb t={feedback.message} />
-            </p>
+            <Verdict kind={feedback.correct ? "correct" : feedback.recovered ? "recovered" : "incorrect"} />
+            {feedback.message && (
+              <p className="feedback-message">
+                <Rb t={feedback.message} />
+              </p>
+            )}
             {feedback.recovered && <p className="feedback-recovered-hint">{recoveredOnRetryMessage.hint}</p>}
             {feedback.correct && !seenGuides.includes("paku") && (
               <p className="feedback-paku" role="note">

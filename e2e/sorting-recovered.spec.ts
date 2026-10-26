@@ -68,7 +68,7 @@ test.describe("仕分け: 1回外して、2回目で全部合ったとき", () =
 
     const dialog = page.getByRole("dialog", { name: "2かいめで せいかい" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator(".feedback-message")).toHaveText("2かいめで せいかい!");
+    await expect(dialog.locator(".verdict")).toHaveText("2かいめで せいかい!");
     await expect(dialog.locator(".feedback-recovered-hint")).toHaveText("もういちど ふくしゅうしてみよう");
     // 不正解向けの文言は出ない
     const text = (await dialog.textContent()) ?? "";
