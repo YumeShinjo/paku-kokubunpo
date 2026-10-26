@@ -34,8 +34,7 @@ for (const [width, height] of [[360, 640], [375, 667]] as const) {
           const b = (await box.boundingBox())!;
           expect(b.x, `${scene} ${i}`).toBeGreaterThanOrEqual(0);
           expect(b.x + b.width, `${scene} ${i}`).toBeLessThanOrEqual(width);
-          // (文字サイズ「大」で、場面のいちばん最初の1行だけ、枠の下が画面より35px下に出る。全角化とは別の、以前からの見え方)
-          if (!(large && i === 0)) expect(b.y + b.height, `${scene} ${i}`).toBeLessThanOrEqual(height);
+          expect(b.y + b.height, `${scene} ${i}`).toBeLessThanOrEqual(height);
           // 文が、ボックスからはみ出さない
           const fits = await page.evaluate(() => {
             const t = document.querySelector(".story-text")!.getBoundingClientRect();

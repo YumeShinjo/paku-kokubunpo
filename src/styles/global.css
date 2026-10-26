@@ -342,6 +342,17 @@ html[data-text-size="large"] .story-textbox {
   height: 16.5rem;
 }
 
+/*
+ * 文字サイズ「大」では、立ち絵の領域も、台詞の枠に合わせて縮める。
+ * 標準の大きさと同じ計算(画面の高さ − 19rem)のままだと、立ち絵の最低の高さ(19rem)と、大きくした枠(16.5rem)を足して 35.5rem(19px × 35.5 = 674px)になり、
+ * 360×640 では約35px、375×667 では約8px、画面より下にはみ出していた(タップで次の行に進むと、画面が自動で下にスクロールして、見えなくなっていた)。
+ * 枠(16.5rem)のぶんを引いて、下に 1.5rem だけ余白を残す。
+ */
+html[data-text-size="large"] .story-stage {
+  height: calc(100dvh - 18rem);
+  min-height: 12rem;
+}
+
 .story-speaker {
   margin: 0 0 0.3rem;
   font-weight: bold;
