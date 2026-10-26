@@ -23,33 +23,33 @@ describe("ホームの状況の一言(上から順に判定して、最初に当
     expect(status({ starCount: MANY_STARS }).id).toBe("status-stars-many"); // 同じ文。表情だけ違う(眠そう)
     expect(status({ starCount: 2, prologueCleared: false, forestUnlocked: false }).id).toBe("status-stars");
     expect(status({ starCount: 2, leafCount: 80 }).id).toBe("status-stars");
-    expect(STATUS_LINES.stars.text).toBe("苦手な問題が残ってるよ。いっしょにやっつけよう!");
+    expect(STATUS_LINES.stars.text).toBe("苦手な問題が残ってるよ。いっしょにやっつけよう！");
     expect(STATUS_LINES.starsMany.text).toBe(STATUS_LINES.stars.text);
   });
 
   it("2. 序章が未クリア(はじめて) → 一言2", () => {
-    expect(status({ prologueCleared: false, forestUnlocked: false }).text).toBe("まずは「はじめる」から。いっしょにことばを集めよう!");
+    expect(status({ prologueCleared: false, forestUnlocked: false }).text).toBe("まずは「はじめる」から。いっしょにことばを集めよう！");
   });
 
   it("3. 言の葉の森が解放済みで、葉が0枚 → 一言3", () => {
-    expect(status({ leafCount: 0 }).text).toBe("言の葉の森にも行ってみない?ユライが待ってるよ");
+    expect(status({ leafCount: 0 }).text).toBe("言の葉の森にも行ってみない？ユライが待ってるよ");
   });
 
   it("4. 葉が1枚以上80枚未満 → 一言4。5. 葉が80枚 → 一言5", () => {
     expect(status({ leafCount: 1 }).id).toBe("status-leaves");
     expect(status({ leafCount: 79 }).id).toBe("status-leaves");
     expect(status({ leafCount: LEAF_TOTAL }).id).toBe("status-leaves-all");
-    expect(status({ leafCount: LEAF_TOTAL }).text).toBe("言の葉の森の葉っぱ、ぜんぶそろったね!");
+    expect(status({ leafCount: LEAF_TOTAL }).text).toBe("言の葉の森の葉っぱ、ぜんぶそろったね！");
   });
 
   it("6. それ以外(言の葉の森が未解放でも、序章が終わっていないとは限らない状態など)→ 一言6", () => {
-    expect(status({ forestUnlocked: false }).text).toBe("今日は、どのことばを集める?");
+    expect(status({ forestUnlocked: false }).text).toBe("今日は、どのことばを集める？");
   });
 
   it("{n} は、80 − 集めた枚数。「あと1枚」〜「あと79枚」", () => {
-    expect(homeLinePlain(STATUS_LINES.leaves, 1)).toBe("言の葉の森の葉っぱ、あと79枚でぜんぶそろうよ!");
-    expect(homeLinePlain(STATUS_LINES.leaves, 12)).toBe("言の葉の森の葉っぱ、あと68枚でぜんぶそろうよ!");
-    expect(homeLinePlain(STATUS_LINES.leaves, 79)).toBe("言の葉の森の葉っぱ、あと1枚でぜんぶそろうよ!");
+    expect(homeLinePlain(STATUS_LINES.leaves, 1)).toBe("言の葉の森の葉っぱ、あと79枚でぜんぶそろうよ！");
+    expect(homeLinePlain(STATUS_LINES.leaves, 12)).toBe("言の葉の森の葉っぱ、あと68枚でぜんぶそろうよ！");
+    expect(homeLinePlain(STATUS_LINES.leaves, 79)).toBe("言の葉の森の葉っぱ、あと1枚でぜんぶそろうよ！");
     expect(homeLinePlain(STATUS_LINES.leaves, 200)).toContain("あと0枚"); // 万一、多くても、マイナスにならない
   });
 });
@@ -57,13 +57,13 @@ describe("ホームの状況の一言(上から順に判定して、最初に当
 describe("コトをタップしたときの一言", () => {
   it("8つの一言がある(文は、依頼のとおり)", () => {
     expect(TAP_LINES.map((l) => l.text)).toEqual([
-      "ん?呼んだ?",
-      "えへへ、くすぐったいよ!",
+      "ん？呼んだ？",
+      "えへへ、くすぐったいよ！",
       "今日も、ことばをいっぱい食べようね",
       "ふんふん♪ ことばって、おいしいよね",
       "わたしのこの葉っぱ、コトノ葉っていうんだよ",
-      "いっしょにがんばろうね!",
-      "ちょっと休憩する?",
+      "いっしょにがんばろうね！",
+      "ちょっと休憩する？",
       "文法って、パズルみたいで楽しいよね",
     ]);
   });

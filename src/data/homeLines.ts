@@ -22,7 +22,7 @@ export type HomeExpression = Extract<MascotExpression, "combo" | "hungry" | "sle
 /**
  * 眠そうの表情を使ってよいか。成長アクセサリー7段階(ゼロ〜全部)で、眠そうの絵に重ねたとき、
  * 腕輪・ブローチ・リボン・モノクルが、体や顔から浮かないかを、スクリーンショットで確かめた結果。
- * false にすると、眠そうの代わりに、ハングリー(状況の一言)・通常(「ちょっと休憩する?」)になる。
+ * false にすると、眠そうの代わりに、ハングリー(状況の一言)・通常(「ちょっと休憩する？」)になる。
  */
 export const SLEEPY_OK = true;
 
@@ -44,23 +44,23 @@ export const MANY_STARS = 5;
 export const LEAF_TOTAL = 80;
 
 export const STATUS_LINES = {
-  stars: { id: "status-stars", text: "苦手な問題が残ってるよ。いっしょにやっつけよう!", expression: "hungry" },
-  starsMany: { id: "status-stars-many", text: "苦手な問題が残ってるよ。いっしょにやっつけよう!", expression: sleepy("hungry") },
-  first: { id: "status-first", text: "まずは「はじめる」から。いっしょにことばを集めよう!", expression: undefined },
-  forestNew: { id: "status-forest-new", text: "言の葉の森にも行ってみない?ユライが待ってるよ", expression: undefined },
-  leaves: { id: "status-leaves", text: "言の葉の森の葉っぱ、あと{n}枚でぜんぶそろうよ!", expression: "combo" },
-  leavesAll: { id: "status-leaves-all", text: "言の葉の森の葉っぱ、ぜんぶそろったね!", expression: "combo" },
-  usual: { id: "status-usual", text: "今日は、どのことばを集める?", expression: undefined },
+  stars: { id: "status-stars", text: "苦手な問題が残ってるよ。いっしょにやっつけよう！", expression: "hungry" },
+  starsMany: { id: "status-stars-many", text: "苦手な問題が残ってるよ。いっしょにやっつけよう！", expression: sleepy("hungry") },
+  first: { id: "status-first", text: "まずは「はじめる」から。いっしょにことばを集めよう！", expression: undefined },
+  forestNew: { id: "status-forest-new", text: "言の葉の森にも行ってみない？ユライが待ってるよ", expression: undefined },
+  leaves: { id: "status-leaves", text: "言の葉の森の葉っぱ、あと{n}枚でぜんぶそろうよ！", expression: "combo" },
+  leavesAll: { id: "status-leaves-all", text: "言の葉の森の葉っぱ、ぜんぶそろったね！", expression: "combo" },
+  usual: { id: "status-usual", text: "今日は、どのことばを集める？", expression: undefined },
 } as const satisfies Record<string, HomeLine>;
 
 export const TAP_LINES: readonly HomeLine[] = [
-  { id: "tap-call", text: "ん?呼んだ?", expression: undefined },
-  { id: "tap-tickle", text: "えへへ、くすぐったいよ!", expression: "combo" },
+  { id: "tap-call", text: "ん？呼んだ？", expression: undefined },
+  { id: "tap-tickle", text: "えへへ、くすぐったいよ！", expression: "combo" },
   { id: "tap-eat", text: "今日も、ことばをいっぱい食べようね", expression: "hungry" },
   { id: "tap-hum", text: "ふんふん♪ ことばって、おいしいよね", expression: undefined },
   { id: "tap-leaf", text: "わたしのこの葉っぱ、コトノ葉っていうんだよ", expression: undefined },
-  { id: "tap-together", text: "いっしょにがんばろうね!", expression: "combo" },
-  { id: "tap-rest", text: "ちょっと休憩する?", expression: sleepy(undefined) },
+  { id: "tap-together", text: "いっしょにがんばろうね！", expression: "combo" },
+  { id: "tap-rest", text: "ちょっと休憩する？", expression: sleepy(undefined) },
   { id: "tap-puzzle", text: "文法って、パズルみたいで楽しいよね", expression: undefined },
 ];
 

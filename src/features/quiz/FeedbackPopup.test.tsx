@@ -90,7 +90,7 @@ describe("仕分け以外: 判定と解説を1つのポップアップに。1タ
     done();
   });
 
-  it("「つぎへ」ボタンのクリックが、外側の暗い部分(.feedback-overlay)まで伝わって、二重に次へ進んでしまわない(onCompleteの二重呼び出しの防止。「コトが せいちょうしたよ!」が2回出た不具合の原因)", () => {
+  it("「つぎへ」ボタンのクリックが、外側の暗い部分(.feedback-overlay)まで伝わって、二重に次へ進んでしまわない(onCompleteの二重呼び出しの防止。「コトが せいちょうしたよ！」が2回出た不具合の原因)", () => {
     vi.useFakeTimers();
     const { onComplete, click, done } = mount([question("q1")]); // 1問だけ→答えると、そのままステージ終わり
     click("正しい");
@@ -327,15 +327,15 @@ describe("正誤の見出し: 固定のラベル + 記号。変わる一言は�
     expect([...labels].sort()).toEqual(["ざんねん", "せいかい!"]);
   });
 
-  it("ボス戦: 命中は「せいかい!」、はずれは「ざんねん」。一言は、命中(ヒット!など)・はずれの文", () => {
+  it("ボス戦: 命中は「せいかい!」、はずれは「ざんねん」。一言は、命中(ヒット！など)・はずれの文", () => {
     const { container, click, done } = setup(3, true);
     click("正しい");
     expect(verdictOf(container).textContent).toBe("せいかい!");
-    expect(["ヒット!", "きまった!", "いい攻撃!", "効いてる!"]).toContain(messageOf(container));
+    expect(["ヒット！", "きまった！", "いい攻撃！", "効いてる！"]).toContain(messageOf(container));
     click("つぎへ");
     click("誤り");
     expect(verdictOf(container).textContent).toBe("ざんねん");
-    expect(["はずれた!でも大丈夫", "もう一回!つぎは当てよう!", "攻撃がそれた!"]).toContain(messageOf(container));
+    expect(["はずれた！でも大丈夫", "もう一回！つぎは当てよう！", "攻撃がそれた！"]).toContain(messageOf(container));
     done();
   });
 

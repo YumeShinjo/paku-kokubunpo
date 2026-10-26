@@ -62,17 +62,17 @@ describe("ボス戦の負けた回数・助けてもらったクリア(進行の
 describe("「先へすすむ」の場面(コトの助太刀)", () => {
   const bossAreas = areas.filter((a) => a.subBossName !== undefined);
 
-  it("小ボスのいる7エリアすべてに、同じ4行の場面がある。ボスの行は「……!」。ネタバレ禁止語を含まない", () => {
+  it("小ボスのいる7エリアすべてに、同じ4行の場面がある。ボスの行は「……！」。ネタバレ禁止語を含まない", () => {
     expect(bossAreas).toHaveLength(7);
     for (const area of bossAreas) {
       const event = getStoryEvent(subBossAssistStoryId(area.id))!;
       expect(event, area.id).toBeDefined();
       const plain = event.lines.map((l) => `${l.speaker ?? ""}:${l.text.map((s) => s.text).join("")}`);
       expect(plain).toEqual([
-        "コト:だいじょうぶ! あとは コトに まかせて!",
-        "コト:ことばの力を ぜんぶ こめて……えいっ!",
-        `${area.subBossName}:……!`,
-        "コト:やった! もとにもどったよ。いっしょに がんばってくれて ありがとう!",
+        "コト:だいじょうぶ！ あとは コトに まかせて！",
+        "コト:ことばの力を ぜんぶ こめて……えいっ！",
+        `${area.subBossName}:……！`,
+        "コト:やった！ もとにもどったよ。いっしょに がんばってくれて ありがとう！",
       ]);
       for (const word of ["ラスボス", "王様", "ヴェルバルト", "コレット", "王女"]) expect(plain.join(""), word).not.toContain(word);
     }

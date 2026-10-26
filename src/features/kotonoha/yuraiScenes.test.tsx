@@ -66,15 +66,15 @@ describe("場面台詞のデータ(yurai-scene-lines.md)", () => {
     const text = (id: SceneId) => YURAI_SCENES[id].map((l) => l.text);
     expect(text("entry_first")).toEqual([
       "ここは、言の葉の 森。……ようこそ。",
-      "あ、旅の人だ!ここ、どんなところなの?",
+      "あ、旅の人だ！ここ、どんなところなの？",
       "ことばが、葉に なって、ねむってる。",
-      "じゃあ、わたしたちで、起こしてあげよう!",
+      "じゃあ、わたしたちで、起こしてあげよう！",
     ]);
-    expect(text("round_start_kotowaza")).toEqual(["くらしの なかで、うまれた ことばから。", "行くよー!"]);
-    expect(text("result_perfect")).toEqual(["……ぜんぶ、おぼえて いたんだね。", "すごいすごい!パーフェクト!"]);
-    expect(text("leaf_new")).toEqual(["……また、ひとつ。", "新しい葉、見つけたよ!"]);
+    expect(text("round_start_kotowaza")).toEqual(["くらしの なかで、うまれた ことばから。", "行くよー！"]);
+    expect(text("result_perfect")).toEqual(["……ぜんぶ、おぼえて いたんだね。", "すごいすごい！パーフェクト！"]);
+    expect(text("leaf_new")).toEqual(["……また、ひとつ。", "新しい葉、見つけたよ！"]);
     expect(text("complete_all")[2]).toBe("ここからは……また、あたらしい 話を さがすだけ。");
-    expect(text("complete_koji")[1]).toBe("故事成語も、コンプリート!すごいよ!");
+    expect(text("complete_koji")[1]).toBe("故事成語も、コンプリート！すごいよ！");
   });
 
   it("ユライの台詞は、ひらがな中心(漢字は「言の葉の森」「葉」「話」だけ)。台詞には、ふりがなの記法を書かない", () => {
@@ -103,7 +103,7 @@ describe("場面台詞のデータ(yurai-scene-lines.md)", () => {
         .filter((s) => s.ruby)
         .map((s) => `${s.text}:${s.ruby}`);
     expect(shown("ここは、言の葉の 森。……ようこそ。")).toEqual(["言:こと", "葉:は", "森:もり"]);
-    expect(shown("新しい葉、見つけたよ!")).toEqual(["葉:は"]);
+    expect(shown("新しい葉、見つけたよ！")).toEqual(["葉:は"]);
     for (const id of SCENE_IDS) {
       for (const line of YURAI_SCENES[id]) expect(plain(rb(sceneRuby(line.text))), id).toBe(line.text);
     }

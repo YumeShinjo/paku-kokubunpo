@@ -173,7 +173,7 @@ describe("STORY.md の台詞の反映(抜粋の照合)", () => {
     expect(texts[at + 2]).toContain("すまない、気づいてやれなかった");
     expect(event.lines[at + 3].speaker).toBe("コレット");
     expect(texts[at + 3]).toContain("思い出せた");
-    // 「お父さん?」のあと、王様が静かに問いかけて分岐へ進む前に置かれている
+    // 「お父さん？」のあと、王様が静かに問いかけて分岐へ進む前に置かれている
     expect(texts.findIndex((t) => t.includes("お父さん"))).toBeLessThan(at);
     expect(texts.findIndex((t) => t.includes("静かに問いかける"))).toBeGreaterThan(at + 3);
   });
@@ -182,8 +182,8 @@ describe("STORY.md の台詞の反映(抜粋の照合)", () => {
     const event = getStoryEvent(areaClearStoryId("prologue"))!;
     expect(plain(event)).toEqual([
       "はじめてのことだまの力を、主人公はしっかりと示した。",
-      "やったね!この調子で、みんなを助けに行こっか!",
-      "言の葉の森が ひらいたよ! ことわざや故事成語を あつめられる、あたらしい場所なんだって",
+      "やったね！この調子で、みんなを助けに行こっか！",
+      "言の葉の森が ひらいたよ！ ことわざや故事成語を あつめられる、あたらしい場所なんだって",
     ]);
     expect(event.lines[2].speaker).toBe("コト");
     expect(event.lines[0].speaker).toBeUndefined();
@@ -329,14 +329,14 @@ describe("用語の補足の台詞(2026-10-15)", () => {
 
   it("序章の導入の末尾に、コトの自己紹介(パクっと)", () => {
     const event = getStoryEvent(introStoryId("prologue"))!;
-    expect(plain(event)[10]).toBe("わたしはコト。正しいことばを パクっと 食べると、元気が出るんだ!");
+    expect(plain(event)[10]).toBe("わたしはコト。正しいことばを パクっと 食べると、元気が出るんだ！");
     expect(event.lines[10].speaker).toBe("コト");
   });
 
   it("鍛冶場の導入の2行目のあとに、「姿変え」の説明", () => {
     const event = getStoryEvent(introStoryId("sugatakaeNoKajiba"))!;
     expect(plain(event)).toHaveLength(3);
-    expect(plain(event)[2]).toBe("ことばも おなじだよ。形をかえて、いろんな はたらきをするの。それを『姿変え』って いうんだ!");
+    expect(plain(event)[2]).toBe("ことばも おなじだよ。形をかえて、いろんな はたらきをするの。それを『姿変え』って いうんだ！");
     expect(event.lines[2].speaker).toBe("コト");
   });
 
